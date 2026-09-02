@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gpon_prod_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-gpon_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-gpon_secret_prod_2026}
+      POSTGRES_DB: ${DB_NAME:-gpon_inventory}
+    volumes:
+      - gpon_prod_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-gpon_admin} -d ${DB_NAME:-gpon_inventory}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gpon_net
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: gpon_prod_backend
+    restart: always
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-gpon_admin}
+      DB_PASSWORD: ${DB_PASSWORD:-gpon_secret_prod_2026}
+      DB_NAME: ${DB_NAME:-gpon_inventory}
+      JWT_SECRET: ${JWT_SECRET:-super_secret_production_jwt_key_fttx_2026}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gpon_net
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: gpon_prod_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - gpon_net
+
+volumes:
+  gpon_prod_pgdata:
+    driver: local
+
+networks:
+  gpon_net:
+    driver: bridge
+
