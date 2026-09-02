@@ -9,7 +9,9 @@
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
     "seed": "pnpm --filter backend run seed",
-    "build": "pnpm --filter backend build && pnpm --filter frontend build"
+    "build": "pnpm --filter frontend build",
+    "build:all": "pnpm --filter backend build && pnpm --filter frontend build",
+    "build:backend": "pnpm --filter backend build"
   },
   "dependencies": {
     "cors": "^2.8.6",

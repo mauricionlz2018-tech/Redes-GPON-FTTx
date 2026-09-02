@@ -1,7 +1,6 @@
 # Dependencies
 node_modules/
 .pnpm-store/
-pnpm-lock.yaml
 
 # Build & compiled output
 dist/
@@ -30,3 +29,4 @@ Thumbs.db
 # Docker persistent volume
 gpon_pgdata/
 docker_gpon_pgdata/
+
