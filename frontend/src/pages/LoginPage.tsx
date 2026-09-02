@@ -114,8 +114,16 @@ export const LoginPage: React.FC = () => {
 
           {/* Acceso Rápido Demo (1 Clic) */}
           <div className="mt-6 pt-6 border-t border-slate-800">
+            <button
+              type="button"
+              onClick={() => handleQuickDemoLogin('Admin')}
+              className="w-full mb-3 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-lg shadow-emerald-950/40"
+            >
+              <span>🗺️ Explorar Mapa y 16 Puertos FTTx (Modo Demo)</span>
+            </button>
+
             <span className="block text-center text-xs font-semibold text-slate-400 mb-3">
-              O accede al instante con un perfil de prueba:
+              O elige un perfil de prueba para evaluar permisos:
             </span>
             <div className="grid grid-cols-3 gap-2">
               <button

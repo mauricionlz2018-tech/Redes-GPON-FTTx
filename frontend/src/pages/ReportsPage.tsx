@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NapBox } from '../types';
+import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
 import {
   FileText,
@@ -22,11 +23,14 @@ export const ReportsPage: React.FC = () => {
     const loadNaps = async () => {
       try {
         const res = await api.get('/naps');
-        if (res.data.success) {
+        if (res.data.success && res.data.data.length > 0) {
           setNaps(res.data.data);
+        } else {
+          setNaps(mockNaps);
         }
       } catch (e) {
-        console.error('Error cargando NAPs:', e);
+        console.warn('Backend no disponible, cargando datos mock en Reportes...');
+        setNaps(mockNaps);
       } finally {
         setLoading(false);
       }

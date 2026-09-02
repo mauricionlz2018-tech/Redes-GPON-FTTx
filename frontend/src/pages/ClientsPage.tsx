@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Client } from '../types';
+import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
 import { Search, Users, Wifi, Filter, RefreshCw, Server } from 'lucide-react';
 
@@ -17,7 +18,22 @@ export const ClientsPage: React.FC = () => {
         setClients(res.data.data);
       }
     } catch (e) {
-      console.error('Error cargando clientes:', e);
+      console.warn('Backend no disponible, cargando abonados desde mockNaps...');
+      const allMockClients: Client[] = [];
+      mockNaps.forEach((nap) => {
+        (nap.puertos || []).forEach((port) => {
+          if (port.cliente) {
+            allMockClients.push({
+              ...port.cliente,
+              puerto_nap: {
+                ...port,
+                caja_nap: nap
+              }
+            });
+          }
+        });
+      });
+      setClients(allMockClients);
     } finally {
       setLoading(false);
     }

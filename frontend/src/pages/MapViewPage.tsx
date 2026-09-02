@@ -18,13 +18,16 @@ import {
   Compass
 } from 'lucide-react';
 
+import { mockNaps, mockOdf } from '../data/mockGponData';
+
 export const MapViewPage: React.FC = () => {
-  const [naps, setNaps] = useState<NapBox[]>([]);
-  const [odf, setOdf] = useState<OdfPanel | null>(null);
-  const [selectedNap, setSelectedNap] = useState<NapBox | null>(null);
+  const [naps, setNaps] = useState<NapBox[]>(mockNaps);
+  const [odf, setOdf] = useState<OdfPanel | null>(mockOdf);
+  const [selectedNap, setSelectedNap] = useState<NapBox | null>(mockNaps[0]); // Mostrar la primera NAP por defecto
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   // Modales
   const [assigningPort, setAssigningPort] = useState<NapPort | null>(null);
@@ -33,16 +36,15 @@ export const MapViewPage: React.FC = () => {
   // Cargar NAPs y ODF
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
-
       // 1. Intentar cargar desde Backend
       const [napsRes, odfRes] = await Promise.all([
         api.get('/naps'),
         api.get('/odf')
       ]);
 
-      if (napsRes.data.success) {
+      if (napsRes.data.success && napsRes.data.data.length > 0) {
         setNaps(napsRes.data.data);
+        setIsDemoMode(false);
         // Guardar en Dexie IndexedDB para respaldo offline
         try {
           await offlineDb.cached_naps.clear();
@@ -56,14 +58,17 @@ export const MapViewPage: React.FC = () => {
         setOdf(odfRes.data.data[0]);
       }
     } catch (err) {
-      console.warn('Fallo petición de red, leyendo desde caché local IndexedDB...', err);
-      // Respaldo Offline: Cargar desde IndexedDB
+      console.warn('Backend no disponible, activando modo demostración interactivo con topología de San José del Rincón.');
+      setIsDemoMode(true);
+      // Si hay datos en Dexie, usarlos; de lo contrario, cargar mockNaps
       const cached = await offlineDb.cached_naps.toArray();
       if (cached.length > 0) {
         setNaps(cached);
+      } else {
+        setNaps(mockNaps);
+        setOdf(mockOdf);
+        setSelectedNap(mockNaps[0]);
       }
-    } finally {
-      setLoading(false);
     }
   }, []);
 

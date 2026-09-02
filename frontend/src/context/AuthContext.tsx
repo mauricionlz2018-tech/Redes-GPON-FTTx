@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, [token]);
 
-  const login = async (credencial_acceso: string, password = 'admin123'): Promise<boolean> => {
+  const login = async (credencial_acceso: string, password = 'admin123', targetRole?: UserRole): Promise<boolean> => {
     try {
       const response = await api.post('/auth/login', {
         credencial_acceso,
@@ -48,8 +48,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     } catch (error) {
-      console.error('Error en autenticación:', error);
-      return false;
+      console.warn('Backend no disponible, iniciando en Modo Demostración local...');
+      // Fallback Demo: permitir acceso inmediato con datos simulados
+      let rol: UserRole = targetRole || 'Admin';
+      if (credencial_acceso.includes('soporte')) rol = 'Soporte';
+      if (credencial_acceso.includes('tecnico')) rol = 'Tecnico';
+
+      const demoUser: User = {
+        id_usuario: 'demo-user-1',
+        nombre_completo:
+          rol === 'Admin'
+            ? 'Ing. Carlos Mendoza (Admin Demo)'
+            : rol === 'Soporte'
+            ? 'Ing. Sofía Ramírez (Soporte Demo)'
+            : 'Juan Pérez (Técnico Demo)',
+        credencial_acceso: credencial_acceso || `${rol.toLowerCase()}@gpon.com`,
+        rol
+      };
+
+      const demoToken = 'demo-jwt-token';
+      localStorage.setItem('gpon_token', demoToken);
+      localStorage.setItem('gpon_user', JSON.stringify(demoUser));
+      setToken(demoToken);
+      setUser(demoUser);
+      return true;
     }
   };
 
@@ -68,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       Tecnico: 'tecnico@gpon.com'
     };
 
-    await login(emailMap[role], 'admin123');
+    await login(emailMap[role], 'admin123', role);
   };
 
   return (
