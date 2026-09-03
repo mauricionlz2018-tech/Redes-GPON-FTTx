@@ -74,132 +74,154 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="bg-slate-900/95 border-b border-slate-800 backdrop-blur sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
-          {/* Logo y Nombre de la Empresa */}
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-tr from-sky-600 to-cyan-400 p-2 rounded-lg text-white shadow-md shadow-sky-900/20">
-              <Network className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
-                GPON TELECOM
-                <span className="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                  FTTx
+    <>
+      <header className="bg-slate-900/95 border-b border-slate-800 backdrop-blur sticky top-0 z-30 w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6">
+          <div className="flex items-center justify-between h-14 gap-2">
+            {/* Logo y Nombre de la Empresa */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+              <div className="bg-gradient-to-tr from-sky-600 to-cyan-400 p-1.5 sm:p-2 rounded-lg text-white shadow-md flex-shrink-0">
+                <Network className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-bold text-xs sm:text-base tracking-tight text-white flex items-center gap-1 sm:gap-1.5 truncate">
+                  GPON TELECOM
+                  <span className="text-[8px] sm:text-[10px] uppercase font-semibold px-1 sm:px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 flex-shrink-0">
+                    FTTx
+                  </span>
                 </span>
-              </span>
-              <p className="text-[11px] text-slate-400 -mt-0.5 hidden sm:block">
-                Inventario y Mapeo Lógico de Fibra
-              </p>
+                <p className="text-[10px] sm:text-[11px] text-slate-400 -mt-0.5 hidden md:block truncate">
+                  Inventario y Mapeo Lógico de Fibra
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Navegación Principal */}
-          <nav className="flex items-center gap-1 sm:gap-2">
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              const isActive = location.pathname === link.to;
-              return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{link.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+            {/* Navegación Principal en Desktop */}
+            <nav className="hidden sm:flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                const isActive = location.pathname === link.to;
+                return (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
 
-          {/* Acciones derechas: PWA, Red y Perfil */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Botón de Instalar Aplicación (Móvil y Escritorio) */}
-            {!isInstalled && (
+            {/* Acciones derechas: APK, Red y Perfil */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              {/* Botón de Instalar Aplicación / APK */}
               <button
                 onClick={handleInstallClick}
-                className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 sm:px-3 py-1.5 rounded-lg shadow-md shadow-emerald-950/40 transition-all active:scale-95"
-                title="Instalar como Aplicación en Celular o PC"
+                className="flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md shadow-emerald-950/40 transition-all active:scale-95"
+                title="Centro de Descarga e Instalación APK"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Instalar App</span>
+                <span>APK</span>
               </button>
-            )}
 
-            {/* Indicador de Red */}
-            <div className="flex items-center gap-1.5">
-              {isOnline ? (
-                <div
-                  className="flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20"
-                  title="Conexión en línea activa"
-                >
-                  <Wifi className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">En Línea</span>
-                </div>
-              ) : (
-                <div
-                  className="flex items-center gap-1 text-[11px] font-medium text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20 animate-pulse"
-                  title="Sin conexión a internet. Los cambios se guardan localmente en IndexedDB"
-                >
-                  <WifiOff className="w-3.5 h-3.5" />
-                  <span>Modo Offline</span>
-                </div>
-              )}
-
-              {/* Botón de Sincronización si hay mutaciones en cola */}
-              {pendingCount > 0 && (
-                <button
-                  onClick={syncNow}
-                  disabled={!isOnline || isSyncing}
-                  className="flex items-center gap-1 text-[11px] font-medium bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1 rounded-md transition-all shadow-sm disabled:opacity-50"
-                  title="Sincronizar cambios pendientes con el servidor"
-                >
-                  <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
-                  <span>Sync ({pendingCount})</span>
-                </button>
-              )}
-            </div>
-
-            {/* Perfil de Usuario con opción para Editar */}
-            <div className="flex items-center gap-1.5 border-l border-slate-800 pl-2 sm:pl-3">
-              <button
-                onClick={() => setIsEditUserOpen(true)}
-                className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-800/80 transition-colors text-left group"
-                title="Editar mi perfil y credenciales"
-              >
-                <div className="text-right hidden sm:block">
-                  <p className="text-xs font-semibold text-slate-200 group-hover:text-sky-400 transition-colors truncate max-w-[130px]">
-                    {user.nombre_completo.split('(')[0]}
-                  </p>
-                  <span
-                    className={`text-[9px] font-bold uppercase px-1.5 py-0.2 rounded border ${getRoleBadge(
-                      user.rol
-                    )}`}
+              {/* Indicador de Red */}
+              <div className="flex items-center">
+                {isOnline ? (
+                  <div
+                    className="flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 p-1 sm:px-2 sm:py-1 rounded-full border border-emerald-500/20"
+                    title="Conexión en línea activa"
                   >
-                    {user.rol}
-                  </span>
-                </div>
-                <div className="p-1.5 bg-slate-800 group-hover:bg-indigo-600/30 text-slate-300 group-hover:text-indigo-400 border border-slate-700 rounded-lg transition-colors">
-                  <UserCog className="w-4 h-4" />
-                </div>
-              </button>
+                    <Wifi className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">En Línea</span>
+                  </div>
+                ) : (
+                  <div
+                    className="flex items-center gap-1 text-[11px] font-medium text-amber-400 bg-amber-500/10 p-1 sm:px-2 sm:py-1 rounded-full border border-amber-500/20 animate-pulse"
+                    title="Sin conexión a internet. Modo Offline"
+                  >
+                    <WifiOff className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Offline</span>
+                  </div>
+                )}
 
-              <button
-                onClick={logout}
-                className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
-                title="Cerrar sesión"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+                {/* Botón de Sincronización si hay mutaciones en cola */}
+                {pendingCount > 0 && (
+                  <button
+                    onClick={syncNow}
+                    disabled={!isOnline || isSyncing}
+                    className="ml-1 flex items-center gap-1 text-[10px] font-medium bg-amber-600 hover:bg-amber-500 text-white px-2 py-1 rounded-md transition-all shadow-sm disabled:opacity-50"
+                    title="Sincronizar cambios pendientes con el servidor"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                    <span className="hidden sm:inline">Sync</span> ({pendingCount})
+                  </button>
+                )}
+              </div>
+
+              {/* Perfil de Usuario con opción para Editar */}
+              <div className="flex items-center gap-1 border-l border-slate-800 pl-1.5 sm:pl-2">
+                <button
+                  onClick={() => setIsEditUserOpen(true)}
+                  className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-800/80 transition-colors text-left group"
+                  title="Editar perfil de usuario"
+                >
+                  <div className="text-right hidden sm:block">
+                    <p className="text-xs font-semibold text-slate-200 group-hover:text-sky-400 transition-colors truncate max-w-[120px]">
+                      {user.nombre_completo.split('(')[0]}
+                    </p>
+                    <span
+                      className={`text-[9px] font-bold uppercase px-1.5 py-0.2 rounded border ${getRoleBadge(
+                        user.rol
+                      )}`}
+                    >
+                      {user.rol}
+                    </span>
+                  </div>
+                  <div className="p-1.5 bg-slate-800 group-hover:bg-indigo-600/30 text-slate-300 group-hover:text-indigo-400 border border-slate-700 rounded-lg transition-colors">
+                    <UserCog className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </div>
+                </button>
+
+                <button
+                  onClick={logout}
+                  className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+                  title="Cerrar sesión"
+                >
+                  <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </header>
+
+      {/* Barra de Navegación Inferior Fija (Móvil / Smartphone) */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 border-t border-slate-800 backdrop-blur px-4 py-1.5 flex items-center justify-around shadow-2xl">
+        {navLinks.map((link) => {
+          const Icon = link.icon;
+          const isActive = location.pathname === link.to;
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+                isActive
+                  ? 'text-sky-400 font-bold scale-105'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium">{link.label.split(' ')[0]}</span>
+            </Link>
+          );
+        })}
+      </nav>
 
       {/* Modales */}
       {isInstallModalOpen && (
@@ -213,7 +235,7 @@ export const Navbar: React.FC = () => {
       {isEditUserOpen && (
         <EditUserModal onClose={() => setIsEditUserOpen(false)} />
       )}
-    </header>
+    </>
   );
 };
 

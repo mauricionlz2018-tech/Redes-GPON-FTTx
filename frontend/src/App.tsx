@@ -25,11 +25,11 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col w-full overflow-x-hidden">
       {/* Barra de prueba de roles para evaluación de RBAC */}
       <DemoRoleBar />
       <Navbar />
-      <main className="flex-1 pb-8">{children}</main>
+      <main className="flex-1 pb-20 sm:pb-8 w-full max-w-full overflow-x-hidden">{children}</main>
     </div>
   );
 };

@@ -33,14 +33,14 @@ export const DemoRoleBar: React.FC = () => {
   ];
 
   return (
-    <aside aria-label="Selector de rol demo" className="bg-slate-950/80 border-b border-slate-800 px-3 py-1.5 text-xs">
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-slate-400">
-          <span className="font-semibold text-slate-300">Simulador de Roles (RBAC):</span>
-          <span className="hidden sm:inline text-slate-400">Prueba los permisos del sistema con 1 clic</span>
+    <aside aria-label="Selector de rol demo" className="bg-slate-950/90 border-b border-slate-800 px-3 py-1.5 text-xs w-full overflow-hidden">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-slate-400 flex-shrink-0">
+          <span className="font-semibold text-slate-300 text-[11px] sm:text-xs">RBAC:</span>
+          <span className="hidden md:inline text-slate-400">Simulador de roles de campo</span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar">
           {roles.map((r) => {
             const Icon = r.icon;
             const isActive = user.rol === r.role;
@@ -49,15 +49,15 @@ export const DemoRoleBar: React.FC = () => {
                 key={r.role}
                 onClick={() => switchRole(r.role)}
                 title={r.desc}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-medium whitespace-nowrap transition-all ${
                   isActive
-                    ? `${r.color} shadow-sm ring-2 ring-white/20`
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                    ? `${r.color} shadow-sm ring-1 sm:ring-2 ring-white/20`
+                    : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{r.label}</span>
-                {isActive && <CheckCircle2 className="w-3 h-3 ml-0.5" />}
+                <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                <span>{r.role}</span>
+                {isActive && <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 ml-0.5 text-emerald-300" />}
               </button>
             );
           })}

@@ -122,10 +122,10 @@ export const MapViewPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-4">
-      {/* Barra de Filtros y Búsqueda */}
-      <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-md">
-        <div className="flex items-center gap-2 flex-1 min-w-[240px]">
-          <div className="relative w-full max-w-sm">
+      {/* Barra de Filtros y Búsqueda Responsiva */}
+      <div className="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shadow-md w-full">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1 w-full">
+          <div className="relative flex-1 w-full">
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
             <input
               type="text"
@@ -136,12 +136,12 @@ export const MapViewPage: React.FC = () => {
             />
           </div>
 
-          <div className="flex items-center gap-1">
-            <Filter className="w-4 h-4 text-slate-500 hidden sm:block" />
+          <div className="flex items-center gap-1.5 w-full sm:w-auto">
+            <Filter className="w-4 h-4 text-slate-500 hidden md:block" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500"
+              className="w-full sm:w-auto bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500"
             >
               <option value="todos">Todos los Estados</option>
               <option value="disponible">🟢 Disponibles (&lt;80%)</option>
@@ -151,22 +151,22 @@ export const MapViewPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           {user?.rol !== 'Tecnico' && (
             <button
               onClick={() => setIsCreateNapOpen(true)}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md shadow-sky-950/40 transition-all"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md shadow-sky-950/40 transition-all active:scale-95"
               title="Registrar e instalar nueva caja NAP en la red FTTx"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Nueva Caja NAP</span>
+              <span>+ Nueva Caja NAP</span>
             </button>
           )}
 
           <button
             onClick={fetchData}
             disabled={loading}
-            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition-colors shadow-sm disabled:opacity-50"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition-colors shadow-sm disabled:opacity-50 active:scale-95"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Actualizar</span>
