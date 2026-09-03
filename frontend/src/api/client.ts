@@ -1,8 +1,13 @@
 import axios from 'axios';
 
-const baseUrl = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL.replace(/\/+$/, '')}/api/v1`
-  : '/api/v1';
+// En desarrollo local usa el proxy de Vite ('/api/v1').
+// En producción (Vercel) apunta directamente a tu API en Render:
+const defaultApiUrl = import.meta.env.DEV
+  ? ''
+  : 'https://redes-gpon-fttx.onrender.com';
+
+const apiUrl = import.meta.env.VITE_API_URL || defaultApiUrl;
+const baseUrl = apiUrl ? `${apiUrl.replace(/\/+$/, '')}/api/v1` : '/api/v1';
 
 const api = axios.create({
   baseURL: baseUrl,

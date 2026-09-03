@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { User } from '../models/User';
+import { User } from '../models';
 
 const loginSchema = z.object({
   credencial_acceso: z.string().min(3),
@@ -58,14 +58,19 @@ export const login = async (req: Request, res: Response) => {
       message: 'Inicio de sesión exitoso',
       data: {
         token,
-        usuario: payload
+        usuario: {
+          id_usuario: user.id_usuario,
+          nombre_completo: user.nombre_completo,
+          credencial_acceso: user.credencial_acceso,
+          rol: user.rol
+        }
       }
     });
   } catch (error: any) {
-    console.error('Error en login:', error);
+    console.error('Error detallado en login:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor en autenticación'
+      message: error.message || 'Error interno del servidor en autenticación'
     });
   }
 };

@@ -266,3 +266,4 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
     </div>
   );
 };
+
