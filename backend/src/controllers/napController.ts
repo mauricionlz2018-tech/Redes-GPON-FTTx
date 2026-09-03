@@ -9,7 +9,14 @@ export const listNaps = async (req: Request, res: Response) => {
         {
           model: NapPort,
           as: 'puertos',
-          attributes: ['id_puerto', 'indice_puerto', 'estado']
+          attributes: ['id_puerto', 'indice_puerto', 'estado'],
+          include: [
+            {
+              model: Client,
+              as: 'cliente',
+              attributes: ['id_cliente', 'numero_cliente', 'nombre_completo', 'marca_ont', 'ont_mac', 'direccion', 'potencia_rx_estimada']
+            }
+          ]
         },
         {
           model: PonPort,

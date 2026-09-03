@@ -136,3 +136,4 @@ export const mockNaps: NapBox[] = [
     puertos: createMockPorts('nap-sjr-04', 'NAP-SJR-04', 2)
   }
 ];
+

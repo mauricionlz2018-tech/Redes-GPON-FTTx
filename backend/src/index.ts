@@ -46,9 +46,9 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('✔ Conexión exitosa a PostgreSQL con Sequelize.');
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Servidor backend GPON corriendo en http://localhost:${PORT}`);
-      console.log(`📡 API REST v1 disponible en http://localhost:${PORT}/api/v1`);
+      console.log(`📡 API REST v1 disponible en http://localhost:${PORT}/api/v1 (Acceso local y LAN)`);
     });
   } catch (error) {
     console.error('❌ Error al conectar a PostgreSQL:', error);

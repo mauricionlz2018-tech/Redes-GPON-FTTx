@@ -301,38 +301,49 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           )}
 
           {/* Caso 2: Puerto Ocupado -> Ficha del Abonado */}
-          {selectedPort.estado === 'Ocupado' && selectedPort.cliente && (
+          {selectedPort.estado === 'Ocupado' && (
             <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-slate-900/80 p-3 rounded-lg border border-slate-700">
-                <div>
-                  <span className="text-slate-400 block text-[11px]">Abonado Conectado:</span>
-                  <strong className="text-white text-sm">
-                    {selectedPort.cliente.nombre_completo}
-                  </strong>
+              {selectedPort.cliente ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-slate-900/80 p-3 rounded-lg border border-slate-700">
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Abonado Conectado:</span>
+                    <strong className="text-white text-sm">
+                      {selectedPort.cliente.nombre_completo}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Cód. Cliente:</span>
+                    <span className="font-mono font-semibold text-sky-400">
+                      {selectedPort.cliente.numero_cliente}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">ONT Marca:</span>
+                    <span className="text-slate-200">
+                      {selectedPort.cliente.marca_ont} (MAC: {selectedPort.cliente.ont_mac})
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Potencia Rx Estimada:</span>
+                    <span className="text-emerald-400 font-mono">
+                      {selectedPort.cliente.potencia_rx_estimada} dBm
+                    </span>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <span className="text-slate-400 block text-[11px]">Dirección Instalación:</span>
+                    <span className="text-slate-300">{selectedPort.cliente.direccion}</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-slate-400 block text-[11px]">Cód. Cliente:</span>
-                  <span className="font-mono font-semibold text-sky-400">
-                    {selectedPort.cliente.numero_cliente}
+              ) : (
+                <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-700 text-xs">
+                  <span className="text-sky-400 font-semibold block text-[12px] mb-1">
+                    Puerto en Servicio FTTx Activo
                   </span>
+                  <p className="text-slate-300 text-[11px]">
+                    Abonado conectado en la base de datos de Neon. Haz clic en "Liberar Puerto" si deseas ponerlo disponible.
+                  </p>
                 </div>
-                <div>
-                  <span className="text-slate-400 block text-[11px]">ONT Marca:</span>
-                  <span className="text-slate-200">
-                    {selectedPort.cliente.marca_ont} (MAC: {selectedPort.cliente.ont_mac})
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[11px]">Potencia Rx Estimada:</span>
-                  <span className="text-emerald-400 font-mono">
-                    {selectedPort.cliente.potencia_rx_estimada} dBm
-                  </span>
-                </div>
-                <div className="sm:col-span-2">
-                  <span className="text-slate-400 block text-[11px]">Dirección Instalación:</span>
-                  <span className="text-slate-300">{selectedPort.cliente.direccion}</span>
-                </div>
-              </div>
+              )}
 
               {/* Botón de Liberación de Puerto */}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
