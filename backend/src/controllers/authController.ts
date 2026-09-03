@@ -115,3 +115,57 @@ export const listUsers = async (req: Request, res: Response) => {
   }
 };
 
+const updateProfileSchema = z.object({
+  nombre_completo: z.string().min(3).max(150).optional(),
+  password: z.string().min(4).optional()
+});
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'No autenticado' });
+      return;
+    }
+
+    const parseResult = updateProfileSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      res.status(400).json({
+        success: false,
+        message: 'Datos de actualización inválidos',
+        errors: parseResult.error.errors
+      });
+      return;
+    }
+
+    const user = await User.findByPk(req.user.id_usuario);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+      return;
+    }
+
+    const { nombre_completo, password } = parseResult.data;
+    if (nombre_completo) {
+      user.nombre_completo = nombre_completo;
+    }
+    if (password) {
+      user.password_hash = await bcrypt.hash(password, 10);
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Perfil de usuario actualizado con éxito',
+      data: {
+        id_usuario: user.id_usuario,
+        nombre_completo: user.nombre_completo,
+        credencial_acceso: user.credencial_acceso,
+        rol: user.rol
+      }
+    });
+  } catch (error: any) {
+    console.error('Error actualizando perfil:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+

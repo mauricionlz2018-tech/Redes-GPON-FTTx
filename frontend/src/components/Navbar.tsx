@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNetwork } from '../context/NetworkContext';
+import { EditUserModal } from './EditUserModal';
+import { InstallPwaModal } from './InstallPwaModal';
 import {
   Network,
   MapPin,
@@ -10,7 +12,9 @@ import {
   LogOut,
   Wifi,
   WifiOff,
-  RefreshCw
+  RefreshCw,
+  Download,
+  UserCog
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -19,6 +23,38 @@ export const Navbar: React.FC = () => {
   const location = useLocation();
 
   if (!user) return null;
+
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+          setIsInstalled(true);
+        }
+      });
+    } else {
+      setIsInstallModalOpen(true);
+    }
+  };
 
   const navLinks = [
     { to: '/mapa', label: 'Mapa de Red', icon: MapPin },
@@ -81,8 +117,20 @@ export const Navbar: React.FC = () => {
             })}
           </nav>
 
-          {/* Estado de Red (Offline-First) y Usuario */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          {/* Acciones derechas: PWA, Red y Perfil */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Botón de Instalar Aplicación (Móvil y Escritorio) */}
+            {!isInstalled && (
+              <button
+                onClick={handleInstallClick}
+                className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 sm:px-3 py-1.5 rounded-lg shadow-md shadow-emerald-950/40 transition-all active:scale-95"
+                title="Instalar como Aplicación en Celular o PC"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">Instalar App</span>
+              </button>
+            )}
+
             {/* Indicador de Red */}
             <div className="flex items-center gap-1.5">
               {isOnline ? (
@@ -117,20 +165,29 @@ export const Navbar: React.FC = () => {
               )}
             </div>
 
-            {/* Ficha de Usuario y Salir */}
-            <div className="flex items-center gap-2 border-l border-slate-800 pl-3">
-              <div className="text-right hidden lg:block">
-                <p className="text-xs font-medium text-slate-200 truncate max-w-[140px]">
-                  {user.nombre_completo.split('(')[0]}
-                </p>
-                <span
-                  className={`text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded border ${getRoleBadge(
-                    user.rol
-                  )}`}
-                >
-                  {user.rol}
-                </span>
-              </div>
+            {/* Perfil de Usuario con opción para Editar */}
+            <div className="flex items-center gap-1.5 border-l border-slate-800 pl-2 sm:pl-3">
+              <button
+                onClick={() => setIsEditUserOpen(true)}
+                className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-800/80 transition-colors text-left group"
+                title="Editar mi perfil y credenciales"
+              >
+                <div className="text-right hidden sm:block">
+                  <p className="text-xs font-semibold text-slate-200 group-hover:text-sky-400 transition-colors truncate max-w-[130px]">
+                    {user.nombre_completo.split('(')[0]}
+                  </p>
+                  <span
+                    className={`text-[9px] font-bold uppercase px-1.5 py-0.2 rounded border ${getRoleBadge(
+                      user.rol
+                    )}`}
+                  >
+                    {user.rol}
+                  </span>
+                </div>
+                <div className="p-1.5 bg-slate-800 group-hover:bg-indigo-600/30 text-slate-300 group-hover:text-indigo-400 border border-slate-700 rounded-lg transition-colors">
+                  <UserCog className="w-4 h-4" />
+                </div>
+              </button>
 
               <button
                 onClick={logout}
@@ -143,6 +200,19 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modales */}
+      {isInstallModalOpen && (
+        <InstallPwaModal
+          deferredPrompt={deferredPrompt}
+          onClose={() => setIsInstallModalOpen(false)}
+          onInstallSuccess={() => setIsInstalled(true)}
+        />
+      )}
+
+      {isEditUserOpen && (
+        <EditUserModal onClose={() => setIsEditUserOpen(false)} />
+      )}
     </header>
   );
 };

@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (credencial: string, password?: string) => Promise<boolean>;
   logout: () => void;
   switchRole: (role: UserRole) => Promise<void>;
+  updateUserData: (updatedUser: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -93,8 +94,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await login(emailMap[role], 'admin123', role);
   };
 
+  // Actualizar datos del usuario logueado en memoria y localStorage
+  const updateUserData = (updatedUser: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const merged = { ...prev, ...updatedUser };
+      localStorage.setItem('gpon_user', JSON.stringify(merged));
+      return merged;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, switchRole }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, switchRole, updateUserData }}>
       {children}
     </AuthContext.Provider>
   );

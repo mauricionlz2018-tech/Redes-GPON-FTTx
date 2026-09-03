@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middlewares/auth';
 import { requireRoles } from '../middlewares/role';
-import { login, getProfile, listUsers } from '../controllers/authController';
+import { login, getProfile, listUsers, updateProfile } from '../controllers/authController';
 import { listOdfs, getOdfById } from '../controllers/odfController';
 import { listNaps, getNapById, updateGpsCoordinates, createNap } from '../controllers/napController';
 import { assignPort, releasePort, updatePortStatus } from '../controllers/portController';
@@ -15,6 +15,7 @@ const router = Router();
 // ============================
 router.post('/auth/login', login);
 router.get('/auth/me', authenticateToken, getProfile);
+router.put('/auth/perfil', authenticateToken, updateProfile);
 router.get('/auth/usuarios', authenticateToken, requireRoles(['Admin']), listUsers);
 
 // ============================
