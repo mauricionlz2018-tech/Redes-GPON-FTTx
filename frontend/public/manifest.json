@@ -1,22 +1,33 @@
 {
   "short_name": "GPON FTTx",
   "name": "GPON TELECOM - Mapeo e Inventario Lógico",
+  "description": "Sistema móvil de inventario cartográfico, asignación de puertos y gestión de fibra óptica en campo.",
+  "id": "/mapa",
+  "start_url": "/mapa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
   "icons": [
     {
       "src": "/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "sizes": "192x192"
+      "purpose": "any"
     },
     {
       "src": "/icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": "/",
-  "background_color": "#0f172a",
-  "theme_color": "#0284c7",
-  "display": "standalone",
-  "orientation": "portrait"
+  "categories": ["business", "utilities", "productivity"]
 }
-
