@@ -3,6 +3,8 @@ import { GponMap } from '../components/GponMap';
 import { NapPortMatrix } from '../components/NapPortMatrix';
 import { AssignClientModal } from '../components/AssignClientModal';
 import { GpsCaptureModal } from '../components/GpsCaptureModal';
+import { CreateNapModal } from '../components/CreateNapModal';
+import { useAuth } from '../context/AuthContext';
 import { NapBox, NapPort, OdfPanel } from '../types';
 import { offlineDb } from '../db/offlineDb';
 import api from '../api/client';
@@ -15,7 +17,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Compass
+  Compass,
+  Plus
 } from 'lucide-react';
 
 import { mockNaps, mockOdf } from '../data/mockGponData';
@@ -30,8 +33,10 @@ export const MapViewPage: React.FC = () => {
   const [isDemoMode, setIsDemoMode] = useState(false);
 
   // Modales
+  const { user } = useAuth();
   const [assigningPort, setAssigningPort] = useState<NapPort | null>(null);
   const [gpsModalNap, setGpsModalNap] = useState<NapBox | null>(null);
+  const [isCreateNapOpen, setIsCreateNapOpen] = useState(false);
 
   // Cargar NAPs y ODF
   const fetchData = useCallback(async () => {
@@ -146,14 +151,27 @@ export const MapViewPage: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={fetchData}
-          disabled={loading}
-          className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition-colors shadow-sm disabled:opacity-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Actualizar</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {user?.rol !== 'Tecnico' && (
+            <button
+              onClick={() => setIsCreateNapOpen(true)}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md shadow-sky-950/40 transition-all"
+              title="Registrar e instalar nueva caja NAP en la red FTTx"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Nueva Caja NAP</span>
+            </button>
+          )}
+
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition-colors shadow-sm disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Actualizar</span>
+          </button>
+        </div>
       </div>
 
       {/* Grid: Mapa + Panel de NAP y 16 Puertos */}
@@ -242,6 +260,25 @@ export const MapViewPage: React.FC = () => {
             fetchData();
             refreshSelectedNap();
           }}
+        />
+      )}
+
+      {isCreateNapOpen && (
+        <CreateNapModal
+          onClose={() => setIsCreateNapOpen(false)}
+          onCreatedSuccess={(newNap) => {
+            setNaps((prev) => [newNap, ...prev]);
+            setSelectedNap(newNap);
+            fetchData();
+          }}
+          defaultCoordinates={
+            odf?.coordenadas_gps
+              ? {
+                  lat: Number((odf.coordenadas_gps.lat + 0.003).toFixed(6)),
+                  lng: Number((odf.coordenadas_gps.lng + 0.003).toFixed(6))
+                }
+              : undefined
+          }
         />
       )}
     </div>

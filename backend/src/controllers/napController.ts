@@ -185,3 +185,106 @@ export const updateGpsCoordinates = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+const createNapSchema = z.object({
+  identificador: z.string().min(3).max(50),
+  zona: z.string().min(2).max(100),
+  id_puerto_pon: z.string().uuid().optional(),
+  total_puertos: z.number().int().min(8).max(32).default(16),
+  direccion_texto: z.string().min(3).max(255),
+  coordenadas_gps: z.object({
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180)
+  })
+});
+
+export const createNap = async (req: Request, res: Response) => {
+  const t = await NapBox.sequelize!.transaction();
+  try {
+    const parseResult = createNapSchema.safeParse(req.body);
+
+    if (!parseResult.success) {
+      await t.rollback();
+      res.status(400).json({
+        success: false,
+        message: 'Datos de la caja NAP inválidos',
+        errors: parseResult.error.errors
+      });
+      return;
+    }
+
+    const { identificador, zona, total_puertos, direccion_texto, coordenadas_gps } = parseResult.data;
+    let id_puerto_pon = parseResult.data.id_puerto_pon;
+
+    // Si no se proporcionó id_puerto_pon, asignar el primer puerto PON disponible
+    if (!id_puerto_pon) {
+      const defaultPon = await PonPort.findOne({ transaction: t });
+      if (defaultPon) {
+        id_puerto_pon = defaultPon.id_puerto_pon;
+      }
+    }
+
+    // Verificar si ya existe una caja con ese identificador
+    const existing = await NapBox.findOne({ where: { identificador }, transaction: t });
+    if (existing) {
+      await t.rollback();
+      res.status(409).json({
+        success: false,
+        message: `Ya existe una caja NAP registrada con el identificador '${identificador}'`
+      });
+      return;
+    }
+
+    // 1. Crear la caja NAP
+    const newNap = await NapBox.create(
+      {
+        identificador,
+        zona,
+        id_puerto_pon: id_puerto_pon!,
+        total_puertos,
+        direccion_texto,
+        coordenadas_gps
+      },
+      { transaction: t }
+    );
+
+    // 2. Generar automáticamente los 16 puertos físicos en estado 'Libre'
+    const portPromises = [];
+    for (let i = 1; i <= total_puertos; i++) {
+      portPromises.push(
+        NapPort.create(
+          {
+            id_nap: newNap.id_nap,
+            indice_puerto: i,
+            estado: 'Libre'
+          },
+          { transaction: t }
+        )
+      );
+    }
+    const createdPorts = await Promise.all(portPromises);
+
+    await t.commit();
+
+    res.status(201).json({
+      success: true,
+      message: `Caja ${identificador} creada exitosamente con ${total_puertos} puertos listos para asignación.`,
+      data: {
+        ...newNap.toJSON(),
+        puertos: createdPorts,
+        metricas: {
+          total: total_puertos,
+          libres: total_puertos,
+          ocupados: 0,
+          danados: 0,
+          porcentajeSaturacion: 0,
+          estadoSaturacion: 'disponible'
+        }
+      }
+    });
+  } catch (error: any) {
+    await t.rollback();
+    console.error('Error creando nueva caja NAP:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
