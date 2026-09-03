@@ -123,11 +123,11 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
 
     doc.moveDown(1);
     doc
+      .font('Helvetica-Bold')
       .fillColor('#0f172a')
       .fontSize(10)
-      .text(`Saturación Global de la Red: ${totalOcupadosRed}/${totalPuertosRed} puertos ocupados (${overallPct}%)`, {
-        bold: true
-      } as any)
+      .text(`Saturación Global de la Red: ${totalOcupadosRed}/${totalPuertosRed} puertos ocupados (${overallPct}%)`)
+      .font('Helvetica')
       .moveDown(1.5);
 
     // Sección 2: Padrón de Abonados Conectados
