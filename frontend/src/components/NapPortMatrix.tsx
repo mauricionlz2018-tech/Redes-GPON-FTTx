@@ -13,6 +13,7 @@ import {
   Trash2,
   Wrench,
   ShieldAlert,
+  Info
   Info,
   X
 } from 'lucide-react';
@@ -41,6 +42,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
     // Validación de RBAC del lado del cliente
     if (user?.rol === 'Tecnico') {
       setRbacError(
+        "⛔ Permiso denegado (HTTP 403 Forbidden): El rol 'Tecnico' tiene acceso de solo lectura y registro inicial. La corrección o liberación de puertos ocupados es exclusiva de Soporte y Administrador."
         "Permiso denegado (HTTP 403 Forbidden): El rol 'Tecnico' tiene acceso de solo lectura y registro inicial. La corrección o liberación de puertos ocupados es exclusiva de Soporte y Administrador."
       );
       return;
@@ -82,6 +84,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   const handleChangeStatus = async (port: NapPort, nuevoEstado: string) => {
     if (user?.rol === 'Tecnico') {
       setRbacError(
+        "⛔ Permiso denegado (HTTP 403 Forbidden): El rol 'Tecnico' no puede cambiar estados de puertos manualmente."
         "Permiso denegado (HTTP 403 Forbidden): El rol 'Tecnico' no puede cambiar estados de puertos manualmente."
       );
       return;
@@ -181,9 +184,11 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           </div>
           <button
             onClick={() => setRbacError(null)}
+            className="text-red-400 hover:text-white text-xs font-bold"
             className="text-red-400 hover:text-white p-0.5 rounded"
             title="Cerrar"
           >
+            ✕
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -198,9 +203,11 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           </div>
           <button
             onClick={() => setActionSuccess(null)}
+            className="text-emerald-400 hover:text-white"
             className="text-emerald-400 hover:text-white p-0.5 rounded"
             title="Cerrar"
           >
+            ✕
             <X className="w-4 h-4" />
           </button>
         </div>

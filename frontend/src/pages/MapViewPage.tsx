@@ -144,6 +144,9 @@ export const MapViewPage: React.FC = () => {
               className="w-full sm:w-auto bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500"
             >
               <option value="todos">Todos los Estados</option>
+              <option value="disponible">🟢 Disponibles (&lt;80%)</option>
+              <option value="alerta">🟡 En Alerta (&ge;80%)</option>
+              <option value="saturada">🔴 Saturadas (100%)</option>
               <option value="disponible">Disponibles (&lt;80%)</option>
               <option value="alerta">En Alerta (&ge;80%)</option>
               <option value="saturada">Saturadas (100%)</option>

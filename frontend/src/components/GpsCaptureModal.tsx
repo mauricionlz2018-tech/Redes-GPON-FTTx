@@ -59,9 +59,11 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
     try {
       if (isOnline) {
         await api.patch(`/naps/${nap.id_nap}/gps`, { lat, lng });
+        alert(`✔ Coordenadas de la caja ${nap.identificador} actualizadas con éxito.`);
         alert(`Coordenadas de la caja ${nap.identificador} actualizadas con éxito.`);
       } else {
         await enqueueGpsUpdate(nap.id_nap, lat, lng);
+        alert(`💾 Coordenadas guardadas localmente en modo OFFLINE. Se sincronizarán al recuperar señal.`);
         alert(`Coordenadas guardadas localmente en modo OFFLINE. Se sincronizarán al recuperar señal.`);
       }
       onGpsUpdated();

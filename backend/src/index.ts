@@ -44,13 +44,18 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 async function startServer() {
   try {
     await sequelize.authenticate();
+    console.log('✔ Conexión exitosa a PostgreSQL con Sequelize.');
     console.log('[OK] Conexion exitosa a PostgreSQL con Sequelize.');
 
     app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Servidor backend GPON corriendo en http://localhost:${PORT}`);
+      console.log(`📡 API REST v1 disponible en http://localhost:${PORT}/api/v1 (Acceso local y LAN)`);
       console.log(`Servidor backend GPON corriendo en http://localhost:${PORT}`);
       console.log(`API REST v1 disponible en http://localhost:${PORT}/api/v1 (Acceso local y LAN)`);
     });
   } catch (error) {
+    console.error('❌ Error al conectar a PostgreSQL:', error);
+    console.log('💡 Asegúrate de haber iniciado el contenedor de base de datos con: docker compose -f docker/docker-compose.yml up -d');
     console.error('[ERROR] Error al conectar a PostgreSQL:', error);
     console.log('Asegurate de haber iniciado el contenedor de base de datos con: docker compose -f docker/docker-compose.yml up -d');
     // Salir con error para reintento
