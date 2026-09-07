@@ -20,7 +20,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
     marca_ont: client.marca_ont,
     direccion: client.direccion,
     ont_mac: client.ont_mac,
-    potencia_rx_estimada: client.potencia_rx_estimada
+    potencia_rx_estimada: client.potencia_rx_estimada as number | string
   });
 
   const [loading, setLoading] = useState(false);
@@ -171,11 +171,11 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
               </label>
               <input
                 type="number"
-                step="0.1"
+                step="any"
                 required
                 value={formData.potencia_rx_estimada}
                 onChange={(e) =>
-                  setFormData({ ...formData, potencia_rx_estimada: parseFloat(e.target.value) || 0 })
+                  setFormData({ ...formData, potencia_rx_estimada: e.target.value })
                 }
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
               />

@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
 import PDFDocument from 'pdfkit';
 import { NapBox, NapPort, Client, OdfPanel } from '../models';
+interface ColumnDef {
+  header: string;
+  width: number;
+  align?: 'left' | 'center' | 'right';
+}
 
 export const generateSaturationReport = async (req: Request, res: Response) => {
   try {
@@ -22,8 +27,12 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
 
     const odf = await OdfPanel.findOne();
 
-    // Crear documento PDF
-    const doc = new PDFDocument({ margin: 40, size: 'LETTER' });
+    // Crear documento PDF con soporte de cálculo de páginas bufferizadas
+    const doc = new PDFDocument({
+      margin: 40,
+      size: 'LETTER',
+      bufferPages: true
+    });
 
     // Configurar cabeceras de respuesta HTTP
     res.setHeader('Content-Type', 'application/pdf');
@@ -31,163 +40,347 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
 
     doc.pipe(res);
 
-    // Encabezado corporativo
-    doc
-      .fillColor('#0f172a')
-      .fontSize(20)
-      .text('GPON TELECOM S.A. de C.V.', { align: 'left' });
+    const pageWidth = 532; // 612 - 80 margin
+    const pageLeft = 40;
+    const pageBottomLimit = 730;
 
-    doc
-      .fillColor('#0284c7')
-      .fontSize(12)
-      .text('Sistema de Inventario y Mapeo Lógico de Red FTTx', { align: 'left' });
-
-    doc
-      .fillColor('#64748b')
-      .fontSize(9)
-      .text(`Generado: ${new Date().toLocaleString('es-MX')} | ODF Central: ${odf ? odf.nombre : 'Principal'}`, { align: 'left' })
-      .moveDown(1.5);
-
-    doc
-      .strokeColor('#cbd5e1')
-      .lineWidth(1)
-      .moveTo(40, doc.y)
-      .lineTo(570, doc.y)
-      .stroke()
-      .moveDown(1);
-
-    // Sección: Resumen Ejecutivo de Cajas NAP
-    doc
-      .fillColor('#1e293b')
-      .fontSize(14)
-      .text('1. Estado y Saturación de Cajas NAP');
-
-    doc.moveDown(0.5);
-
-    // Cabecera de la tabla de NAPs
-    const startY = doc.y;
-    doc.fillColor('#334155').fontSize(9);
-    doc.text('Identificador', 40, startY, { width: 100 });
-    doc.text('Zona', 140, startY, { width: 120 });
-    doc.text('Total', 260, startY, { width: 40 });
-    doc.text('Libres', 310, startY, { width: 40 });
-    doc.text('Ocup.', 360, startY, { width: 40 });
-    doc.text('Saturación', 410, startY, { width: 70 });
-    doc.text('Estado', 490, startY, { width: 80 });
-
-    doc.moveDown(0.5);
-    doc
-      .strokeColor('#e2e8f0')
-      .lineWidth(0.5)
-      .moveTo(40, doc.y)
-      .lineTo(570, doc.y)
-      .stroke()
-      .moveDown(0.5);
-
+    // Métricas globales
     let totalPuertosRed = 0;
     let totalOcupadosRed = 0;
+    let totalLibresRed = 0;
 
     naps.forEach((nap) => {
       const ports = (nap.puertos || []) as any[];
       const total = nap.total_puertos || 16;
       const ocupados = ports.filter((p: any) => p.estado === 'Ocupado').length;
       const libres = ports.filter((p: any) => p.estado === 'Libre').length;
-      const pct = Math.round((ocupados / total) * 100);
 
       totalPuertosRed += total;
       totalOcupadosRed += ocupados;
-
-      const currentY = doc.y;
-      doc.fillColor('#0f172a').fontSize(8.5);
-      doc.text(nap.identificador, 40, currentY, { width: 100 });
-      doc.text(nap.zona, 140, currentY, { width: 120 });
-      doc.text(total.toString(), 260, currentY, { width: 40 });
-      doc.text(libres.toString(), 310, currentY, { width: 40 });
-      doc.text(ocupados.toString(), 360, currentY, { width: 40 });
-
-      // Color del porcentaje
-      if (pct >= 80) {
-        doc.fillColor('#dc2626'); // Rojo o amarillo alerta
-      } else {
-        doc.fillColor('#16a34a'); // Verde
-      }
-      doc.text(`${pct}%`, 410, currentY, { width: 70 });
-
-      doc.fillColor(pct >= 80 ? '#b91c1c' : '#15803d');
-      doc.text(pct >= 80 ? 'CRÍTICO' : 'NORMAL', 490, currentY, { width: 80 });
-
-      doc.moveDown(0.8);
+      totalLibresRed += libres;
     });
 
     const overallPct = totalPuertosRed > 0 ? Math.round((totalOcupadosRed / totalPuertosRed) * 100) : 0;
 
-    doc.moveDown(1);
+    // Encabezado Corporativo (Banner Superior)
+    doc.rect(pageLeft, 40, pageWidth, 58).fill('#0f172a');
+
     doc
+      .fillColor('#ffffff')
       .font('Helvetica-Bold')
-      .fillColor('#0f172a')
-      .fontSize(10)
-      .text(`Saturación Global de la Red: ${totalOcupadosRed}/${totalPuertosRed} puertos ocupados (${overallPct}%)`)
-      .font('Helvetica')
-      .moveDown(1.5);
-
-    // Sección 2: Padrón de Abonados Conectados
-    doc
-      .fillColor('#1e293b')
       .fontSize(14)
-      .text('2. Directorio de Clientes Activos');
+      .text('GPON TELECOM S.A. DE C.V.', pageLeft + 14, 50, { width: pageWidth - 28 });
 
-    doc.moveDown(0.5);
-
-    const clientHeaderY = doc.y;
-    doc.fillColor('#334155').fontSize(9);
-    doc.text('Cód. Cliente', 40, clientHeaderY, { width: 80 });
-    doc.text('Nombre Abonado', 120, clientHeaderY, { width: 140 });
-    doc.text('NAP / Puerto', 265, clientHeaderY, { width: 90 });
-    doc.text('ONT Marca', 360, clientHeaderY, { width: 60 });
-    doc.text('MAC ONT', 425, clientHeaderY, { width: 95 });
-    doc.text('Rx (dBm)', 525, clientHeaderY, { width: 50 });
-
-    doc.moveDown(0.5);
     doc
-      .strokeColor('#e2e8f0')
-      .lineWidth(0.5)
-      .moveTo(40, doc.y)
-      .lineTo(570, doc.y)
-      .stroke()
-      .moveDown(0.5);
+      .fillColor('#38bdf8')
+      .font('Helvetica')
+      .fontSize(9)
+      .text('Reporte Ejecutivo de Auditoría de Red, Capacidad FTTx y Padrón de Abonados', pageLeft + 14, 68);
 
-    // Listar abonados de cada NAP
+    doc
+      .fillColor('#94a3b8')
+      .font('Helvetica')
+      .fontSize(7.5)
+      .text(
+        `Fecha de Emisión: ${new Date().toLocaleString('es-MX')}  |  ODF Central: ${odf ? odf.nombre : 'Central SJR-01'}  |  Estado: Operativo`,
+        pageLeft + 14,
+        82
+      );
+
+    // KPI Summary Cards
+    const cardY = 108;
+    const cardCount = 4;
+    const cardGap = 8;
+    const cardWidth = (pageWidth - cardGap * (cardCount - 1)) / cardCount;
+    const cardHeight = 42;
+
+    const kpis = [
+      { label: 'Cajas NAP Registradas', value: naps.length.toString(), color: '#0284c7' },
+      { label: 'Capacidad de Puertos', value: totalPuertosRed.toString(), color: '#334155' },
+      { label: 'Puertos Asignados', value: `${totalOcupadosRed} (${overallPct}%)`, color: overallPct >= 80 ? '#dc2626' : '#16a34a' },
+      { label: 'Puertos Disponibles', value: totalLibresRed.toString(), color: '#0d9488' }
+    ];
+
+    kpis.forEach((kpi, index) => {
+      const cardX = pageLeft + index * (cardWidth + cardGap);
+      doc.rect(cardX, cardY, cardWidth, cardHeight).fillAndStroke('#f8fafc', '#cbd5e1');
+      doc
+        .fillColor('#64748b')
+        .font('Helvetica')
+        .fontSize(7)
+        .text(kpi.label.toUpperCase(), cardX + 6, cardY + 7, { width: cardWidth - 12, align: 'center' });
+      doc
+        .fillColor(kpi.color)
+        .font('Helvetica-Bold')
+        .fontSize(12)
+        .text(kpi.value, cardX + 6, cardY + 20, { width: cardWidth - 12, align: 'center' });
+    });
+
+    // Helper: Dibujar fila de tabla estructurada con bordes y celdas
+    const renderRow = (
+      y: number,
+      height: number,
+      columns: ColumnDef[],
+      values: string[],
+      bgColor: string,
+      textColor: string,
+      isHeader = false,
+      badge?: { colIndex: number; text: string; bg: string; fg: string }
+    ) => {
+      let currentX = pageLeft;
+
+      // Fondo y borde exterior de la fila
+      doc.rect(pageLeft, y, pageWidth, height).fillAndStroke(bgColor, '#cbd5e1');
+
+      // Celdas individuales con bordes verticales
+      columns.forEach((col, idx) => {
+        if (idx > 0) {
+          doc
+            .strokeColor('#cbd5e1')
+            .lineWidth(0.5)
+            .moveTo(currentX, y)
+            .lineTo(currentX, y + height)
+            .stroke();
+        }
+
+        const text = values[idx] || '';
+        const padX = 4;
+        const padY = isHeader ? (height - 9) / 2 : (height - 8.5) / 2;
+
+        if (badge && badge.colIndex === idx) {
+          const badgeW = col.width - 12;
+          const badgeH = 12;
+          const badgeX = currentX + (col.width - badgeW) / 2;
+          const badgeY = y + (height - badgeH) / 2;
+
+          doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 2).fill(badge.bg);
+          doc
+            .fillColor(badge.fg)
+            .font('Helvetica-Bold')
+            .fontSize(7)
+            .text(badge.text, badgeX, badgeY + 2.5, { width: badgeW, align: 'center', lineBreak: false });
+        } else {
+          doc
+            .fillColor(textColor)
+            .font(isHeader ? 'Helvetica-Bold' : 'Helvetica')
+            .fontSize(isHeader ? 7.5 : 7.5)
+            .text(text, currentX + padX, y + padY, {
+              width: col.width - padX * 2,
+              align: col.align || 'left',
+              lineBreak: false,
+              ellipsis: true
+            });
+        }
+
+        currentX += col.width;
+      });
+    };
+
+    // SECCIÓN 1: Tabla de Cajas NAP
+    let curY = 162;
+    doc
+      .fillColor('#0f172a')
+      .font('Helvetica-Bold')
+      .fontSize(10.5)
+      .text('1. Inventario y Nivel de Saturación por Caja NAP', pageLeft, curY);
+
+    curY += 16;
+
+    const napColumns: ColumnDef[] = [
+      { header: 'IDENTIFICADOR', width: 95, align: 'left' },
+      { header: 'ZONA / SECTOR', width: 135, align: 'left' },
+      { header: 'CAPACIDAD', width: 52, align: 'center' },
+      { header: 'LIBRES', width: 48, align: 'center' },
+      { header: 'OCUPADOS', width: 52, align: 'center' },
+      { header: 'SATURACIÓN', width: 68, align: 'center' },
+      { header: 'DIAGNÓSTICO', width: 82, align: 'center' }
+    ];
+
+    const drawNapHeader = (y: number) => {
+      renderRow(
+        y,
+        18,
+        napColumns,
+        napColumns.map((c) => c.header),
+        '#1e293b',
+        '#ffffff',
+        true
+      );
+    };
+
+    drawNapHeader(curY);
+    curY += 18;
+
+    naps.forEach((nap, index) => {
+      const ports = (nap.puertos || []) as any[];
+      const total = nap.total_puertos || 16;
+      const ocupados = ports.filter((p: any) => p.estado === 'Ocupado').length;
+      const libres = ports.filter((p: any) => p.estado === 'Libre').length;
+      const pct = Math.round((ocupados / total) * 100);
+      const isCritical = pct >= 80;
+
+      if (curY + 16 > pageBottomLimit) {
+        doc.addPage();
+        curY = 45;
+        drawNapHeader(curY);
+        curY += 18;
+      }
+
+      const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+      const rowValues = [
+        nap.identificador,
+        nap.zona || 'No especificada',
+        `${total} pts`,
+        libres.toString(),
+        ocupados.toString(),
+        `${pct}%`,
+        isCritical ? 'CRÍTICO' : 'NORMAL'
+      ];
+
+      renderRow(
+        curY,
+        16,
+        napColumns,
+        rowValues,
+        rowBg,
+        '#1e293b',
+        false,
+        {
+          colIndex: 6,
+          text: isCritical ? 'CRÍTICO' : 'NORMAL',
+          bg: isCritical ? '#fee2e2' : '#dcfce7',
+          fg: isCritical ? '#991b1b' : '#166534'
+        }
+      );
+
+      curY += 16;
+    });
+
+    curY += 20;
+
+    // SECCIÓN 2: Directorio de Clientes Activos
+    if (curY + 45 > pageBottomLimit) {
+      doc.addPage();
+      curY = 45;
+    }
+
+    doc
+      .fillColor('#0f172a')
+      .font('Helvetica-Bold')
+      .fontSize(10.5)
+      .text('2. Directorio de Abonados Conectados a la Red FTTx', pageLeft, curY);
+
+    curY += 16;
+
+    const clientColumns: ColumnDef[] = [
+      { header: 'CÓD. CLIENTE', width: 70, align: 'left' },
+      { header: 'NOMBRE DEL ABONADO', width: 145, align: 'left' },
+      { header: 'CAJA / PUERTO', width: 95, align: 'center' },
+      { header: 'ONT CPE', width: 55, align: 'center' },
+      { header: 'DIRECCIÓN MAC', width: 105, align: 'center' },
+      { header: 'POTENCIA RX', width: 62, align: 'right' }
+    ];
+
+    const drawClientHeader = (y: number) => {
+      renderRow(
+        y,
+        18,
+        clientColumns,
+        clientColumns.map((c) => c.header),
+        '#1e293b',
+        '#ffffff',
+        true
+      );
+    };
+
+    drawClientHeader(curY);
+    curY += 18;
+
+    let clientRowIndex = 0;
+
     naps.forEach((nap) => {
       const portsWithClient = ((nap.puertos || []) as any[]).filter((p: any) => p.cliente);
       portsWithClient.forEach((port: any) => {
         const c = port.cliente!;
-        const cY = doc.y;
 
-        // Salto de página si se acaba el espacio
-        if (cY > 720) {
+        if (curY + 16 > pageBottomLimit) {
           doc.addPage();
+          curY = 45;
+          drawClientHeader(curY);
+          curY += 18;
         }
 
-        doc.fillColor('#1e293b').fontSize(8);
-        doc.text(c.numero_cliente, 40, doc.y, { width: 80 });
-        doc.text(c.nombre_completo, 120, doc.y, { width: 140 });
-        doc.text(`${nap.identificador} - P#${port.indice_puerto}`, 265, doc.y, { width: 90 });
-        doc.text(c.marca_ont, 360, doc.y, { width: 60 });
-        doc.text(c.ont_mac, 425, doc.y, { width: 95 });
-        doc.text(`${c.potencia_rx_estimada} dBm`, 525, doc.y, { width: 50 });
+        const rowBg = clientRowIndex % 2 === 0 ? '#ffffff' : '#f8fafc';
+        const clientValues = [
+          c.numero_cliente,
+          c.nombre_completo,
+          `${nap.identificador} - P#${port.indice_puerto}`,
+          c.marca_ont || 'ZTE',
+          c.ont_mac || 'N/D',
+          `${c.potencia_rx_estimada ?? -19.5} dBm`
+        ];
 
-        doc.moveDown(0.7);
+        renderRow(
+          curY,
+          16,
+          clientColumns,
+          clientValues,
+          rowBg,
+          '#1e293b',
+          false
+        );
+
+        curY += 16;
+        clientRowIndex++;
       });
     });
 
-    // Pie de página
-    doc.moveDown(2);
-    doc
-      .fillColor('#94a3b8')
-      .fontSize(8)
-      .text('Documento confidencial emitido por GPON TELECOM S.A. de C.V. Todos los derechos reservados.', {
-        align: 'center'
-      });
+    if (clientRowIndex === 0) {
+      renderRow(
+        curY,
+        20,
+        [{ header: '', width: pageWidth, align: 'center' }],
+        ['No hay abonados asignados en la red actualmente.'],
+        '#ffffff',
+        '#64748b',
+        false
+      );
+    }
+
+    // Pie de página en todas las páginas generadas
+    const pageRange = doc.bufferedPageRange();
+    for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
+      doc.switchToPage(i);
+
+      // Línea divisoria del pie
+      doc
+        .strokeColor('#cbd5e1')
+        .lineWidth(0.5)
+        .moveTo(pageLeft, 746)
+        .lineTo(pageLeft + pageWidth, 746)
+        .stroke();
+
+      // Texto de pie de página
+      doc
+        .fillColor('#64748b')
+        .font('Helvetica')
+        .fontSize(7)
+        .text(
+          'Documento oficial confidencial emitido por GPON TELECOM S.A. de C.V. Prohibida su copia o distribución no autorizada.',
+          pageLeft,
+          752,
+          { width: pageWidth - 80, align: 'left' }
+        );
+
+      doc
+        .fillColor('#64748b')
+        .font('Helvetica-Bold')
+        .fontSize(7)
+        .text(`Página ${i + 1} de ${pageRange.count}`, pageLeft + pageWidth - 80, 752, {
+          width: 80,
+          align: 'right'
+        });
+    }
 
     doc.end();
   } catch (error: any) {

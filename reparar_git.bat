@@ -8,3 +8,4 @@ echo ========================================================
 echo [OK] Indice de Git reconstruido y reparado exitosamente.
 echo ========================================================
 pause
+

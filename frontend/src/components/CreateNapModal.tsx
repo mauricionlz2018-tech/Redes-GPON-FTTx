@@ -17,8 +17,8 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
   const [identificador, setIdentificador] = useState('NAP-SJR-05');
   const [zona, setZona] = useState('');
   const [direccionTexto, setDireccionTexto] = useState('');
-  const [lat, setLat] = useState<number>(defaultCoordinates?.lat || 19.6670);
-  const [lng, setLng] = useState<number>(defaultCoordinates?.lng || -100.1490);
+  const [lat, setLat] = useState<string | number>(defaultCoordinates?.lat ?? 19.6670);
+  const [lng, setLng] = useState<string | number>(defaultCoordinates?.lng ?? -100.1490);
   const [totalPuertos, setTotalPuertos] = useState<number>(16);
 
   const [loading, setLoading] = useState(false);
@@ -57,14 +57,22 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
       return;
     }
 
+    const numLat = Number(lat);
+    const numLng = Number(lng);
+
+    if (isNaN(numLat) || isNaN(numLng) || lat === '' || lng === '') {
+      setErrorMsg('Por favor ingresa coordenadas GPS numéricas válidas.');
+      return;
+    }
+
     const payload = {
       identificador: identificador.trim().toUpperCase(),
       zona: zona.trim(),
       direccion_texto: direccionTexto.trim(),
       total_puertos: Number(totalPuertos),
       coordenadas_gps: {
-        lat: Number(lat),
-        lng: Number(lng)
+        lat: numLat,
+        lng: numLng
       }
     };
 
@@ -222,10 +230,10 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
                 <label className="block text-[11px] text-slate-400 mb-0.5">Latitud</label>
                 <input
                   type="number"
-                  step="0.000001"
+                  step="any"
                   required
                   value={lat}
-                  onChange={(e) => setLat(Number(e.target.value))}
+                  onChange={(e) => setLat(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono"
                 />
               </div>
@@ -233,10 +241,10 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
                 <label className="block text-[11px] text-slate-400 mb-0.5">Longitud</label>
                 <input
                   type="number"
-                  step="0.000001"
+                  step="any"
                   required
                   value={lng}
-                  onChange={(e) => setLng(Number(e.target.value))}
+                  onChange={(e) => setLng(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono"
                 />
               </div>

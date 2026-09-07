@@ -16,8 +16,8 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
   onGpsUpdated
 }) => {
   const { isOnline, enqueueGpsUpdate } = useNetwork();
-  const [lat, setLat] = useState<number>(nap.coordenadas_gps?.lat || 19.6642);
-  const [lng, setLng] = useState<number>(nap.coordenadas_gps?.lng || -100.1472);
+  const [lat, setLat] = useState<string | number>(nap.coordenadas_gps?.lat ?? 19.6642);
+  const [lng, setLng] = useState<string | number>(nap.coordenadas_gps?.lng ?? -100.1472);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -53,17 +53,23 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
   };
 
   const handleSave = async () => {
+    const numLat = Number(lat);
+    const numLng = Number(lng);
+
+    if (isNaN(numLat) || isNaN(numLng) || lat === '' || lng === '') {
+      setErrorMsg('Por favor ingresa valores numéricos válidos para latitud y longitud.');
+      return;
+    }
+
     setIsSaving(true);
     setErrorMsg(null);
 
     try {
       if (isOnline) {
-        await api.patch(`/naps/${nap.id_nap}/gps`, { lat, lng });
-        alert(`✔ Coordenadas de la caja ${nap.identificador} actualizadas con éxito.`);
+        await api.patch(`/naps/${nap.id_nap}/gps`, { lat: numLat, lng: numLng });
         alert(`Coordenadas de la caja ${nap.identificador} actualizadas con éxito.`);
       } else {
-        await enqueueGpsUpdate(nap.id_nap, lat, lng);
-        alert(`💾 Coordenadas guardadas localmente en modo OFFLINE. Se sincronizarán al recuperar señal.`);
+        await enqueueGpsUpdate(nap.id_nap, numLat, numLng);
         alert(`Coordenadas guardadas localmente en modo OFFLINE. Se sincronizarán al recuperar señal.`);
       }
       onGpsUpdated();
@@ -135,9 +141,9 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
               <label className="block text-xs font-semibold text-slate-300 mb-1">Latitud</label>
               <input
                 type="number"
-                step="0.000001"
+                step="any"
                 value={lat}
-                onChange={(e) => setLat(parseFloat(e.target.value) || 0)}
+                onChange={(e) => setLat(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
               />
             </div>
@@ -145,9 +151,9 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
               <label className="block text-xs font-semibold text-slate-300 mb-1">Longitud</label>
               <input
                 type="number"
-                step="0.000001"
+                step="any"
                 value={lng}
-                onChange={(e) => setLng(parseFloat(e.target.value) || 0)}
+                onChange={(e) => setLng(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
               />
             </div>

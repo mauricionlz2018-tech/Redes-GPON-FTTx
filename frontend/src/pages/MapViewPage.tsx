@@ -162,7 +162,7 @@ export const MapViewPage: React.FC = () => {
               title="Registrar e instalar nueva caja NAP en la red FTTx"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>+ Nueva Caja NAP</span>
+              <span>Nueva Caja NAP</span>
             </button>
           )}
 
