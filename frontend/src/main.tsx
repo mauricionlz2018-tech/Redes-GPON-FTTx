@@ -15,7 +15,7 @@ if ('serviceWorker' in navigator && !import.meta.env.DEV) {
     navigator.serviceWorker
       .register('/sw.js')
       .then((reg) => {
-        console.log('✔ Service Worker PWA registrado con éxito en scope:', reg.scope);
+        console.log('Service Worker PWA registrado con éxito en scope:', reg.scope);
       })
       .catch((err) => {
         console.warn('Advertencia al registrar Service Worker:', err);

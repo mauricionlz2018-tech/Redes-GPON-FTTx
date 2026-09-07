@@ -189,7 +189,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
 
                 <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-xs space-y-2 text-slate-300">
                   <p>1. Abre <strong className="text-sky-400">Safari</strong> en tu iPhone.</p>
-                  <p>2. Toca el botón central <strong className="text-white">Compartir ⎋</strong> (el cuadrado con la flecha hacia arriba).</p>
+                  <p>2. Toca el botón central <strong className="text-white">Compartir</strong> (el cuadrado con la flecha hacia arriba).</p>
                   <p>3. Desliza hacia abajo y pulsa <strong className="text-emerald-400">"Agregar a pantalla de inicio"</strong>.</p>
                   <p>4. Pulsa "Agregar" arriba a la derecha. ¡Listo!</p>
                 </div>

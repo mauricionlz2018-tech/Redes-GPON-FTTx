@@ -6,7 +6,7 @@ export async function runSeed() {
 
   // 1. Sincronizar esquemas (recrear tablas limpias)
   await sequelize.sync({ force: true });
-  console.log('✔ Tablas y esquemas sincronizados correctamente.');
+  console.log('[OK] Tablas y esquemas sincronizados correctamente.');
 
   // 2. Crear Usuarios (Admin, Soporte, Tecnico)
   const passwordHash = await bcrypt.hash('admin123', 10);
@@ -31,7 +31,7 @@ export async function runSeed() {
       rol: 'Tecnico'
     }
   ]);
-  console.log('✔ Usuarios iniciales creados (admin@gpon.com, soporte@gpon.com, tecnico@gpon.com / pass: admin123).');
+  console.log('[OK] Usuarios iniciales creados (admin@gpon.com, soporte@gpon.com, tecnico@gpon.com / pass: admin123).');
 
   // 3. Crear ODF Central (San José del Rincón)
   const odf = await OdfPanel.create({
@@ -40,7 +40,7 @@ export async function runSeed() {
     coordenadas_gps: { lat: 19.6642, lng: -100.1472 },
     capacidad_hilos: 48
   });
-  console.log('✔ ODF Central creado:', odf.nombre);
+  console.log('[OK] ODF Central creado:', odf.nombre);
 
   // 4. Crear Hilos de Fibra
   for (let i = 1; i <= 24; i++) {
@@ -178,11 +178,11 @@ export async function runSeed() {
         });
       }
     }
-    console.log(`✔ Caja ${nap.identificador} creada con 16 puertos (${nData.occupiedCount} ocupados).`);
+    console.log(`[OK] Caja ${nap.identificador} creada con 16 puertos (${nData.occupiedCount} ocupados).`);
   }
 
   console.log('====================================================');
-  console.log('🎉 Seed completado exitosamente con topología GPON.');
+  console.log('Seed completado exitosamente con topología GPON.');
   console.log('====================================================');
 }
 
@@ -191,7 +191,7 @@ if (require.main === module) {
   runSeed()
     .then(() => process.exit(0))
     .catch((err) => {
-      console.error('❌ Error ejecutando seed:', err);
+      console.error('[ERROR] Error ejecutando seed:', err);
       process.exit(1);
     });
 }

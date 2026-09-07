@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Network, Shield, ShieldAlert, Wrench, Lock, Mail, ArrowRight } from 'lucide-react';
+import { Network, Shield, ShieldAlert, Wrench, Lock, Mail, ArrowRight, MapPin } from 'lucide-react';
 import { UserRole } from '../types';
 
 export const LoginPage: React.FC = () => {
@@ -119,7 +119,8 @@ export const LoginPage: React.FC = () => {
               onClick={() => handleQuickDemoLogin('Admin')}
               className="w-full mb-3 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-lg shadow-emerald-950/40"
             >
-              <span>🗺️ Explorar Mapa y 16 Puertos FTTx (Modo Demo)</span>
+              <MapPin className="w-4 h-4" />
+              <span>Explorar Mapa y 16 Puertos FTTx (Modo Demo)</span>
             </button>
 
             <span className="block text-center text-xs font-semibold text-slate-400 mb-3">

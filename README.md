@@ -5,7 +5,7 @@ Sistema integral de gestión de infraestructura de fibra óptica pasiva (ODF Cen
 
 ---
 
-## ⚡ Inicio Rápido en 3 Pasos
+## Inicio Rápido en 3 Pasos
 
 ```bash
 # 1. Levantar la base de datos PostgreSQL en Docker
@@ -21,7 +21,7 @@ pnpm --filter frontend dev   # App en http://localhost:3000
 
 ---
 
-## 🚀 Perfiles de Acceso Rápido (Demo RBAC)
+## Perfiles de Acceso Rápido (Demo RBAC)
 
 La aplicación incluye un conmutador de roles en 1 clic para evaluar el control de acceso:
 
@@ -31,7 +31,7 @@ La aplicación incluye un conmutador de roles en 1 clic para evaluar el control 
 
 ---
 
-## 📖 Documentación Completa de Despliegue
+## Documentación Completa de Despliegue
 
 Consulta la guía exhaustiva en [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) para:
 - Despliegue en producción con Docker Compose y Nginx (`docker/docker-compose.prod.yml`).
