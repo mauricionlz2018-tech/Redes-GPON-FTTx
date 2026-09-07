@@ -111,60 +111,60 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
     switch (estado) {
       case 'Libre':
         return {
-          bg: 'bg-emerald-500/15 hover:bg-emerald-500/25 border-emerald-500/40 text-emerald-400',
-          led: 'bg-emerald-500 shadow-emerald-500/50 shadow-md',
+          bg: 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400',
+          led: 'bg-emerald-500 shadow-emerald-500/50 shadow-sm',
           label: 'Libre'
         };
       case 'Ocupado':
         return {
-          bg: 'bg-sky-500/15 hover:bg-sky-500/25 border-sky-500/40 text-sky-300',
-          led: 'bg-sky-500 shadow-sky-500/50 shadow-md',
+          bg: 'bg-sky-500/10 hover:bg-sky-500/20 border-sky-500/40 text-sky-700 dark:text-sky-300',
+          led: 'bg-sky-500 shadow-sky-500/50 shadow-sm',
           label: 'Ocupado'
         };
       case 'Dañado':
         return {
-          bg: 'bg-red-500/15 hover:bg-red-500/25 border-red-500/40 text-red-400',
-          led: 'bg-red-500 shadow-red-500/50 shadow-md',
+          bg: 'bg-red-500/10 hover:bg-red-500/20 border-red-500/40 text-red-700 dark:text-red-400',
+          led: 'bg-red-500 shadow-red-500/50 shadow-sm',
           label: 'Dañado'
         };
       case 'Reservado':
         return {
-          bg: 'bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/40 text-amber-400',
-          led: 'bg-amber-500 shadow-amber-500/50 shadow-md',
+          bg: 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/40 text-amber-700 dark:text-amber-400',
+          led: 'bg-amber-500 shadow-amber-500/50 shadow-sm',
           label: 'Reservado'
         };
       default:
         return {
-          bg: 'bg-slate-700/30 hover:bg-slate-700/50 border-slate-600 text-slate-400',
-          led: 'bg-slate-500',
+          bg: 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/30 dark:hover:bg-slate-700/50 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400',
+          led: 'bg-slate-400 dark:bg-slate-500',
           label: estado
         };
     }
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm dark:shadow-xl transition-colors">
       {/* Cabecera del Chasis de la NAP */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3 mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <Server className="w-5 h-5 text-sky-400" />
-            <h3 className="font-bold text-base text-white">{nap.identificador}</h3>
-            <span className="text-xs text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+            <Server className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            <h3 className="font-bold text-base text-slate-900 dark:text-white">{nap.identificador}</h3>
+            <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-medium">
               {nap.zona}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">{nap.direccion_texto}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{nap.direccion_texto}</p>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <span className="text-xs text-slate-400">Saturación:</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">Saturación:</span>
             <span
               className={`ml-1 text-xs font-bold px-2 py-0.5 rounded ${
                 (nap.metricas?.porcentajeSaturacion ?? 0) >= 80
-                  ? 'bg-amber-500/20 text-amber-300'
-                  : 'bg-emerald-500/20 text-emerald-300'
+                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                  : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
               }`}
             >
               {nap.metricas?.porcentajeSaturacion ?? 0}% ({nap.metricas?.ocupados ?? 0}/
@@ -176,15 +176,15 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
       {/* Alerta de RBAC (403) si un técnico intenta acción prohibida */}
       {rbacError && (
-        <div className="mb-4 p-3 bg-red-950/50 border border-red-800/80 rounded-lg flex items-start gap-2.5 text-xs text-red-200 animate-fadeIn">
-          <ShieldAlert className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+        <div className="mb-4 p-3 bg-red-500/10 dark:bg-red-950/50 border border-red-500/30 dark:border-red-800/80 rounded-lg flex items-start gap-2.5 text-xs text-red-800 dark:text-red-200 animate-fadeIn">
+          <ShieldAlert className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <strong className="block font-semibold text-red-300">Restricción de Perfil RBAC</strong>
+            <strong className="block font-semibold text-red-700 dark:text-red-300">Restricción de Perfil RBAC</strong>
             <span>{rbacError}</span>
           </div>
           <button
             onClick={() => setRbacError(null)}
-            className="text-red-400 hover:text-white p-0.5 rounded"
+            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-white p-0.5 rounded"
             title="Cerrar"
           >
             <X className="w-4 h-4" />
@@ -194,14 +194,14 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
       {/* Aviso de acción exitosa */}
       {actionSuccess && (
-        <div className="mb-4 p-2.5 bg-emerald-950/40 border border-emerald-800/60 rounded-lg flex items-center justify-between text-xs text-emerald-200">
+        <div className="mb-4 p-2.5 bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 dark:border-emerald-800/60 rounded-lg flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-200">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>{actionSuccess}</span>
           </div>
           <button
             onClick={() => setActionSuccess(null)}
-            className="text-emerald-400 hover:text-white p-0.5 rounded"
+            className="text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-white p-0.5 rounded"
             title="Cerrar"
           >
             <X className="w-4 h-4" />
@@ -210,12 +210,12 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
       )}
 
       {/* Matriz Visual Física de los 16 Puertos (Estilo Panel de Fibra SC-APC) */}
-      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 mb-4">
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-3 px-1">
-          <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-300">
+      <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 mb-4 transition-colors">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-3 px-1">
+          <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-700 dark:text-slate-300">
             Panel Físico de Puertos Ópticos (1 a 16)
           </span>
-          <span className="text-[11px] text-sky-400 flex items-center gap-1">
+          <span className="text-[11px] text-sky-600 dark:text-sky-400 flex items-center gap-1 font-medium">
             <Info className="w-3 h-3" /> Haz clic en un puerto para interactuar
           </span>
         </div>
@@ -236,17 +236,17 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                 }}
                 className={`flex flex-col items-center justify-between p-2 rounded-lg border transition-all relative ${
                   statusStyle.bg
-                } ${isSelected ? 'ring-2 ring-sky-400 scale-105 shadow-lg shadow-sky-900/30' : ''}`}
+                } ${isSelected ? 'ring-2 ring-sky-500 scale-105 shadow-md shadow-sky-500/20 font-bold' : ''}`}
               >
                 {/* Luz LED indicadora */}
                 <div className="flex items-center justify-between w-full mb-1">
-                  <span className="text-[10px] font-bold text-slate-400">P#{port.indice_puerto}</span>
+                  <span className="text-[10px] font-bold opacity-70">P#{port.indice_puerto}</span>
                   <span className={`w-2 h-2 rounded-full ${statusStyle.led}`} />
                 </div>
 
                 {/* Icono conector de fibra */}
-                <div className="w-7 h-7 bg-slate-900 rounded border border-slate-700 flex items-center justify-center my-1">
-                  <span className="text-[10px] font-mono font-bold text-slate-300">
+                <div className="w-7 h-7 bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-700 flex items-center justify-center my-1 shadow-sm">
+                  <span className="text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300">
                     {port.indice_puerto}
                   </span>
                 </div>
@@ -263,10 +263,10 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
       {/* Detalle y Operaciones del Puerto Seleccionado */}
       {selectedPort ? (
-        <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-4 animate-fadeIn">
-          <div className="flex items-center justify-between border-b border-slate-700 pb-2 mb-3">
+        <div className="bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl p-4 animate-fadeIn transition-colors">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 mb-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-white">
+              <span className="text-sm font-bold text-slate-900 dark:text-white">
                 Detalle del Puerto #{selectedPort.indice_puerto}
               </span>
               <span
@@ -279,7 +279,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             </div>
             <button
               onClick={() => setSelectedPort(null)}
-              className="text-xs text-slate-400 hover:text-white"
+              className="text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
             >
               Cerrar
             </button>
@@ -287,12 +287,12 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
           {/* Caso 1: Puerto Libre -> Botón de Asignación */}
           {selectedPort.estado === 'Libre' && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-emerald-950/30 border border-emerald-900/50 p-3 rounded-lg">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/30 dark:border-emerald-900/50 p-3 rounded-lg">
               <div>
-                <p className="text-xs text-emerald-300 font-medium">
+                <p className="text-xs text-emerald-800 dark:text-emerald-300 font-medium">
                   El puerto #{selectedPort.indice_puerto} se encuentra disponible para nueva instalación.
                 </p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Permitido para Técnicos de campo, Soporte y Administradores.
                 </p>
               </div>
@@ -310,42 +310,42 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           {selectedPort.estado === 'Ocupado' && (
             <div className="space-y-3">
               {selectedPort.cliente ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-slate-900/80 p-3 rounded-lg border border-slate-700">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-white dark:bg-slate-900/80 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                   <div>
-                    <span className="text-slate-400 block text-[11px]">Abonado Conectado:</span>
-                    <strong className="text-white text-sm">
+                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Abonado Conectado:</span>
+                    <strong className="text-slate-900 dark:text-white text-sm">
                       {selectedPort.cliente.nombre_completo}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[11px]">Cód. Cliente:</span>
-                    <span className="font-mono font-semibold text-sky-400">
+                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Cód. Cliente:</span>
+                    <span className="font-mono font-semibold text-sky-600 dark:text-sky-400">
                       {selectedPort.cliente.numero_cliente}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[11px]">ONT Marca:</span>
-                    <span className="text-slate-200">
+                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">ONT Marca:</span>
+                    <span className="text-slate-800 dark:text-slate-200">
                       {selectedPort.cliente.marca_ont} (MAC: {selectedPort.cliente.ont_mac})
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[11px]">Potencia Rx Estimada:</span>
-                    <span className="text-emerald-400 font-mono">
+                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Potencia Rx Estimada:</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
                       {selectedPort.cliente.potencia_rx_estimada} dBm
                     </span>
                   </div>
                   <div className="sm:col-span-2">
-                    <span className="text-slate-400 block text-[11px]">Dirección Instalación:</span>
-                    <span className="text-slate-300">{selectedPort.cliente.direccion}</span>
+                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Dirección Instalación:</span>
+                    <span className="text-slate-700 dark:text-slate-300">{selectedPort.cliente.direccion}</span>
                   </div>
                 </div>
               ) : (
-                <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-700 text-xs">
-                  <span className="text-sky-400 font-semibold block text-[12px] mb-1">
+                <div className="bg-white dark:bg-slate-900/80 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+                  <span className="text-sky-600 dark:text-sky-400 font-semibold block text-[12px] mb-1">
                     Puerto en Servicio FTTx Activo
                   </span>
-                  <p className="text-slate-300 text-[11px]">
+                  <p className="text-slate-600 dark:text-slate-300 text-[11px]">
                     Abonado conectado en la base de datos de Neon. Haz clic en "Liberar Puerto" si deseas ponerlo disponible.
                   </p>
                 </div>
@@ -353,13 +353,13 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
               {/* Botón de Liberación de Puerto */}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                   {user?.rol === 'Tecnico' ? (
-                    <span className="text-amber-400">
+                    <span className="text-amber-600 dark:text-amber-400 font-medium">
                       * Rol Técnico: no autorizado para liberar o reasignar abonados.
                     </span>
                   ) : (
-                    <span className="text-slate-400">
+                    <span>
                       * Soporte/Admin: puedes liberar el puerto para dejarlo disponible nuevamente.
                     </span>
                   )}
@@ -368,7 +368,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   {selectedPort.cliente && (
                     <button
                       onClick={() => setIsEditClientModalOpen(true)}
-                      className="bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white border border-sky-500/30 text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors"
+                      className="bg-sky-50 hover:bg-sky-100 dark:bg-sky-600/20 dark:hover:bg-sky-600 text-sky-700 hover:text-sky-900 dark:text-sky-300 dark:hover:text-white border border-sky-300 dark:border-sky-500/30 text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors font-medium"
                       title="Editar datos técnicos y contrato del abonado"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
@@ -379,10 +379,10 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   <button
                     onClick={() => handleReleasePort(selectedPort)}
                     disabled={isProcessing}
-                    className={`text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors ${
+                    className={`text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors font-medium ${
                       user?.rol === 'Tecnico'
-                        ? 'bg-slate-800 text-slate-500 border border-slate-700 hover:border-red-500/50 hover:text-red-400 cursor-not-allowed'
-                        : 'bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30'
+                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 cursor-not-allowed'
+                        : 'bg-red-50 hover:bg-red-100 dark:bg-red-600/20 dark:hover:bg-red-600 text-red-700 hover:text-red-900 dark:text-red-300 dark:hover:text-white border border-red-300 dark:border-red-500/30'
                     }`}
                     title={user?.rol === 'Tecnico' ? 'Acción restringida para Técnicos' : 'Liberar puerto'}
                   >
@@ -396,15 +396,15 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
           {/* Caso 3: Puerto Dañado o en Mantenimiento */}
           {selectedPort.estado === 'Dañado' && (
-            <div className="bg-red-950/30 border border-red-900/50 p-3 rounded-lg text-xs flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-red-300">
-                <AlertTriangle className="w-4 h-4 text-red-400" />
+            <div className="bg-red-500/10 dark:bg-red-950/30 border border-red-500/30 dark:border-red-900/50 p-3 rounded-lg text-xs flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
+                <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400" />
                 <span>Este puerto está marcado como DAÑADO por falla en splitter o conector SC.</span>
               </div>
               {user?.rol !== 'Tecnico' && (
                 <button
                   onClick={() => handleChangeStatus(selectedPort, 'Libre')}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1 rounded text-xs border border-slate-600"
+                  className="bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-1 rounded text-xs border border-slate-300 dark:border-slate-600 shadow-sm"
                 >
                   Restablecer a Libre
                 </button>
@@ -413,7 +413,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           )}
         </div>
       ) : (
-        <div className="text-center py-3 text-xs text-slate-500 border border-dashed border-slate-800 rounded-lg">
+        <div className="text-center py-3 text-xs text-slate-500 dark:text-slate-400 border border-dashed border-slate-300 dark:border-slate-800 rounded-lg">
           Selecciona cualquiera de los 16 puertos en la matriz para ver su detalle u operar sobre él.
         </div>
       )}

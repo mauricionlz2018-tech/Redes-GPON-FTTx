@@ -56,24 +56,24 @@ export const ClientsPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
       {/* Encabezado */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 transition-colors">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-sky-400" />
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Users className="w-5 h-5 text-sky-600 dark:text-sky-400" />
             Padrón de Abonados Conectados FTTx
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Consulta y administración de clientes vinculados a puertos de cajas NAP.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
-            Total activos: <strong className="text-sky-400">{filteredClients.length}</strong>
+          <span className="text-xs text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+            Total activos: <strong className="text-sky-600 dark:text-sky-400">{filteredClients.length}</strong>
           </span>
           <button
             onClick={fetchClients}
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-700"
+            className="p-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 shadow-sm"
             title="Recargar abonados"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -82,25 +82,25 @@ export const ClientsPage: React.FC = () => {
       </div>
 
       {/* Controles de Búsqueda y Filtro */}
-      <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-md">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-sm dark:shadow-md transition-colors">
         <div className="relative flex-1 min-w-[260px] max-w-md">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3" />
           <input
             type="text"
             placeholder="Buscar por abonado, código, MAC o dirección..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-slate-500" />
-          <span className="text-xs text-slate-400">Marca ONT:</span>
+          <Filter className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+          <span className="text-xs text-slate-600 dark:text-slate-400">Marca ONT:</span>
           <select
             value={brandFilter}
             onChange={(e) => setBrandFilter(e.target.value)}
-            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+            className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
           >
             <option value="todas">Todas las marcas</option>
             <option value="ZTE">ZTE</option>
@@ -112,10 +112,10 @@ export const ClientsPage: React.FC = () => {
       </div>
 
       {/* Tabla de Clientes */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-xl transition-colors">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-950 text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+            <thead className="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="px-4 py-3">Código</th>
                 <th className="px-4 py-3">Nombre del Abonado</th>
@@ -127,55 +127,55 @@ export const ClientsPage: React.FC = () => {
                 <th className="px-4 py-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {filteredClients.map((client) => {
                 const nap = client.puerto_nap?.caja_nap;
                 const portIndex = client.puerto_nap?.indice_puerto;
                 const rx = client.potencia_rx_estimada;
 
                 // Calidad de la señal óptica
-                let rxColor = 'text-emerald-400';
-                if (rx < -24) rxColor = 'text-red-400';
-                else if (rx < -22) rxColor = 'text-amber-400';
+                let rxColor = 'text-emerald-600 dark:text-emerald-400 font-semibold';
+                if (rx < -24) rxColor = 'text-red-600 dark:text-red-400 font-semibold';
+                else if (rx < -22) rxColor = 'text-amber-600 dark:text-amber-400 font-semibold';
 
                 return (
-                  <tr key={client.id_cliente} className="hover:bg-slate-800/50 transition-colors">
-                    <td className="px-4 py-3 font-mono font-medium text-sky-400 whitespace-nowrap">
+                  <tr key={client.id_cliente} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 font-mono font-medium text-sky-600 dark:text-sky-400 whitespace-nowrap">
                       {client.numero_cliente}
                     </td>
-                    <td className="px-4 py-3 font-medium text-white whitespace-nowrap">
+                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">
                       {client.nombre_completo}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {nap ? (
                         <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-slate-200">{nap.identificador}</span>
-                          <span className="text-[10px] bg-slate-800 text-sky-400 border border-slate-700 px-1.5 py-0.5 rounded">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{nap.identificador}</span>
+                          <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-sky-700 dark:text-sky-400 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">
                             P#{portIndex}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-500">Sin NAP asignada</span>
+                        <span className="text-slate-400 dark:text-slate-500">Sin NAP asignada</span>
                       )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="bg-slate-800 text-slate-300 border border-slate-700 px-2 py-0.5 rounded text-[11px] font-medium">
+                      <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded text-[11px] font-medium">
                         {client.marca_ont}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">
+                    <td className="px-4 py-3 font-mono text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
                       {client.ont_mac}
                     </td>
                     <td className="px-4 py-3 font-mono whitespace-nowrap">
-                      <span className={`font-semibold ${rxColor}`}>{rx} dBm</span>
+                      <span className={rxColor}>{rx} dBm</span>
                     </td>
-                    <td className="px-4 py-3 text-slate-400 max-w-xs truncate" title={client.direccion}>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400 max-w-xs truncate" title={client.direccion}>
                       {client.direccion}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <button
                         onClick={() => setClientToEdit(client)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-950/60 hover:bg-sky-900 border border-sky-800/80 text-sky-300 hover:text-white text-xs transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-300 dark:border-sky-800/80 text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-white text-xs transition-colors font-medium"
                         title="Editar datos del abonado"
                       >
                         <Edit3 className="w-3.5 h-3.5" />

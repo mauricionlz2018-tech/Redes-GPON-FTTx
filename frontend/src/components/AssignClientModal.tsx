@@ -97,33 +97,33 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl max-w-lg w-full p-6 shadow-2xl relative text-slate-900 dark:text-white transition-colors">
         {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Encabezado */}
-        <div className="flex items-center gap-3 border-b border-slate-800 pb-3 mb-4">
-          <div className="p-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg">
+        <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+          <div className="p-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-lg">
             <UserCheck className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-white">Asignar Abonado a Puerto</h3>
-            <p className="text-xs text-slate-400">
-              Caja <span className="text-sky-400 font-semibold">{nap.identificador}</span> &bull; Puerto{' '}
-              <span className="text-emerald-400 font-semibold">#{port.indice_puerto}</span>
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Asignar Abonado a Puerto</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Caja <span className="text-sky-600 dark:text-sky-400 font-semibold">{nap.identificador}</span> &bull; Puerto{' '}
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">#{port.indice_puerto}</span>
             </p>
           </div>
         </div>
 
         {/* Indicador de modo Offline si aplica */}
         {!isOnline && (
-          <div className="mb-4 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2 text-xs text-amber-300">
+          <div className="mb-4 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
             <WifiOff className="w-4 h-4 flex-shrink-0" />
             <span>
               Estás en <strong>Modo Sin Conexión</strong>. La asignación se guardará en IndexedDB y se sincronizará automáticamente al volver en línea.
@@ -133,8 +133,8 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
 
         {/* Mensaje de error */}
         {errorMsg && (
-          <div className="mb-4 p-3 bg-red-950/50 border border-red-800 rounded-lg flex items-center gap-2 text-xs text-red-200">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-400" />
+          <div className="mb-4 p-3 bg-red-500/10 dark:bg-red-950/50 border border-red-500/30 dark:border-red-800 rounded-lg flex items-center gap-2 text-xs text-red-700 dark:text-red-200">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500 dark:text-red-400" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -143,7 +143,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Código / N° de Cliente
               </label>
               <input
@@ -151,18 +151,18 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
                 required
                 value={formData.numero_cliente}
                 onChange={(e) => setFormData({ ...formData, numero_cliente: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Marca de ONT (CPE)
               </label>
               <select
                 value={formData.marca_ont}
                 onChange={(e) => setFormData({ ...formData, marca_ont: e.target.value as any })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
               >
                 <option value="ZTE">ZTE (F660 / F670)</option>
                 <option value="Huawei">Huawei (HG8245H)</option>
@@ -173,7 +173,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Nombre Completo del Abonado
             </label>
             <input
@@ -182,13 +182,13 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
               placeholder="Ej. María Elena González Flores"
               value={formData.nombre_completo}
               onChange={(e) => setFormData({ ...formData, nombre_completo: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Dirección MAC de la ONT
               </label>
               <input
@@ -197,12 +197,12 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
                 placeholder="48:2C:EA:12:34:56"
                 value={formData.ont_mac}
                 onChange={(e) => setFormData({ ...formData, ont_mac: e.target.value.toUpperCase() })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono uppercase"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono uppercase"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Potencia Rx Estimada (dBm)
               </label>
               <input
@@ -212,13 +212,13 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, potencia_rx_estimada: e.target.value })
                 }
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Dirección de Instalación
             </label>
             <textarea
@@ -226,16 +226,16 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
               required
               value={formData.direccion}
               onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
             />
           </div>
 
           {/* Botones de acción */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition-colors"
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium transition-colors"
             >
               Cancelar
             </button>

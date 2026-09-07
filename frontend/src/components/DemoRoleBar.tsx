@@ -33,11 +33,11 @@ export const DemoRoleBar: React.FC = () => {
   ];
 
   return (
-    <aside aria-label="Selector de rol demo" className="bg-slate-950/90 border-b border-slate-800 px-3 py-1.5 text-xs w-full overflow-hidden">
+    <aside aria-label="Selector de rol demo" className="bg-slate-100 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-xs w-full overflow-hidden transition-colors">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-slate-400 flex-shrink-0">
-          <span className="font-semibold text-slate-300 text-[11px] sm:text-xs">RBAC:</span>
-          <span className="hidden md:inline text-slate-400">Simulador de roles de campo</span>
+        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 flex-shrink-0">
+          <span className="font-semibold text-slate-800 dark:text-slate-300 text-[11px] sm:text-xs">RBAC:</span>
+          <span className="hidden md:inline text-slate-500 dark:text-slate-400">Simulador de roles de campo</span>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar">
@@ -51,8 +51,8 @@ export const DemoRoleBar: React.FC = () => {
                 title={r.desc}
                 className={`flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-medium whitespace-nowrap transition-all ${
                   isActive
-                    ? `${r.color} shadow-sm ring-1 sm:ring-2 ring-white/20`
-                    : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300'
+                    ? `${r.color} shadow-sm ring-1 sm:ring-2 ring-indigo-500/30 dark:ring-white/20 font-semibold`
+                    : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-300 dark:border-transparent dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-300'
                 }`}
               >
                 <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />

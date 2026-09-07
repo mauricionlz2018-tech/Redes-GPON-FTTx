@@ -83,45 +83,45 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl relative transition-colors">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 border-b border-slate-800 pb-3 mb-4">
-          <div className="p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg">
+        <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+          <div className="p-2.5 bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20 rounded-lg">
             <Compass className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-white">Capturar GPS en Campo</h3>
-            <p className="text-xs text-slate-400">
-              Caja <span className="text-sky-400 font-semibold">{nap.identificador}</span>
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Capturar GPS en Campo</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Caja <span className="text-sky-600 dark:text-sky-400 font-semibold">{nap.identificador}</span>
             </p>
           </div>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 bg-red-950/50 border border-red-800 rounded-lg flex items-center gap-2 text-xs text-red-200">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0 text-red-400" />
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-xs text-red-700 dark:text-red-200">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 text-red-500 dark:text-red-400" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         <div className="space-y-4">
-          <div className="bg-slate-800/80 p-3 rounded-lg border border-slate-700 text-xs space-y-2">
-            <div className="flex justify-between items-center text-slate-400">
+          <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs space-y-2">
+            <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
               <span>Ubicación actual de la caja:</span>
-              <span className="font-mono text-white">
+              <span className="font-mono text-slate-900 dark:text-white font-semibold">
                 {nap.coordenadas_gps?.lat.toFixed(4)}, {nap.coordenadas_gps?.lng.toFixed(4)}
               </span>
             </div>
             {accuracy !== null && (
-              <div className="flex justify-between items-center text-slate-400">
+              <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
                 <span>Precisión del sensor:</span>
-                <span className="font-semibold text-emerald-400">&plusmn;{accuracy} metros</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">&plusmn;{accuracy} metros</span>
               </div>
             )}
           </div>
@@ -138,32 +138,32 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Latitud</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Latitud</label>
               <input
                 type="number"
                 step="any"
                 value={lat}
                 onChange={(e) => setLat(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+                className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Longitud</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Longitud</label>
               <input
                 type="number"
                 step="any"
                 value={lng}
                 onChange={(e) => setLng(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+                className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium"
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium transition-colors"
             >
               Cancelar
             </button>
@@ -171,7 +171,7 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow"
+              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow transition-colors"
             >
               <Check className="w-4 h-4" />
               <span>{isSaving ? 'Guardando...' : 'Guardar Coordenadas'}</span>

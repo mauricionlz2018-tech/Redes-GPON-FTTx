@@ -235,8 +235,8 @@ export const Navbar: React.FC = () => {
               to={link.to}
               className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
                 isActive
-                  ? 'text-sky-400 font-bold scale-105'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'text-sky-600 dark:text-sky-400 font-bold scale-105'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Icon className="w-5 h-5" />

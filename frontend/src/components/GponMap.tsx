@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel } from '../types';
+import { useTheme } from '../context/ThemeContext';
 import { Network, Server, MapPin, Radio, Compass } from 'lucide-react';
 
 interface GponMapProps {
@@ -78,6 +79,8 @@ export const GponMap: React.FC<GponMapProps> = ({
   onSelectNap,
   onOpenGpsModal
 }) => {
+  const { theme } = useTheme();
+
   // Centro por defecto: San José del Rincón, Edo. Méx.
   const defaultCenter: [number, number] = useMemo(() => {
     if (odf && odf.coordenadas_gps) {
@@ -89,17 +92,22 @@ export const GponMap: React.FC<GponMapProps> = ({
   const odfIcon = useMemo(() => createOdfIcon(), []);
 
   return (
-    <div className="relative w-full h-full min-h-[480px] rounded-xl overflow-hidden border border-slate-800 shadow-xl">
+    <div className="relative w-full h-full min-h-[480px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors">
       <MapContainer
         center={defaultCenter}
         zoom={14}
         scrollWheelZoom={true}
         className="w-full h-full"
       >
-        {/* Capa de Cartografía OpenStreetMap */}
+        {/* Capa de Cartografía adaptativa a Modo Claro y Modo Oscuro */}
         <TileLayer
+          key={theme}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url={
+            theme === 'dark'
+              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+              : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          }
         />
 
         {/* Marcador del ODF Central */}
@@ -110,14 +118,14 @@ export const GponMap: React.FC<GponMapProps> = ({
           >
             <Popup>
               <div className="p-1 max-w-[220px]">
-                <div className="flex items-center gap-1.5 text-sky-400 font-bold text-sm mb-1">
+                <div className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400 font-bold text-sm mb-1">
                   <Server className="w-4 h-4" />
                   <span>{odf.nombre}</span>
                 </div>
-                <p className="text-xs text-slate-300">{odf.ubicacion_central}</p>
-                <div className="mt-2 text-[11px] text-slate-400 bg-slate-800 p-1.5 rounded border border-slate-700">
+                <p className="text-xs text-slate-600 dark:text-slate-300">{odf.ubicacion_central}</p>
+                <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 p-1.5 rounded border border-slate-200 dark:border-slate-700">
                   <span>Capacidad: </span>
-                  <strong className="text-white">{odf.capacidad_hilos} Hilos de Fibra</strong>
+                  <strong className="text-slate-900 dark:text-white">{odf.capacidad_hilos} Hilos de Fibra</strong>
                 </div>
               </div>
             </Popup>
@@ -166,30 +174,30 @@ export const GponMap: React.FC<GponMapProps> = ({
               }}
             >
               <Popup>
-                <div className="p-1 min-w-[210px] text-slate-100">
-                  <div className="flex items-center justify-between gap-2 border-b border-slate-700 pb-1 mb-2">
-                    <span className="font-bold text-sm text-sky-400 flex items-center gap-1">
+                <div className="p-1 min-w-[210px] text-slate-800 dark:text-slate-100">
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 mb-2">
+                    <span className="font-bold text-sm text-sky-600 dark:text-sky-400 flex items-center gap-1">
                       <Network className="w-3.5 h-3.5" />
                       {nap.identificador}
                     </span>
                     <span
                       className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                         pct >= 100
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                          ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500/30'
                           : pct >= 80
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30'
+                          : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30'
                       }`}
                     >
                       {pct}% Ocupado
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-300 mb-1">{nap.zona}</p>
-                  <p className="text-[11px] text-slate-400 mb-2">{nap.direccion_texto}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mb-1 font-medium">{nap.zona}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">{nap.direccion_texto}</p>
 
                   {/* Barra de progreso de saturación */}
-                  <div className="w-full bg-slate-800 rounded-full h-1.5 mb-2 overflow-hidden">
+                  <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 mb-2 overflow-hidden">
                     <div
                       className={`h-1.5 rounded-full transition-all ${
                         pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
@@ -198,12 +206,12 @@ export const GponMap: React.FC<GponMapProps> = ({
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-1 text-[11px] mb-3 bg-slate-800/80 p-1.5 rounded border border-slate-700">
+                  <div className="grid grid-cols-2 gap-1 text-[11px] mb-3 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded border border-slate-200 dark:border-slate-700">
                     <div>
-                      Libres: <strong className="text-emerald-400">{m?.libres ?? 0}</strong>
+                      Libres: <strong className="text-emerald-600 dark:text-emerald-400">{m?.libres ?? 0}</strong>
                     </div>
                     <div>
-                      Ocupados: <strong className="text-sky-400">{m?.ocupados ?? 0}</strong>
+                      Ocupados: <strong className="text-sky-600 dark:text-sky-400">{m?.ocupados ?? 0}</strong>
                     </div>
                   </div>
 
@@ -218,9 +226,9 @@ export const GponMap: React.FC<GponMapProps> = ({
                     </button>
                     <button
                       onClick={() => onOpenGpsModal(nap)}
-                      className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-slate-700"
+                      className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-slate-300 dark:border-slate-700"
                     >
-                      <Compass className="w-3.5 h-3.5 text-amber-400" />
+                      <Compass className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                       <span>Capturar GPS de Campo</span>
                     </button>
                   </div>
@@ -232,8 +240,8 @@ export const GponMap: React.FC<GponMapProps> = ({
       </MapContainer>
 
       {/* Leyenda del Mapa flotante en esquina */}
-      <div className="absolute bottom-4 left-4 z-[400] bg-slate-900/90 backdrop-blur border border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-300 shadow-xl max-w-[200px]">
-        <span className="font-semibold text-white block mb-1.5">Semáforo de Saturación</span>
+      <div className="absolute bottom-4 left-4 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-700 dark:text-slate-300 shadow-lg dark:shadow-xl max-w-[200px] transition-colors">
+        <span className="font-semibold text-slate-900 dark:text-white block mb-1.5">Semáforo de Saturación</span>
         <div className="flex items-center gap-2 mb-1">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20" />
           <span>&lt; 80% Disponible</span>
@@ -246,7 +254,7 @@ export const GponMap: React.FC<GponMapProps> = ({
           <span className="w-2.5 h-2.5 rounded-full bg-red-600 ring-2 ring-red-600/20" />
           <span>100% Saturada / Dañada</span>
         </div>
-        <div className="flex items-center gap-2 pt-1 border-t border-slate-800 text-sky-400 font-medium">
+        <div className="flex items-center gap-2 pt-1 border-t border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 font-medium">
           <span className="w-3 h-0.5 bg-sky-500" />
           <span>Fibra Óptica ODF</span>
         </div>

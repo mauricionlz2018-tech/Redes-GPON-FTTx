@@ -41,7 +41,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden transition-colors">
       {/* Fondo con resplandor sutil de fibra óptica */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -49,29 +49,29 @@ export const LoginPage: React.FC = () => {
         <div className="inline-flex items-center justify-center p-3 bg-gradient-to-tr from-sky-600 to-cyan-400 rounded-2xl shadow-xl shadow-sky-900/30 text-white mb-4">
           <Network className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
           GPON TELECOM S.A. de C.V.
         </h1>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Sistema de Inventario y Mapeo Lógico de Red GPON / FTTx
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 z-10">
-        <div className="bg-slate-900/90 border border-slate-800 py-8 px-6 shadow-2xl rounded-2xl sm:px-10 backdrop-blur">
+        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 py-8 px-6 shadow-xl dark:shadow-2xl rounded-2xl sm:px-10 backdrop-blur transition-colors">
           {errorMsg && (
-            <div className="mb-4 p-3 bg-red-950/50 border border-red-800 text-xs text-red-200 rounded-lg">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-xs text-red-700 dark:text-red-200 rounded-lg">
               {errorMsg}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Correo o Usuario
               </label>
               <div className="relative rounded-lg shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -80,15 +80,15 @@ export const LoginPage: React.FC = () => {
                   placeholder="ej. tecnico@gpon.com"
                   value={credencial}
                   onChange={(e) => setCredencial(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Contraseña</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contraseña</label>
               <div className="relative rounded-lg shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
@@ -97,7 +97,7 @@ export const LoginPage: React.FC = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
                 />
               </div>
             </div>
@@ -113,7 +113,7 @@ export const LoginPage: React.FC = () => {
           </form>
 
           {/* Acceso Rápido Demo (1 Clic) */}
-          <div className="mt-6 pt-6 border-t border-slate-800">
+          <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={() => handleQuickDemoLogin('Admin')}
@@ -123,34 +123,34 @@ export const LoginPage: React.FC = () => {
               <span>Explorar Mapa y 16 Puertos FTTx (Modo Demo)</span>
             </button>
 
-            <span className="block text-center text-xs font-semibold text-slate-400 mb-3">
+            <span className="block text-center text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">
               O elige un perfil de prueba para evaluar permisos:
             </span>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => handleQuickDemoLogin('Admin')}
-                className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-800/60 text-indigo-200 transition-colors text-[11px]"
+                className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-200 transition-colors text-[11px]"
               >
-                <Shield className="w-4 h-4 mb-1 text-indigo-400" />
+                <Shield className="w-4 h-4 mb-1 text-indigo-500 dark:text-indigo-400" />
                 <span className="font-semibold">Admin</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleQuickDemoLogin('Soporte')}
-                className="flex flex-col items-center justify-center p-2 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-800/60 text-emerald-200 transition-colors text-[11px]"
+                className="flex flex-col items-center justify-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-200 transition-colors text-[11px]"
               >
-                <ShieldAlert className="w-4 h-4 mb-1 text-emerald-400" />
+                <ShieldAlert className="w-4 h-4 mb-1 text-emerald-500 dark:text-emerald-400" />
                 <span className="font-semibold">Soporte</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleQuickDemoLogin('Tecnico')}
-                className="flex flex-col items-center justify-center p-2 rounded-lg bg-amber-950/40 hover:bg-amber-900/60 border border-amber-800/60 text-amber-200 transition-colors text-[11px]"
+                className="flex flex-col items-center justify-center p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-200 transition-colors text-[11px]"
               >
-                <Wrench className="w-4 h-4 mb-1 text-amber-400" />
+                <Wrench className="w-4 h-4 mb-1 text-amber-500 dark:text-amber-400" />
                 <span className="font-semibold">Técnico</span>
               </button>
             </div>

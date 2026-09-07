@@ -123,33 +123,30 @@ export const MapViewPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-4">
       {/* Barra de Filtros y Búsqueda Responsiva */}
-      <div className="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shadow-md w-full">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 sm:p-3 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shadow-sm dark:shadow-md w-full transition-colors">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1 w-full">
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+            <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
             <input
               type="text"
               placeholder="Buscar por NAP o zona (ej. NAP-SJR-01)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
             />
           </div>
 
           <div className="flex items-center gap-1.5 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-slate-500 hidden md:block" />
+            <Filter className="w-4 h-4 text-slate-400 dark:text-slate-500 hidden md:block" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full sm:w-auto bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500"
+              className="w-full sm:w-auto bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
             >
               <option value="todos">Todos los Estados</option>
               <option value="disponible">🟢 Disponibles (&lt;80%)</option>
               <option value="alerta">🟡 En Alerta (&ge;80%)</option>
               <option value="saturada">🔴 Saturadas (100%)</option>
-              <option value="disponible">Disponibles (&lt;80%)</option>
-              <option value="alerta">En Alerta (&ge;80%)</option>
-              <option value="saturada">Saturadas (100%)</option>
             </select>
           </div>
         </div>
@@ -158,7 +155,7 @@ export const MapViewPage: React.FC = () => {
           {user?.rol !== 'Tecnico' && (
             <button
               onClick={() => setIsCreateNapOpen(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md shadow-sky-950/40 transition-all active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md shadow-sky-950/20 transition-all active:scale-95"
               title="Registrar e instalar nueva caja NAP en la red FTTx"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -169,7 +166,7 @@ export const MapViewPage: React.FC = () => {
           <button
             onClick={fetchData}
             disabled={loading}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition-colors shadow-sm disabled:opacity-50 active:scale-95"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm disabled:opacity-50 active:scale-95"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Actualizar</span>
@@ -199,37 +196,37 @@ export const MapViewPage: React.FC = () => {
               onRefreshNap={refreshSelectedNap}
             />
           ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center space-y-3 shadow-xl">
-              <div className="w-12 h-12 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded-2xl flex items-center justify-center mx-auto">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center space-y-3 shadow-sm dark:shadow-xl transition-colors">
+              <div className="w-12 h-12 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 rounded-2xl flex items-center justify-center mx-auto">
                 <Radio className="w-6 h-6 animate-pulse" />
               </div>
-              <h3 className="font-semibold text-white text-sm">Selecciona una Caja NAP</h3>
-              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+              <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Selecciona una Caja NAP</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
                 Haz clic en cualquier marcador del mapa cartográfico o elije una caja de la lista rápida a continuación para inspeccionar su panel de 16 puertos.
               </p>
 
               {/* Lista rápida de NAPs para acceso inmediato */}
               <div className="pt-2 text-left space-y-2">
-                <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">
                   Cajas NAP Disponibles ({filteredNaps.length}):
                 </span>
                 {filteredNaps.map((n) => (
                   <button
                     key={n.id_nap}
                     onClick={() => setSelectedNap(n)}
-                    className="w-full text-left bg-slate-800/80 hover:bg-slate-800 p-2.5 rounded-lg border border-slate-700/80 flex items-center justify-between transition-colors"
+                    className="w-full text-left bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 flex items-center justify-between transition-colors"
                   >
                     <div>
-                      <span className="font-bold text-xs text-sky-400 block">
+                      <span className="font-bold text-xs text-sky-600 dark:text-sky-400 block">
                         {n.identificador}
                       </span>
-                      <span className="text-[11px] text-slate-400">{n.zona}</span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">{n.zona}</span>
                     </div>
                     <span
                       className={`text-[11px] font-bold px-2 py-0.5 rounded ${
                         (n.metricas?.porcentajeSaturacion ?? 0) >= 80
-                          ? 'bg-amber-500/20 text-amber-300'
-                          : 'bg-emerald-500/20 text-emerald-300'
+                          ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                          : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                       }`}
                     >
                       {n.metricas?.porcentajeSaturacion ?? 0}%
