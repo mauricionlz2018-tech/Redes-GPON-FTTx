@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Client } from '../types';
 import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
+import { Search, Users, Wifi, Filter, RefreshCw, Server } from 'lucide-react';
 import { Search, Users, Wifi, Filter, RefreshCw, Server, Edit3 } from 'lucide-react';
 import { EditClientModal } from '../components/EditClientModal';
 
@@ -187,6 +188,7 @@ export const ClientsPage: React.FC = () => {
               })}
               {filteredClients.length === 0 && (
                 <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
                   <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
                     No se encontraron abonados con los criterios de búsqueda especificados.
                   </td>

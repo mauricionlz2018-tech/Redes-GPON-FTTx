@@ -218,3 +218,4 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
     </div>
   );
 };
+

@@ -365,6 +365,19 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   )}
                 </div>
 
+                <button
+                  onClick={() => handleReleasePort(selectedPort)}
+                  disabled={isProcessing}
+                  className={`text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors ${
+                    user?.rol === 'Tecnico'
+                      ? 'bg-slate-800 text-slate-500 border border-slate-700 hover:border-red-500/50 hover:text-red-400 cursor-not-allowed'
+                      : 'bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30'
+                  }`}
+                  title={user?.rol === 'Tecnico' ? 'Acción restringida para Técnicos' : 'Liberar puerto'}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Liberar Puerto</span>
+                </button>
                 <div className="flex items-center gap-2">
                   {selectedPort.cliente && (
                     <button
