@@ -153,9 +153,6 @@ Los requerimientos funcionales especifican el comportamiento y las funciones ope
 - **Descripción**: El sistema debe permitir actualizar los datos del abonado (nombre, domicilio, marca de ONT, dirección MAC y potencia de recepción estimada).
 - **Actores**: ACT-01, ACT-02 (Restringido para ACT-03).
 - **Prioridad**: Media.
-- **Descripción**: El sistema debe permitir corregir y actualizar los datos del abonado (nombre completo, número de cliente, domicilio, marca de ONT, dirección MAC y potencia de recepción estimada), permitiendo al personal técnico y operativo subsanar errores tipográficos o de captura en sitio.
-- **Actores**: ACT-01, ACT-02, ACT-03.
-- **Prioridad**: Alta.
 
 ---
 
@@ -294,7 +291,6 @@ Los requerimientos no funcionales definen los atributos de calidad, rendimiento,
 | Marcar puerto Dañado / Mantenimiento | `RF-14` | Permitido | Permitido | Prohibido | **403 Forbidden** |
 | Consultar padrón de clientes | `RF-15`, `RF-16` | Permitido | Permitido | Permitido | 401 Unauthorized |
 | Modificar datos de cliente abonado | `RF-17` | Permitido | Permitido | Prohibido | **403 Forbidden** |
-| Modificar/corregir datos de cliente | `RF-17` | Permitido | Permitido | Permitido | 401 Unauthorized |
 | Operación sin conexión (Offline-First) | `RF-21`, `RF-22` | Permitido | Permitido | Permitido | — |
 | Descargar Reporte PDF Ejecutivo | `RF-25`, `RF-26` | Permitido | Permitido | Prohibido | **403 Forbidden** |
 | Administrar usuarios del sistema | `RF-04` | Permitido | Prohibido | Prohibido | **403 Forbidden** |
