@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Client } from '../types';
 import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
-import { Search, Users, Wifi, Filter, RefreshCw, Server } from 'lucide-react';
+import { Search, Users, Wifi, Filter, RefreshCw, Server, Edit3 } from 'lucide-react';
+import { EditClientModal } from '../components/EditClientModal';
 
 export const ClientsPage: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
   const [brandFilter, setBrandFilter] = useState('todas');
   const [loading, setLoading] = useState(true);
+  const [clientToEdit, setClientToEdit] = useState<Client | null>(null);
 
   const fetchClients = async () => {
     try {
@@ -122,6 +124,7 @@ export const ClientsPage: React.FC = () => {
                 <th className="px-4 py-3">MAC ONT</th>
                 <th className="px-4 py-3">Potencia Rx</th>
                 <th className="px-4 py-3">Dirección</th>
+                <th className="px-4 py-3 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -169,12 +172,22 @@ export const ClientsPage: React.FC = () => {
                     <td className="px-4 py-3 text-slate-400 max-w-xs truncate" title={client.direccion}>
                       {client.direccion}
                     </td>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <button
+                        onClick={() => setClientToEdit(client)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-950/60 hover:bg-sky-900 border border-sky-800/80 text-sky-300 hover:text-white text-xs transition-colors"
+                        title="Editar datos del abonado"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Editar</span>
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
               {filteredClients.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
                     No se encontraron abonados con los criterios de búsqueda especificados.
                   </td>
                 </tr>
@@ -183,6 +196,20 @@ export const ClientsPage: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Modal para editar datos del abonado */}
+      {clientToEdit && (
+        <EditClientModal
+          client={clientToEdit}
+          onClose={() => setClientToEdit(null)}
+          onClientUpdated={(updated) => {
+            setClients((prev) =>
+              prev.map((c) => (c.id_cliente === updated.id_cliente ? { ...c, ...updated } : c))
+            );
+            setClientToEdit(null);
+          }}
+        />
+      )}
     </div>
   );
 };

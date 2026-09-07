@@ -14,8 +14,10 @@ import {
   Wrench,
   ShieldAlert,
   Info,
+  Edit3,
   X
 } from 'lucide-react';
+import { EditClientModal } from './EditClientModal';
 
 interface NapPortMatrixProps {
   nap: NapBox;
@@ -31,6 +33,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   const { user } = useAuth();
   const [selectedPort, setSelectedPort] = useState<NapPort | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [isEditClientModalOpen, setIsEditClientModalOpen] = useState<boolean>(false);
   const [rbacError, setRbacError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
@@ -362,19 +365,32 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   )}
                 </div>
 
-                <button
-                  onClick={() => handleReleasePort(selectedPort)}
-                  disabled={isProcessing}
-                  className={`text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors ${
-                    user?.rol === 'Tecnico'
-                      ? 'bg-slate-800 text-slate-500 border border-slate-700 hover:border-red-500/50 hover:text-red-400 cursor-not-allowed'
-                      : 'bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30'
-                  }`}
-                  title={user?.rol === 'Tecnico' ? 'Acción restringida para Técnicos' : 'Liberar puerto'}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Liberar Puerto</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {selectedPort.cliente && (
+                    <button
+                      onClick={() => setIsEditClientModalOpen(true)}
+                      className="bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white border border-sky-500/30 text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors"
+                      title="Editar datos técnicos y contrato del abonado"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>Editar Datos</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => handleReleasePort(selectedPort)}
+                    disabled={isProcessing}
+                    className={`text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors ${
+                      user?.rol === 'Tecnico'
+                        ? 'bg-slate-800 text-slate-500 border border-slate-700 hover:border-red-500/50 hover:text-red-400 cursor-not-allowed'
+                        : 'bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30'
+                    }`}
+                    title={user?.rol === 'Tecnico' ? 'Acción restringida para Técnicos' : 'Liberar puerto'}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Liberar Puerto</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -401,6 +417,21 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         <div className="text-center py-3 text-xs text-slate-500 border border-dashed border-slate-800 rounded-lg">
           Selecciona cualquiera de los 16 puertos en la matriz para ver su detalle u operar sobre él.
         </div>
+      )}
+
+      {/* Modal para editar y corregir datos del abonado */}
+      {isEditClientModalOpen && selectedPort?.cliente && (
+        <EditClientModal
+          client={selectedPort.cliente}
+          onClose={() => setIsEditClientModalOpen(false)}
+          onClientUpdated={(updatedClient) => {
+            if (selectedPort) {
+              selectedPort.cliente = updatedClient;
+            }
+            setActionSuccess(`Datos del abonado '${updatedClient.nombre_completo}' actualizados exitosamente.`);
+            onRefreshNap();
+          }}
+        />
       )}
     </div>
   );

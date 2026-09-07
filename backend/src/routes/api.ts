@@ -50,8 +50,8 @@ router.patch('/puertos/:id/estado', authenticateToken, requireRoles(['Admin', 'S
 // ============================
 router.get('/clientes', authenticateToken, listClients);
 router.get('/clientes/:id', authenticateToken, getClientById);
-// Edición de abonado: PROHIBIDO para Técnico (403 Forbidden), permitido para Soporte y Admin
-router.put('/clientes/:id', authenticateToken, requireRoles(['Admin', 'Soporte']), updateClient);
+// Edición de abonado: Permitido para Técnico, Soporte y Admin (para corrección de datos en campo)
+router.put('/clientes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), updateClient);
 
 // ============================
 // Rutas de Reportes

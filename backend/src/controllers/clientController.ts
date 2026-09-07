@@ -80,9 +80,11 @@ export const getClientById = async (req: Request, res: Response) => {
 };
 
 const updateClientSchema = z.object({
+  numero_cliente: z.string().min(3).optional(),
   nombre_completo: z.string().min(3).optional(),
   direccion: z.string().min(5).optional(),
   marca_ont: z.enum(['ZTE', 'V-SOL', 'TP-Link', 'Huawei']).optional(),
+  ont_mac: z.string().regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, 'Formato MAC inválido (ej: AA:BB:CC:DD:EE:FF)').optional(),
   potencia_rx_estimada: z.number().optional()
 });
 
@@ -104,6 +106,40 @@ export const updateClient = async (req: Request, res: Response) => {
     if (!client) {
       res.status(404).json({ success: false, message: 'Abonado no encontrado' });
       return;
+    }
+
+    // Si se modifica la MAC, validar que no pertenezca a otro cliente
+    if (parseResult.data.ont_mac && parseResult.data.ont_mac !== client.ont_mac) {
+      const existingMac = await Client.findOne({
+        where: {
+          ont_mac: parseResult.data.ont_mac,
+          id_cliente: { [Op.ne]: client.id_cliente }
+        }
+      });
+      if (existingMac) {
+        res.status(409).json({
+          success: false,
+          message: `Conflicto: Ya existe otro abonado registrado con la MAC ONT '${parseResult.data.ont_mac}'`
+        });
+        return;
+      }
+    }
+
+    // Si se modifica el número de cliente, validar que no pertenezca a otro cliente
+    if (parseResult.data.numero_cliente && parseResult.data.numero_cliente !== client.numero_cliente) {
+      const existingNum = await Client.findOne({
+        where: {
+          numero_cliente: parseResult.data.numero_cliente,
+          id_cliente: { [Op.ne]: client.id_cliente }
+        }
+      });
+      if (existingNum) {
+        res.status(409).json({
+          success: false,
+          message: `Conflicto: Ya existe otro abonado con el número de cliente '${parseResult.data.numero_cliente}'`
+        });
+        return;
+      }
     }
 
     await client.update(parseResult.data);
