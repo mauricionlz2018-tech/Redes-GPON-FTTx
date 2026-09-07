@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NetworkProvider } from './context/NetworkContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/Navbar';
 import { DemoRoleBar } from './components/DemoRoleBar';
 import { LoginPage } from './pages/LoginPage';
@@ -14,7 +15,7 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-sky-400">
+      <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex items-center justify-center text-sky-500">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500" />
       </div>
     );
@@ -25,7 +26,7 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col w-full overflow-x-hidden">
+    <div className="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 flex flex-col w-full overflow-x-hidden">
       {/* Barra de prueba de roles para evaluación de RBAC */}
       <DemoRoleBar />
       <Navbar />
@@ -36,8 +37,9 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <NetworkProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <NetworkProvider>
         <Router>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -74,6 +76,7 @@ export const App: React.FC = () => {
         </Router>
       </NetworkProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 };
 

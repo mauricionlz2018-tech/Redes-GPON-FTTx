@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNetwork } from '../context/NetworkContext';
+import { useTheme } from '../context/ThemeContext';
 import { EditUserModal } from './EditUserModal';
 import { InstallPwaModal } from './InstallPwaModal';
 import {
@@ -14,12 +15,15 @@ import {
   WifiOff,
   RefreshCw,
   Download,
-  UserCog
+  UserCog,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { isOnline, pendingCount, isSyncing, syncNow } = useNetwork();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
 
   if (!user) return null;
@@ -75,7 +79,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="bg-slate-900/95 border-b border-slate-800 backdrop-blur sticky top-0 z-30 w-full overflow-hidden">
+      <header className="bg-white/95 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 backdrop-blur sticky top-0 z-30 w-full overflow-hidden transition-colors">
         <div className="max-w-7xl mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between h-14 gap-2">
             {/* Logo y Nombre de la Empresa */}
@@ -84,13 +88,13 @@ export const Navbar: React.FC = () => {
                 <Network className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0">
-                <span className="font-bold text-xs sm:text-base tracking-tight text-white flex items-center gap-1 sm:gap-1.5 truncate">
+                <span className="font-bold text-xs sm:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 truncate">
                   GPON TELECOM
-                  <span className="text-[8px] sm:text-[10px] uppercase font-semibold px-1 sm:px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 flex-shrink-0">
+                  <span className="text-[8px] sm:text-[10px] uppercase font-semibold px-1 sm:px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 flex-shrink-0">
                     FTTx
                   </span>
                 </span>
-                <p className="text-[10px] sm:text-[11px] text-slate-400 -mt-0.5 hidden md:block truncate">
+                <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 -mt-0.5 hidden md:block truncate">
                   Inventario y Mapeo Lógico de Fibra
                 </p>
               </div>
@@ -107,8 +111,8 @@ export const Navbar: React.FC = () => {
                     to={link.to}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                        ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-semibold'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -118,12 +122,31 @@ export const Navbar: React.FC = () => {
               })}
             </nav>
 
-            {/* Acciones derechas: APK, Red y Perfil */}
+            {/* Acciones derechas: Tema, APK, Red y Perfil */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              {/* Botón Conmutador de Modo Claro / Oscuro */}
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-xs font-semibold shadow-sm"
+                title={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
+              >
+                {theme === 'dark' ? (
+                  <>
+                    <Sun className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="hidden lg:inline text-[11px]">Claro</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-3.5 h-3.5 text-sky-600" />
+                    <span className="hidden lg:inline text-[11px]">Oscuro</span>
+                  </>
+                )}
+              </button>
+
               {/* Botón de Instalar Aplicación / APK */}
               <button
                 onClick={handleInstallClick}
-                className="flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md shadow-emerald-950/40 transition-all active:scale-95"
+                className="flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md shadow-emerald-950/20 transition-all active:scale-95"
                 title="Centro de Descarga e Instalación APK"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -134,7 +157,7 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center">
                 {isOnline ? (
                   <div
-                    className="flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 p-1 sm:px-2 sm:py-1 rounded-full border border-emerald-500/20"
+                    className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 p-1 sm:px-2 sm:py-1 rounded-full border border-emerald-500/20"
                     title="Conexión en línea activa"
                   >
                     <Wifi className="w-3.5 h-3.5" />
@@ -142,7 +165,7 @@ export const Navbar: React.FC = () => {
                   </div>
                 ) : (
                   <div
-                    className="flex items-center gap-1 text-[11px] font-medium text-amber-400 bg-amber-500/10 p-1 sm:px-2 sm:py-1 rounded-full border border-amber-500/20 animate-pulse"
+                    className="flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 p-1 sm:px-2 sm:py-1 rounded-full border border-amber-500/20 animate-pulse"
                     title="Sin conexión a internet. Modo Offline"
                   >
                     <WifiOff className="w-3.5 h-3.5" />
@@ -165,14 +188,14 @@ export const Navbar: React.FC = () => {
               </div>
 
               {/* Perfil de Usuario con opción para Editar */}
-              <div className="flex items-center gap-1 border-l border-slate-800 pl-1.5 sm:pl-2">
+              <div className="flex items-center gap-1 border-l border-slate-200 dark:border-slate-800 pl-1.5 sm:pl-2">
                 <button
                   onClick={() => setIsEditUserOpen(true)}
-                  className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-800/80 transition-colors text-left group"
+                  className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-left group"
                   title="Editar perfil de usuario"
                 >
                   <div className="text-right hidden sm:block">
-                    <p className="text-xs font-semibold text-slate-200 group-hover:text-sky-400 transition-colors truncate max-w-[120px]">
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors truncate max-w-[120px]">
                       {user.nombre_completo.split('(')[0]}
                     </p>
                     <span
@@ -183,14 +206,14 @@ export const Navbar: React.FC = () => {
                       {user.rol}
                     </span>
                   </div>
-                  <div className="p-1.5 bg-slate-800 group-hover:bg-indigo-600/30 text-slate-300 group-hover:text-indigo-400 border border-slate-700 rounded-lg transition-colors">
+                  <div className="p-1.5 bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-500/20 dark:group-hover:bg-indigo-600/30 text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
                     <UserCog className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </button>
 
                 <button
                   onClick={logout}
-                  className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   title="Cerrar sesión"
                 >
                   <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -202,7 +225,7 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* Barra de Navegación Inferior Fija (Móvil / Smartphone) */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 border-t border-slate-800 backdrop-blur px-4 py-1.5 flex items-center justify-around shadow-2xl">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 backdrop-blur px-4 py-1.5 flex items-center justify-around shadow-2xl transition-colors">
         {navLinks.map((link) => {
           const Icon = link.icon;
           const isActive = location.pathname === link.to;
