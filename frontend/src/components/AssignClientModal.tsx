@@ -64,8 +64,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
         // Fuera de línea: encolar en Dexie IndexedDB
         await enqueueAssignment(payload);
         alert(
-          '💾 Operación guardada en modo OFFLINE. La asignación del abonado se sincronizará automáticamente cuando el dispositivo recupere conexión a internet.'
-          'Operación guardada en modo OFFLINE. La asignación del abonado se sincronizará automáticamente cuando el dispositivo recupere conexión a internet.'
+          'Operacion guardada en modo OFFLINE. La asignacion del abonado se sincronizara automaticamente cuando el dispositivo recupere conexion a internet.'
         );
         onAssignedSuccess();
         onClose();

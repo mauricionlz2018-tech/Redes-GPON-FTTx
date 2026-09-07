@@ -52,14 +52,6 @@ pnpm --filter backend run seed
 
 Al terminar, verás el mensaje:
 ```
-✔ Tablas y esquemas sincronizados correctamente.
-✔ Usuarios iniciales creados (admin@gpon.com, soporte@gpon.com, tecnico@gpon.com / pass: admin123).
-✔ ODF Central creado: ODF Central San José del Rincón
-✔ Caja NAP-SJR-01 creada con 16 puertos (13 ocupados).
-✔ Caja NAP-SJR-02 creada con 16 puertos (16 ocupados).
-✔ Caja NAP-SJR-03 creada con 16 puertos (4 ocupados).
-✔ Caja NAP-SJR-04 creada con 16 puertos (2 ocupados).
-🎉 Seed completado exitosamente con topología GPON.
 [OK] Tablas y esquemas sincronizados correctamente.
 [OK] Usuarios iniciales creados (admin@gpon.com, soporte@gpon.com, tecnico@gpon.com / pass: admin123).
 [OK] ODF Central creado: ODF Central San José del Rincón

@@ -280,20 +280,6 @@ Los requerimientos no funcionales definen los atributos de calidad, rendimiento,
 
 | Módulo / Acción del Sistema | Requerimiento | Administrador | Soporte Técnico | Técnico de Campo | Código HTTP en Rechazo |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| Iniciar sesión y autenticarse | `RF-01` | ✔ Permitido | ✔ Permitido | ✔ Permitido | 401 Unauthorized |
-| Cambiar de rol en demostración | `RF-03` | ✔ Permitido | ✔ Permitido | ✔ Permitido | — |
-| Ver mapa y ubicación de NAPs | `RF-09`, `RF-18` | ✔ Permitido | ✔ Permitido | ✔ Permitido | 401 Unauthorized |
-| Registrar nueva caja NAP | `RF-08` | ✔ Permitido | ✔ Permitido | ⛔ Prohibido | **403 Forbidden** |
-| Calibrar coordenadas GPS de NAP | `RF-10` | ✔ Permitido | ✔ Permitido | ✔ Permitido | 401 Unauthorized |
-| Ver matriz de 16 puertos de NAP | `RF-11` | ✔ Permitido | ✔ Permitido | ✔ Permitido | 401 Unauthorized |
-| Asignar nuevo abonado a puerto libre | `RF-12` | ✔ Permitido | ✔ Permitido | ✔ Permitido | 409 si hay colisión |
-| Liberar puerto ocupado (desvincular) | `RF-13` | ✔ Permitido | ✔ Permitido | ⛔ Prohibido | **403 Forbidden** |
-| Marcar puerto Dañado / Mantenimiento | `RF-14` | ✔ Permitido | ✔ Permitido | ⛔ Prohibido | **403 Forbidden** |
-| Consultar padrón de clientes | `RF-15`, `RF-16` | ✔ Permitido | ✔ Permitido | ✔ Permitido | 401 Unauthorized |
-| Modificar datos de cliente abonado | `RF-17` | ✔ Permitido | ✔ Permitido | ⛔ Prohibido | **403 Forbidden** |
-| Operación sin conexión (Offline-First) | `RF-21`, `RF-22` | ✔ Permitido | ✔ Permitido | ✔ Permitido | — |
-| Descargar Reporte PDF Ejecutivo | `RF-25`, `RF-26` | ✔ Permitido | ✔ Permitido | ⛔ Prohibido | **403 Forbidden** |
-| Administrar usuarios del sistema | `RF-04` | ✔ Permitido | ⛔ Prohibido | ⛔ Prohibido | **403 Forbidden** |
 | Iniciar sesión y autenticarse | `RF-01` | Permitido | Permitido | Permitido | 401 Unauthorized |
 | Cambiar de rol en demostración | `RF-03` | Permitido | Permitido | Permitido | — |
 | Ver mapa y ubicación de NAPs | `RF-09`, `RF-18` | Permitido | Permitido | Permitido | 401 Unauthorized |

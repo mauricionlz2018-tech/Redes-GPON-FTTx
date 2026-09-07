@@ -193,12 +193,12 @@ import axios from 'axios';
 const API_URL = 'http://localhost:4000/api/v1';
 
 async function testSimultaneousPortAssignment() {
-  console.log('🚀 ========================================================');
-  console.log('🚀 INICIANDO PRUEBA DE ESTRÉS: 20 PETICIONES SIMULTÁNEAS');
-  console.log('🚀 ========================================================');
+  console.log('========================================================');
+  console.log('INICIANDO PRUEBA DE ESTRES: 20 PETICIONES SIMULTANEAS');
+  console.log('========================================================');
 
   try {
-    // 1. Obtener Token JWT de autenticación
+    // 1. Obtener Token JWT de autenticacion
     const loginRes = await axios.post(`${API_URL}/auth/login`, {
       credencial_acceso: 'admin@gpon.com',
       password: 'admin123'
@@ -218,13 +218,13 @@ async function testSimultaneousPortAssignment() {
     
     const freePort = napDetail.data.data.puertos.find((p: any) => p.estado === 'Libre');
     if (!freePort) {
-      console.error('❌ No se encontró ningún puerto en estado Libre para la prueba.');
+      console.error('[ERROR] No se encontro ningun puerto en estado Libre para la prueba.');
       return;
     }
 
-    console.log(`🎯 Caja Objetivo: ${nap.identificador}`);
-    console.log(`🎯 Puerto Objetivo: #${freePort.indice_puerto} (UUID: ${freePort.id_puerto})`);
-    console.log('⚡ Disparando 20 peticiones concurrentes mediante Promise.all()...\n');
+    console.log(`[INFO] Caja Objetivo: ${nap.identificador}`);
+    console.log(`[INFO] Puerto Objetivo: #${freePort.indice_puerto} (UUID: ${freePort.id_puerto})`);
+    console.log('[PROCESO] Disparando 20 peticiones concurrentes mediante Promise.all()...\n');
 
     const startTime = Date.now();
 
@@ -244,7 +244,7 @@ async function testSimultaneousPortAssignment() {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-          validateStatus: () => true // Capturar códigos 201 y 409 sin disparar excepción
+          validateStatus: () => true // Capturar codigos 201 y 409 sin disparar excepcion
         }
       );
     });
@@ -257,19 +257,19 @@ async function testSimultaneousPortAssignment() {
     const rechazadosConflicto = responses.filter((r) => r.status === 409).length;
     const otrosErrores = responses.filter((r) => r.status !== 201 && r.status !== 409).length;
 
-    console.log('📊 RESULTADOS DE LA PRUEBA DE ESTRÉS:');
+    console.log('[REPORTE] RESULTADOS DE LA PRUEBA DE ESTRES:');
     console.log('--------------------------------------------------');
-    console.log(`⏱ Tiempo total de resolución: ${duration} ms`);
-    console.log(`✅ Asignaciones Exitosas (Esperado: 1): ${exitosos}`);
-    console.log(`🛑 Rechazos por Bloqueo ACID 409 Conflict (Esperado: 19): ${rechazadosConflicto}`);
-    console.log(`⚠️ Errores inesperados: ${otrosErrores}`);
+    console.log(`Tiempo total de resolucion: ${duration} ms`);
+    console.log(`Asignaciones Exitosas (Esperado: 1): ${exitosos}`);
+    console.log(`Rechazos por Bloqueo ACID 409 Conflict (Esperado: 19): ${rechazadosConflicto}`);
+    console.log(`Errores inesperados: ${otrosErrores}`);
     console.log('--------------------------------------------------');
 
     if (exitosos === 1 && rechazadosConflicto === 19) {
-      console.log('🏆 DICTAMEN: PRUEBA SUPERADA EXITOSAMENTE.');
-      console.log('✔ La base de datos tiene integridad ACID absoluta y aislamiento de concurrencia.');
+      console.log('[EXITO] DICTAMEN: PRUEBA SUPERADA EXITOSAMENTE.');
+      console.log('[OK] La base de datos tiene integridad ACID absoluta y aislamiento de concurrencia.');
     } else {
-      console.error('❌ DICTAMEN: FALLA EN PRUEBA DE CONCURRENCIA.');
+      console.error('[FALLO] DICTAMEN: FALLA EN PRUEBA DE CONCURRENCIA.');
     }
   } catch (error: any) {
     console.error('Error durante la prueba de estrés:', error.message);
