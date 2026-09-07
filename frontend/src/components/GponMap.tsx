@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel } from '../types';
-import { useTheme } from '../context/ThemeContext';
 import { Network, Server, MapPin, Radio, Compass } from 'lucide-react';
 
 interface GponMapProps {
@@ -79,8 +78,6 @@ export const GponMap: React.FC<GponMapProps> = ({
   onSelectNap,
   onOpenGpsModal
 }) => {
-  const { theme } = useTheme();
-
   // Centro por defecto: San José del Rincón, Edo. Méx.
   const defaultCenter: [number, number] = useMemo(() => {
     if (odf && odf.coordenadas_gps) {
@@ -99,15 +96,10 @@ export const GponMap: React.FC<GponMapProps> = ({
         scrollWheelZoom={true}
         className="w-full h-full"
       >
-        {/* Capa de Cartografía adaptativa a Modo Claro y Modo Oscuro */}
+        {/* Capa de Cartografía Oficial OpenStreetMap */}
         <TileLayer
-          key={theme}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url={
-            theme === 'dark'
-              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-              : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-          }
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
         {/* Marcador del ODF Central */}
