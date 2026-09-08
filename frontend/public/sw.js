@@ -1,8 +1,9 @@
-const CACHE_NAME = 'gpon-fttx-v1';
+const CACHE_NAME = 'gpon-fttx-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/logo-gpon.png',
   '/icon-192.png',
   '/icon-512.png',
   '/icon.svg'
