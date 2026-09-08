@@ -17,7 +17,8 @@ import {
   Download,
   UserCog,
   Sun,
-  Moon
+  Moon,
+  Bot
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -141,6 +142,16 @@ export const Navbar: React.FC = () => {
                     <span className="hidden lg:inline text-[11px]">Oscuro</span>
                   </>
                 )}
+              </button>
+
+              {/* Botón de Asistente Virtual y Manual */}
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open-gpon-assistant'))}
+                className="flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all text-xs font-semibold shadow-sm active:scale-95"
+                title="Abrir Asistente Virtual y Manual de Usuario"
+              >
+                <Bot className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline text-[11px]">Asistente</span>
               </button>
 
               {/* Botón de Instalar Aplicación / APK */}

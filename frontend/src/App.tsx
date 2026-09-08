@@ -9,6 +9,7 @@ import { LoginPage } from './pages/LoginPage';
 import { MapViewPage } from './pages/MapViewPage';
 import { ClientsPage } from './pages/ClientsPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { AssistantChatbot } from './components/AssistantChatbot';
 
 const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -31,6 +32,8 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <DemoRoleBar />
       <Navbar />
       <main className="flex-1 pb-20 sm:pb-8 w-full max-w-full overflow-x-hidden">{children}</main>
+      {/* Asistente Virtual y Manual Interactivo de Red */}
+      <AssistantChatbot />
     </div>
   );
 };

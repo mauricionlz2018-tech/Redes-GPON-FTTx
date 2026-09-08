@@ -1,0 +1,452 @@
+export interface KnowledgeItem {
+  id: string;
+  category: 'operacion' | 'roles' | 'tecnico' | 'red' | 'general';
+  title: string;
+  keywords: string[];
+  shortAnswer: string;
+  detailedSteps?: string[];
+  tips?: string[];
+  allowedRoles?: ('Admin' | 'Soporte' | 'Tecnico')[];
+}
+
+export interface ManualModule {
+  id: string;
+  title: string;
+  subtitle: string;
+  iconName: 'MapPin' | 'UserCheck' | 'Shield' | 'Compass' | 'WifiOff' | 'FileText' | 'Activity';
+  sections: {
+    heading: string;
+    content: string;
+    points?: string[];
+    important?: string;
+  }[];
+}
+
+export const KNOWLEDGE_BASE: KnowledgeItem[] = [
+  {
+    id: 'asignar_cliente',
+    category: 'operacion',
+    title: '¿Cómo asignar un cliente a un puerto libre?',
+    keywords: [
+      'asignar', 'cliente', 'abonado', 'conectar', 'puerto', 'nuevo cliente',
+      'dar de alta', 'vincular', 'contrato', 'instalar'
+    ],
+    shortAnswer:
+      'Para asignar un cliente a la red, localiza la Caja NAP correspondiente en el mapa, abre la matriz de 16 puertos, selecciona un puerto verde (Libre) y pulsa "Asignar Abonado".',
+    detailedSteps: [
+      '1. Ve al módulo "Mapa de Red" desde la barra de navegación superior.',
+      '2. Haz clic sobre el marcador de la Caja NAP donde se realizará la acometida de fibra.',
+      '3. En el panel inferior o lateral se desplegará la matriz de puertos.',
+      '4. Haz clic en un puerto de color verde con estado "Libre".',
+      '5. En el detalle del puerto, haz clic en el botón azul "Asignar Abonado".',
+      '6. Completa el formulario con Código de Cliente, Nombre Completo, Marca de ONT (ZTE, Huawei, V-SOL o TP-Link), Dirección MAC (formato AA:BB:CC:DD:EE:FF), Potencia Rx en dBm y Dirección física.',
+      '7. Haz clic en "Confirmar Asignación". El puerto cambiará inmediatamente a estado "Ocupado" (azul).'
+    ],
+    tips: [
+      'Si te encuentras en campo sin cobertura de internet, el sistema guardará la asignación en modo Offline y se sincronizará automáticamente al recuperar señal.',
+      'Asegúrate de que la dirección MAC cumpla el estándar de 6 bloques hexadecimales (ej. 48:2C:EA:12:34:56).'
+    ]
+  },
+  {
+    id: 'editar_cliente',
+    category: 'operacion',
+    title: '¿Cómo editar o corregir los datos de un cliente?',
+    keywords: [
+      'editar', 'corregir', 'modificar', 'cambiar datos', 'error de captura',
+      'mac', 'nombre', 'ont', 'actualizar cliente', 'reparar datos'
+    ],
+    shortAnswer:
+      'Si hubo una equivocación al capturar los datos del abonado (nombre, MAC, modelo de ONT o potencia), puedes editarlos directamente sin necesidad de liberar el puerto.',
+    detailedSteps: [
+      '1. En el Mapa de Red, haz clic en la Caja NAP donde está conectado el abonado.',
+      '2. Selecciona el puerto azul (Ocupado) correspondiente al cliente.',
+      '3. En la tarjeta de detalle del puerto, presiona el botón azul "Editar Datos".',
+      '4. Modifica los campos que requieran corrección (Código, Nombre, Marca ONT, MAC, Potencia o Dirección).',
+      '5. Presiona "Guardar Cambios". La información se actualizará de inmediato en la base de datos central.'
+    ],
+    tips: [
+      'También puedes consultar y editar clientes desde el módulo "Abonados" en la barra superior usando el buscador por nombre o código.'
+    ]
+  },
+  {
+    id: 'liberar_puerto',
+    category: 'operacion',
+    title: '¿Cómo liberar un puerto ocupado y por qué se restringe al Técnico?',
+    keywords: [
+      'liberar', 'desconectar', 'quitar cliente', 'baja', 'desocupar',
+      'liberar puerto', 'eliminar cliente', 'desvincular'
+    ],
+    shortAnswer:
+      'Liberar un puerto desvincula al cliente y regresa el puerto al estado "Libre" (verde). Por seguridad operativa y control de auditoría, esta acción está permitida únicamente para los roles Soporte y Administrador.',
+    detailedSteps: [
+      '1. Inicia sesión con credenciales de rol Soporte o Administrador (el rol Técnico tiene esta función deshabilitada para evitar desconexiones accidentales de servicio en campo).',
+      '2. Localiza la Caja NAP y selecciona el puerto ocupado (azul).',
+      '3. En el detalle del puerto, presiona el botón rojo "Liberar Puerto".',
+      '4. Confirma el mensaje de seguridad que advierte que el cliente será desvinculado.',
+      '5. El puerto pasará a color verde y el contador de puertos libres de la NAP se incrementará automáticamente.'
+    ],
+    tips: [
+      'Si eres Técnico y requieres dar de baja a un abonado por corte definitivo de contrato, notifica al área de Soporte Central para que autoricen la liberación.'
+    ],
+    allowedRoles: ['Admin', 'Soporte']
+  },
+  {
+    id: 'roles_permisos',
+    category: 'roles',
+    title: '¿Qué roles existen en el sistema y qué permisos tiene cada uno?',
+    keywords: [
+      'roles', 'permisos', 'tecnico', 'soporte', 'admin', 'administrador',
+      'rbac', 'privilegios', 'acceso', 'autorizacion'
+    ],
+    shortAnswer:
+      'El sistema implementa Control de Acceso Basado en Roles (RBAC) con 3 niveles: Administrador, Soporte Técnico y Técnico en Campo.',
+    detailedSteps: [
+      'Rol Administrador (Nivel Total): Alta de nuevas cajas NAP, configuración de ODFs, asignación y liberación de puertos, edición de abonados, descarga de reportes PDF y gestión de usuarios.',
+      'Rol Soporte Técnico (Nivel Operativo Central): Asignación de abonados, liberación de puertos, edición de datos técnicos, consulta de inventario y descarga de reportes ejecutivos en PDF.',
+      'Rol Técnico en Campo (Nivel Operativo Terreno): Consulta de cajas y puertos, asignación de nuevos abonados en instalaciones, captura de coordenadas GPS de alta precisión en campo y edición de datos. Tiene restringida la liberación y eliminación de cajas para proteger la continuidad del servicio.'
+    ],
+    tips: [
+      'En la barra superior puedes ver tu rol actual con una insignia de color distintivo (Índigo para Admin, Esmeralda para Soporte, Ámbar para Técnico).'
+    ]
+  },
+  {
+    id: 'crear_nap',
+    category: 'red',
+    title: '¿Cómo registrar una nueva Caja NAP en el mapa?',
+    keywords: [
+      'crear nap', 'nueva caja', 'registrar nap', 'agregar caja', 'instalar nap',
+      'splitter', 'poste', 'cobertura', 'alta caja'
+    ],
+    shortAnswer:
+      'Los usuarios con rol Administrador o Soporte pueden registrar nuevas Cajas NAP en la red haciendo clic en el botón "Nueva Caja NAP" ubicado en la barra superior del Mapa.',
+    detailedSteps: [
+      '1. Ve a la vista "Mapa de Red".',
+      '2. En la barra de herramientas superior, haz clic en el botón azul "Nueva Caja NAP".',
+      '3. Escribe el Identificador de la caja (ej. NAP-SJR-05).',
+      '4. Selecciona la capacidad de puertos (8 puertos para splitter 1:8, 16 puertos estándar o 24 puertos).',
+      '5. Ingresa la Zona o Sector de cobertura (ej. Barrio San Miguel / Colonia Centro).',
+      '6. Especifica la Dirección física o referencia de poste (ej. Poste CFE #42, esq. Hidalgo).',
+      '7. Captura las Coordenadas GPS (puedes usar el botón "GPS de mi dispositivo" o escribirlas manualmente).',
+      '8. Presiona "Registrar e Inicializar NAP". Se crearán automáticamente los puertos libres correspondientes.'
+    ],
+    tips: [
+      'El identificador se estandariza automáticamente en mayúsculas para cumplir con la nomenclatura corporativa de GPON Telecom.'
+    ],
+    allowedRoles: ['Admin', 'Soporte']
+  },
+  {
+    id: 'captura_gps',
+    category: 'tecnico',
+    title: '¿Cómo capturar y actualizar las coordenadas GPS en campo?',
+    keywords: [
+      'gps', 'coordenadas', 'geolocalizacion', 'ubicacion', 'latitud', 'longitud',
+      'sensor', 'campo', 'movil', 'smartphone', 'precision'
+    ],
+    shortAnswer:
+      'Puedes capturar las coordenadas exactas de una Caja NAP utilizando el sensor GPS de tu smartphone o laptop mediante la API de geolocalización HTML5 del navegador.',
+    detailedSteps: [
+      '1. En el Mapa de Red, selecciona la Caja NAP que estás instalando o auditando.',
+      '2. En el panel de la caja, haz clic en el botón "Capturar GPS en Campo" (icono de brújula).',
+      '3. Presiona el botón "Obtener Coordenadas del Dispositivo". El navegador solicitará permiso para acceder a tu ubicación.',
+      '4. El sensor calculará la Latitud y Longitud con precisión submétrica (se indicará el margen en metros, ej. +/- 3 metros).',
+      '5. Si requieres afinar la coordenada manualmente, puedes editar libremente los campos numéricos de Latitud y Longitud.',
+      '6. Presiona "Guardar Coordenadas". Si estás en línea se enviará al servidor; si estás sin señal se guardará en cola local.'
+    ],
+    tips: [
+      'Para máxima precisión GPS en campo, asegúrate de activar la ubicación precisa en los ajustes de tu teléfono y estar al aire libre sin obstrucción de techos metálicos.'
+    ]
+  },
+  {
+    id: 'modo_offline',
+    category: 'tecnico',
+    title: '¿Cómo funciona el modo Offline (sin conexión a internet)?',
+    keywords: [
+      'offline', 'sin conexion', 'sin internet', 'sin senal', 'desconectado',
+      'indexeddb', 'sincronizar', 'cola local', 'pwa'
+    ],
+    shortAnswer:
+      'El sistema está diseñado como Progressive Web App (PWA) con arquitectura Offline-First, permitiendo registrar asignaciones y coordenadas GPS aun sin señal celular en zonas rurales.',
+    detailedSteps: [
+      '1. Cuando el dispositivo pierde señal de datos o Wi-Fi, la barra superior muestra el indicador rojo "Modo Offline".',
+      '2. Puedes seguir trabajando con total normalidad: asignar clientes a puertos, registrar coordenadas GPS y consultar datos.',
+      '3. Cada operación realizada sin internet se almacena en el motor IndexedDB de tu navegador como una transacción en cola pendiente.',
+      '4. Al recuperar la conectividad, el sistema detecta la red automáticamente y procesa las peticiones pendientes con el backend.',
+      '5. También puedes forzar la sincronización en cualquier momento haciendo clic en el botón "Sincronizar" en la barra de navegación.'
+    ],
+    tips: [
+      'Tus datos nunca se pierden aunque cierres el navegador, gracias a la persistencia en almacenamiento seguro local.'
+    ]
+  },
+  {
+    id: 'reportes_pdf',
+    category: 'operacion',
+    title: '¿Cómo descargar el reporte ejecutivo de saturación en PDF?',
+    keywords: [
+      'pdf', 'reporte', 'descargar reporte', 'informe', 'imprimir', 'saturacion',
+      'auditoria', 'exportar', 'ejecutivo'
+    ],
+    shortAnswer:
+      'Puedes generar al vuelo un informe corporativo en formato PDF con la matriz completa de saturación, diagnósticos de alerta y padrón de clientes activos.',
+    detailedSteps: [
+      '1. Haz clic en "Reportes PDF" en la barra de navegación superior.',
+      '2. En el panel principal podrás revisar las métricas en tiempo real de capacidad de red.',
+      '3. Haz clic en el botón azul "Descargar Reporte PDF Ejecutivo".',
+      '4. El backend compila mediante streaming un documento PDF membretado con formato tabla, celdas delimitadas, tarjetas KPI y numeración oficial.',
+      '5. El archivo se guardará automáticamente en tu dispositivo con el nombre "reporte_gpon_saturacion_[fecha].pdf".'
+    ],
+    tips: [
+      'El reporte clasifica automáticamente las cajas con saturación mayor o igual al 80% con diagnóstico "CRÍTICO" en color rojo para priorizar expansiones de red.'
+    ],
+    allowedRoles: ['Admin', 'Soporte']
+  },
+  {
+    id: 'potencia_optica',
+    category: 'red',
+    title: '¿Cuáles son los valores recomendados de potencia óptica (dBm)?',
+    keywords: [
+      'potencia', 'dbm', 'rx', 'optica', 'laser', 'atenuacion', 'senhal',
+      'ont', 'fibra', 'decibeles', 'limite'
+    ],
+    shortAnswer:
+      'En redes GPON ITU-T G.984 clase B+, la potencia óptica recibida en la ONT (Rx Power) debe ubicarse idealmente entre -15.0 dBm y -25.0 dBm.',
+    detailedSteps: [
+      'Rango Óptimo (-15.0 dBm a -24.0 dBm): Excelente nivel de potencia. Señal limpia sin errores de trama ni pérdida de paquetes.',
+      'Rango Aceptable (-24.1 dBm a -26.9 dBm): Conexión estable pero próxima al umbral de sensibilidad del receptor óptico.',
+      'Rango Crítico (-27.0 dBm o inferior, ej. -28 dBm, -30 dBm): Riesgo inminente de desconexión por atenuación severa provocada por macrocurvaturas de fibra, empalme defectuoso o conector SC sucio.',
+      'Saturación de Receptor (> -8.0 dBm): Peligro de daño físico al fotodiodo receptor por exceso de luz (generalmente ocurre si se conecta una ONT directo al puerto OLT sin splitter intermedio).'
+    ],
+    tips: [
+      'Al dar de alta un abonado en el sistema, el valor sugerido por defecto es -19.5 dBm, que corresponde a un enlace típico balanceado con splitter 1:16.'
+    ]
+  },
+  {
+    id: 'estados_puertos',
+    category: 'operacion',
+    title: '¿Qué significan los colores de los puertos en la matriz de la NAP?',
+    keywords: [
+      'colores', 'estados', 'verde', 'azul', 'rojo', 'puertos',
+      'libre', 'ocupado', 'danhado', 'mantenimiento'
+    ],
+    shortAnswer:
+      'Cada puerto de la Caja NAP tiene un código de color normalizado para facilitar el diagnóstico visual rápido.',
+    detailedSteps: [
+      'Verde (Libre): Puerto disponible para contratación e instalación inmediata de un nuevo abonado.',
+      'Azul (Ocupado): Puerto activo con abonado asignado, ONT registrada y contrato en servicio.',
+      'Rojo (Dañado): Puerto inhabilitado por splitter dañado, atenuación excesiva o conector SC quebrado. No permite asignación hasta que Soporte o Admin lo repare.'
+    ],
+    tips: [
+      'Para marcar un puerto como Dañado o ponerlo nuevamente Disponible, selecciónalo y utiliza las opciones de cambio de estado en la tarjeta de detalle.'
+    ]
+  }
+];
+
+export const MANUAL_MODULES: ManualModule[] = [
+  {
+    id: 'mod_mapa',
+    title: '1. Mapa Geoespacial y Cajas NAP',
+    subtitle: 'Navegación en terreno, localización de cajas y visualización de splitters',
+    iconName: 'MapPin',
+    sections: [
+      {
+        heading: 'Visualización de la Planta Externa',
+        content:
+          'El mapa muestra las cajas NAP georreferenciadas con pines interactivos. Cada marcador indica el porcentaje de saturación de la caja.',
+        points: [
+          'Marcador Verde / Azul: Cajas con saturación normal (< 80%).',
+          'Marcador Rojo con Alerta: Cajas saturadas (>= 80%) que requieren ampliación de capacidad.',
+          'Barra de Búsqueda: Permite filtrar cajas al instante por Identificador o Zona.'
+        ]
+      },
+      {
+        heading: 'Registro de Nueva Caja NAP',
+        content:
+          'Utiliza el botón "+ Nueva Caja NAP" en la parte superior. Requiere identificador único (ej. NAP-SJR-05), zona, referencia física y coordenadas GPS.',
+        important: 'Los puertos se generan automáticamente según la capacidad elegida (8, 16 o 24 puertos).'
+      }
+    ]
+  },
+  {
+    id: 'mod_puertos',
+    title: '2. Asignación y Gestión de Puertos',
+    subtitle: 'Conexión de abonados, registro de ONT y auditoría de potencia',
+    iconName: 'UserCheck',
+    sections: [
+      {
+        heading: 'Matriz de 16 Puertos FTTx',
+        content:
+          'Al hacer clic en una caja NAP se despliega la matriz interactiva de puertos con sus tres estados:',
+        points: [
+          'Verde: Puerto Libre disponible para instalación.',
+          'Azul: Puerto Ocupado con abonado activo en servicio.',
+          'Rojo: Puerto Dañado en mantenimiento técnico.'
+        ]
+      },
+      {
+        heading: 'Alta y Vinculación del Abonado',
+        content:
+          'Selecciona un puerto libre y pulsa "Asignar Abonado". El sistema solicita Código de Cliente, Nombre, Modelo de ONT (ZTE/Huawei/V-SOL/TP-Link), Dirección MAC y Potencia Rx.',
+        important: 'La dirección MAC debe tener formato estándar de 12 dígitos hexadecimales separados por dos puntos (ej. 48:2C:EA:12:34:56).'
+      },
+      {
+        heading: 'Edición vs Liberación de Puerto',
+        content:
+          'Si hubo un error al escribir el nombre o MAC, usa el botón "Editar Datos" para corregir sin desconectar el servicio. La opción "Liberar Puerto" se reserva para Soporte y Administrador para evitar bajas accidentales.'
+      }
+    ]
+  },
+  {
+    id: 'mod_gps',
+    title: '3. Geolocalización y Captura GPS en Campo',
+    subtitle: 'Alta precisión por satélite para técnicos en postes y acometidas',
+    iconName: 'Compass',
+    sections: [
+      {
+        heading: 'Captura Automática por Sensor',
+        content:
+          'Desde el botón "Capturar GPS en Campo" en el detalle de la caja, pulsa "Obtener Coordenadas del Dispositivo". El sistema toma la señal satelital con reporte de precisión en metros.',
+        points: [
+          'Habilita los permisos de ubicación en el navegador del smartphone.',
+          'Espera a que la precisión baje de +/- 10 metros para garantizar exactitud de mapeo.',
+          'Puedes afinar la latitud y longitud manualmente en cualquier momento.'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'mod_offline',
+    title: '4. Funcionamiento Offline y PWA',
+    subtitle: 'Operación continua en campo sin cobertura de internet móvil',
+    iconName: 'WifiOff',
+    sections: [
+      {
+        heading: 'Arquitectura Offline-First',
+        content:
+          'Cuando no hay cobertura celular, la aplicación continúa funcionando transparentemente:',
+        points: [
+          'Las asignaciones de abonados y actualizaciones de GPS se almacenan en la base de datos local IndexedDB del dispositivo.',
+          'El indicador superior alertará "Modo Offline" con el número de operaciones pendientes.',
+          'Al restablecer la señal, los datos se sincronizan con la base central sin intervención del técnico.'
+        ]
+      },
+      {
+        heading: 'Instalación como Aplicación Móvil (PWA)',
+        content:
+          'Puedes instalar el sistema en la pantalla de inicio de tu celular o tablet Android / iOS pulsando el botón "Instalar App" en la barra superior o en el menú del navegador.'
+      }
+    ]
+  },
+  {
+    id: 'mod_reportes',
+    title: '5. Auditoría y Reportes en Formato PDF',
+    subtitle: 'Generación de informes ejecutivos con formato tabla y diagnósticos',
+    iconName: 'FileText',
+    sections: [
+      {
+        heading: 'Reporte Ejecutivo de Red',
+        content:
+          'Desde el módulo "Reportes PDF", pulsa "Descargar Reporte PDF Ejecutivo" para obtener el documento formal.',
+        points: [
+          'Matriz de saturación con celdas y bordes profesionales por cada caja NAP.',
+          'Badges de diagnóstico visual: NORMAL (verde) y CRÍTICO (rojo para saturación >= 80%).',
+          'Tarjetas KPI con total de puertos, ocupados, libres y porcentaje global.',
+          'Directorio completo de abonados con número de contrato, puerto y niveles de señal óptica.'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'mod_roles',
+    title: '6. Matriz de Roles y Responsabilidades',
+    subtitle: 'Seguridad basada en roles (RBAC) y reglas de negocio',
+    iconName: 'Shield',
+    sections: [
+      {
+        heading: 'Comparativa de Permisos',
+        content:
+          'La plataforma protege la integridad física de la red asignando permisos diferenciados:',
+        points: [
+          'Técnico: Consulta de red, asignación de nuevos abonados en campo, edición de datos de clientes, captura de GPS. Restringido: no puede liberar puertos ni crear/borrar cajas.',
+          'Soporte Técnico: Asignación, edición y liberación autorizada de puertos, descarga de reportes PDF, consulta de red.',
+          'Administrador: Control total del sistema, alta de cajas NAP, gestión de usuarios y configuraciones.'
+        ]
+      }
+    ]
+  }
+];
+
+export const QUICK_QUESTIONS = [
+  '¿Cómo asignar un cliente a un puerto?',
+  '¿Cómo editar datos de un cliente si me equivoqué?',
+  '¿Por qué el Técnico no puede liberar puertos?',
+  '¿Cómo capturar las coordenadas GPS en campo?',
+  '¿Cómo funciona el modo sin conexión (Offline)?',
+  '¿Cómo descargar el reporte de saturación en PDF?',
+  '¿Cuáles son los valores recomendados de potencia (dBm)?',
+  '¿Qué significan los colores de los puertos?'
+];
+
+// Motor de búsqueda en lenguaje natural para la base de conocimiento
+export function searchKnowledge(query: string): { item: KnowledgeItem; score: number } | null {
+  const cleanQuery = query
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+
+  if (!cleanQuery) return null;
+
+  const queryWords = cleanQuery.split(/\s+/).filter((w) => w.length > 2);
+
+  let bestItem: KnowledgeItem | null = null;
+  let bestScore = 0;
+
+  for (const item of KNOWLEDGE_BASE) {
+    let score = 0;
+
+    // Coincidencia exacta en título
+    const cleanTitle = item.title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    if (cleanTitle.includes(cleanQuery)) {
+      score += 15;
+    }
+
+    // Coincidencia en palabras clave
+    for (const kw of item.keywords) {
+      const cleanKw = kw
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      if (cleanQuery.includes(cleanKw) || cleanKw.includes(cleanQuery)) {
+        score += 8;
+      }
+
+      for (const qw of queryWords) {
+        if (cleanKw.includes(qw)) {
+          score += 3;
+        }
+      }
+    }
+
+    // Coincidencia en contenido y pasos
+    for (const qw of queryWords) {
+      if (cleanTitle.includes(qw)) score += 4;
+      if (item.shortAnswer.toLowerCase().includes(qw)) score += 2;
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestItem = item;
+    }
+  }
+
+  if (bestItem && bestScore >= 5) {
+    return { item: bestItem, score: bestScore };
+  }
+
+  return null;
+}
+
