@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Network, Shield, ShieldAlert, Wrench, Lock, Mail, ArrowRight, MapPin } from 'lucide-react';
 import { Shield, ShieldAlert, Wrench, Lock, Mail, ArrowRight, MapPin } from 'lucide-react';
 import { UserRole } from '../types';
 
@@ -46,54 +45,26 @@ export const LoginPage: React.FC = () => {
       {/* Fondo con resplandor sutil de fibra óptica */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10">
-        <div className="inline-flex items-center justify-center p-3 bg-gradient-to-tr from-sky-600 to-cyan-400 rounded-2xl shadow-xl shadow-sky-900/30 text-white mb-4">
-          <Network className="w-8 h-8" />
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10 px-4">
-        <div className="flex justify-center mb-3">
-          <div className="bg-white p-3 rounded-2xl shadow-xl shadow-sky-950/30 border border-slate-200 dark:border-slate-800 max-w-[260px]">
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-8 px-6 shadow-xl rounded-2xl sm:px-10 transition-colors">
-          {/* Logo dentro del Panel */}
-          <div className="flex justify-center mb-4">
         <div className="flex justify-center mb-4">
           <div className="bg-white p-3 rounded-2xl shadow-xl shadow-sky-950/20 border border-slate-200 dark:border-slate-800 max-w-[260px]">
             <img
               src="/logo-gpon.png"
-              alt="Gpon TELECOM S.A. DE C.V."
               alt="GPON TELECOM S.A. DE C.V."
-              className="w-full h-auto object-contain"
-              alt="GPON TELECOM S.A. DE C.V."
-              className="h-14 sm:h-16 w-auto object-contain"
               className="h-14 sm:h-16 w-auto object-contain mx-auto"
             />
           </div>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-          GPON TELECOM S.A. de C.V.
         <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
           Portal Operativo GPON / FTTx
         </h1>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Sistema de Inventario y Mapeo Lógico de Red GPON / FTTx
           Internet Service Provider (ISP) EDOMEX - Mapeo y Auditoría de Red
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 z-10">
-      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 z-10">
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 py-8 px-6 shadow-xl dark:shadow-2xl rounded-2xl sm:px-10 backdrop-blur transition-colors">
-          {/* Encabezado dentro del Panel */}
-          <div className="text-center mb-6">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-              Portal Operativo GPON / FTTx
-            </h1>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Internet Service Provider (ISP) EDOMEX - Mapeo y Auditoría de Red
-            </p>
-          </div>
-
           {errorMsg && (
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-xs text-red-700 dark:text-red-200 rounded-lg">
               {errorMsg}
@@ -115,7 +86,6 @@ export const LoginPage: React.FC = () => {
                   placeholder="ej. tecnico@gpon.com"
                   value={credencial}
                   onChange={(e) => setCredencial(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:bg-white"
                 />
               </div>
@@ -133,7 +103,6 @@ export const LoginPage: React.FC = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:bg-white"
                 />
               </div>
@@ -142,7 +111,6 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold py-2.5 px-4 rounded-lg text-xs transition-all shadow-md shadow-sky-900/30 disabled:opacity-50"
               className="w-full mt-2 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold py-2.5 px-4 rounded-lg text-xs transition-all shadow-md shadow-sky-900/20 disabled:opacity-50"
             >
               <span>{loading ? 'Iniciando sesión...' : 'Ingresar al Sistema'}</span>
@@ -155,7 +123,6 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleQuickDemoLogin('Admin')}
-              className="w-full mb-3 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-lg shadow-emerald-950/40"
               className="w-full mb-3 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-md shadow-emerald-950/20"
             >
               <MapPin className="w-4 h-4" />
@@ -169,7 +136,6 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleQuickDemoLogin('Admin')}
-                className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-200 transition-colors text-[11px]"
                 className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-50/80 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-200 transition-colors text-[11px]"
               >
                 <Shield className="w-4 h-4 mb-1 text-indigo-500 dark:text-indigo-400" />
@@ -179,7 +145,6 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleQuickDemoLogin('Soporte')}
-                className="flex flex-col items-center justify-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-200 transition-colors text-[11px]"
                 className="flex flex-col items-center justify-center p-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-200 transition-colors text-[11px]"
               >
                 <ShieldAlert className="w-4 h-4 mb-1 text-emerald-500 dark:text-emerald-400" />
@@ -189,7 +154,6 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleQuickDemoLogin('Tecnico')}
-                className="flex flex-col items-center justify-center p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-200 transition-colors text-[11px]"
                 className="flex flex-col items-center justify-center p-2 rounded-lg bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-200 transition-colors text-[11px]"
               >
                 <Wrench className="w-4 h-4 mb-1 text-amber-500 dark:text-amber-400" />
@@ -202,4 +166,3 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
-
