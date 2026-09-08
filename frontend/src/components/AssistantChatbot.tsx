@@ -189,6 +189,9 @@ export const AssistantChatbot: React.FC = () => {
           {/* Cabecera del Asistente */}
           <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-800 p-3.5 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-900/40 border border-sky-400/30">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-900/40 border border-sky-400/30 flex-shrink-0">
+                <Bot className="w-5 h-5" />
               <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md border border-slate-700 flex-shrink-0">
                 <img
                   src="/logo-gpon.png"
@@ -198,6 +201,7 @@ export const AssistantChatbot: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-xs sm:text-sm text-white">Asistente Virtual GPON</h3>
                   <h3 className="font-bold text-xs sm:text-sm text-white">Asistente GPON Telecom</h3>
                   <span className="inline-flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.2 rounded-full font-medium">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
@@ -205,6 +209,7 @@ export const AssistantChatbot: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-400">
+                  Guía interactiva para técnicos y operadores de red
                   ISP EDOMEX - Soporte y Guía de Operación
                 </p>
               </div>
