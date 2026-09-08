@@ -204,6 +204,7 @@ export const AssistantChatbot: React.FC = () => {
                   <h3 className="font-bold text-xs sm:text-sm text-white">Asistente Virtual GPON</h3>
                   <h3 className="font-bold text-xs sm:text-sm text-white">Asistente GPON Telecom</h3>
                   <span className="inline-flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.2 rounded-full font-medium">
+                  <span className="inline-flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full font-medium">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                     En línea
                   </span>

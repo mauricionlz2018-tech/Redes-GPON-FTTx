@@ -57,6 +57,7 @@ export const LoginPage: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-8 px-6 shadow-xl rounded-2xl sm:px-10 transition-colors">
           {/* Logo dentro del Panel */}
           <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-4">
           <div className="bg-white p-3 rounded-2xl shadow-xl shadow-sky-950/20 border border-slate-200 dark:border-slate-800 max-w-[260px]">
             <img
               src="/logo-gpon.png"
@@ -65,6 +66,7 @@ export const LoginPage: React.FC = () => {
               className="w-full h-auto object-contain"
               alt="GPON TELECOM S.A. DE C.V."
               className="h-14 sm:h-16 w-auto object-contain"
+              className="h-14 sm:h-16 w-auto object-contain mx-auto"
             />
           </div>
         </div>

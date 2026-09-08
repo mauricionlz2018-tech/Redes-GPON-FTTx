@@ -100,6 +100,7 @@ export const Navbar: React.FC = () => {
                 <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 truncate">
                   GPON TELECOM
                   <span className="text-[8px] sm:text-[10px] uppercase font-semibold px-1 sm:px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 flex-shrink-0">
+                  <span className="text-[8px] sm:text-[10px] uppercase font-semibold px-1 sm:px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 flex-shrink-0">
                     FTTx
                     EDOMEX
                   </span>

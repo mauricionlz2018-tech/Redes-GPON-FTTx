@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Download, X, Smartphone, CheckCircle, Apple, ExternalLink, HelpCircle, ArrowRight } from 'lucide-react';
-import { Download, X, Smartphone, Apple, ExternalLink, HelpCircle } from 'lucide-react';
 
 interface InstallPwaModalProps {
   onClose: () => void;

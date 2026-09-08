@@ -161,7 +161,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
       .fillColor(colors.bannerTitle)
       .font('Helvetica-Bold')
       .fontSize(13)
-      .text('GPON TELECOM S.A. DE C.V.', pageLeft + 14, 43, { width: pageWidth - 28, lineBreak: false });
       .text('GPON TELECOM S.A. DE C.V.', pageLeft + 14, 43, { width: pageWidth - 115, lineBreak: false });
 
     doc
@@ -172,7 +171,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
         `Reporte Ejecutivo de Auditoría de Red, Capacidad FTTx y Abonados (${isDark ? 'Modo Oscuro NOC' : 'Modo Claro'})`,
         pageLeft + 14,
         60,
-        { width: pageWidth - 28, lineBreak: false }
         { width: pageWidth - 115, lineBreak: false }
       );
 
@@ -184,7 +182,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
         `Emisión: ${new Date().toLocaleString('es-MX')}  |  ODF Central: ${odf ? odf.nombre : 'Central SJR-01'}  |  Estado: Operativo  |  Cumplimiento: WCAG AAA`,
         pageLeft + 14,
         74,
-        { width: pageWidth - 28, lineBreak: false }
         { width: pageWidth - 115, lineBreak: false }
       );
 
