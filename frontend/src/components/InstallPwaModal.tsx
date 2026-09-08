@@ -44,12 +44,16 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
         {/* Cabecera */}
         <div className="bg-emerald-50 dark:bg-gradient-to-r dark:from-slate-800 dark:to-emerald-950 px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-2 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl flex-shrink-0">
-              <Smartphone className="w-5 h-5" />
+            <div className="bg-white p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center h-10 w-10 flex-shrink-0">
+              <img
+                src="/logo-gpon.png"
+                alt="GPON Telecom"
+                className="h-8 w-auto object-contain"
+              />
             </div>
             <div className="min-w-0">
               <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">Centro de Descarga e Instalación Móvil</h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">App nativa FTTx para teléfonos y cuadrillas</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">App nativa GPON TELECOM para teléfonos y cuadrillas</p>
             </div>
           </div>
           <button
@@ -102,8 +106,12 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
           {activeTab === 'direct' && (
             <div className="space-y-4">
               <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 p-4 rounded-xl space-y-3 text-center">
-                <div className="w-12 h-12 mx-auto bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
-                  <Smartphone className="w-6 h-6" />
+                <div className="w-16 h-16 mx-auto bg-white p-2 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                  <img
+                    src="/logo-gpon.png"
+                    alt="GPON Telecom"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">Instalación Nativa Inmediata (PWA)</h3>

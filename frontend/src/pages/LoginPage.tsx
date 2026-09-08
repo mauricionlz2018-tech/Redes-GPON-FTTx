@@ -46,14 +46,20 @@ export const LoginPage: React.FC = () => {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10">
-        <div className="inline-flex items-center justify-center p-3 bg-gradient-to-tr from-sky-600 to-cyan-400 rounded-2xl shadow-xl shadow-sky-900/30 text-white mb-4">
-          <Network className="w-8 h-8" />
+        <div className="flex justify-center mb-3">
+          <div className="bg-white p-3 rounded-2xl shadow-xl shadow-sky-950/30 border border-slate-200 dark:border-slate-800 max-w-[260px]">
+            <img
+              src="/logo-gpon.png"
+              alt="Gpon TELECOM S.A. DE C.V."
+              className="w-full h-auto object-contain"
+            />
+          </div>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-          GPON TELECOM S.A. de C.V.
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+          Portal Operativo GPON / FTTx
         </h1>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Sistema de Inventario y Mapeo Lógico de Red GPON / FTTx
+          Internet Service Provider (ISP) EDOMEX - Mapeo y Auditoría de Red
         </p>
       </div>
 

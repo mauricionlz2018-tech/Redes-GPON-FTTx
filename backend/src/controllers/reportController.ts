@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import PDFDocument from 'pdfkit';
+import path from 'path';
+import fs from 'fs';
 import { NapBox, NapPort, Client, OdfPanel } from '../models';
 
 interface ColumnDef {
@@ -130,11 +132,36 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
     // Encabezado Corporativo (Banner Superior)
     doc.rect(pageLeft, 35, pageWidth, 56).fill(colors.bannerBg);
 
+    // Insertar logo corporativo oficial si existe el archivo
+    const logoCandidates = [
+      path.resolve(__dirname, '../../assets/logo-gpon.png'),
+      path.resolve(__dirname, '../../../frontend/public/logo-gpon.png'),
+      path.resolve(process.cwd(), 'assets/logo-gpon.png'),
+      path.resolve(process.cwd(), 'backend/assets/logo-gpon.png'),
+      path.resolve(process.cwd(), 'frontend/public/logo-gpon.png')
+    ];
+
+    const validLogoPath = logoCandidates.find((p) => fs.existsSync(p));
+    if (validLogoPath) {
+      try {
+        doc.roundedRect(pageLeft + pageWidth - 92, 39, 84, 48, 4).fill('#ffffff');
+        doc.image(validLogoPath, pageLeft + pageWidth - 88, 42, {
+          width: 76,
+          height: 42,
+          fit: [76, 42],
+          align: 'center',
+          valign: 'center'
+        });
+      } catch (imgErr) {
+        console.warn('No se pudo incrustar imagen en PDF:', imgErr);
+      }
+    }
+
     doc
       .fillColor(colors.bannerTitle)
       .font('Helvetica-Bold')
       .fontSize(13)
-      .text('GPON TELECOM S.A. DE C.V.', pageLeft + 14, 43, { width: pageWidth - 28, lineBreak: false });
+      .text('GPON TELECOM S.A. DE C.V.', pageLeft + 14, 43, { width: pageWidth - 115, lineBreak: false });
 
     doc
       .fillColor(colors.bannerSub)
@@ -144,7 +171,7 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
         `Reporte Ejecutivo de Auditoría de Red, Capacidad FTTx y Abonados (${isDark ? 'Modo Oscuro NOC' : 'Modo Claro'})`,
         pageLeft + 14,
         60,
-        { width: pageWidth - 28, lineBreak: false }
+        { width: pageWidth - 115, lineBreak: false }
       );
 
     doc
@@ -155,7 +182,7 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
         `Emisión: ${new Date().toLocaleString('es-MX')}  |  ODF Central: ${odf ? odf.nombre : 'Central SJR-01'}  |  Estado: Operativo  |  Cumplimiento: WCAG AAA`,
         pageLeft + 14,
         74,
-        { width: pageWidth - 28, lineBreak: false }
+        { width: pageWidth - 115, lineBreak: false }
       );
 
     // KPI Summary Cards

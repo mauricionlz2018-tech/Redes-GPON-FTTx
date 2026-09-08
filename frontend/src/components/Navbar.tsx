@@ -84,22 +84,26 @@ export const Navbar: React.FC = () => {
         <div className="max-w-7xl mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between h-14 gap-2">
             {/* Logo y Nombre de la Empresa */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
-              <div className="bg-gradient-to-tr from-sky-600 to-cyan-400 p-1.5 sm:p-2 rounded-lg text-white shadow-md flex-shrink-0">
-                <Network className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Link to="/mapa" className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink group">
+              <div className="bg-white p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center h-9 sm:h-10 flex-shrink-0">
+                <img
+                  src="/logo-gpon.png"
+                  alt="Gpon Telecom"
+                  className="h-7 sm:h-8 w-auto object-contain"
+                />
               </div>
               <div className="min-w-0">
-                <span className="font-bold text-xs sm:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 truncate">
+                <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 truncate">
                   GPON TELECOM
                   <span className="text-[8px] sm:text-[10px] uppercase font-semibold px-1 sm:px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 flex-shrink-0">
-                    FTTx
+                    EDOMEX
                   </span>
                 </span>
                 <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 -mt-0.5 hidden md:block truncate">
-                  Inventario y Mapeo Lógico de Fibra
+                  Internet Service Provider (ISP) FTTx
                 </p>
               </div>
-            </div>
+            </Link>
 
             {/* Navegación Principal en Desktop */}
             <nav className="hidden sm:flex items-center gap-1 sm:gap-2 flex-shrink-0">
