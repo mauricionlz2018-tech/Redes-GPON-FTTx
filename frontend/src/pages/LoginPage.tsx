@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Network, Shield, ShieldAlert, Wrench, Lock, Mail, ArrowRight, MapPin } from 'lucide-react';
+import { Shield, ShieldAlert, Wrench, Lock, Mail, ArrowRight, MapPin } from 'lucide-react';
 import { UserRole } from '../types';
 
 export const LoginPage: React.FC = () => {
@@ -48,6 +49,7 @@ export const LoginPage: React.FC = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10">
         <div className="inline-flex items-center justify-center p-3 bg-gradient-to-tr from-sky-600 to-cyan-400 rounded-2xl shadow-xl shadow-sky-900/30 text-white mb-4">
           <Network className="w-8 h-8" />
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10 px-4">
         <div className="flex justify-center mb-3">
           <div className="bg-white p-3 rounded-2xl shadow-xl shadow-sky-950/30 border border-slate-200 dark:border-slate-800 max-w-[260px]">
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors">
@@ -55,9 +57,11 @@ export const LoginPage: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 py-8 px-6 shadow-xl rounded-2xl sm:px-10 transition-colors">
           {/* Logo dentro del Panel */}
           <div className="flex justify-center mb-4">
+          <div className="bg-white p-3 rounded-2xl shadow-xl shadow-sky-950/20 border border-slate-200 dark:border-slate-800 max-w-[260px]">
             <img
               src="/logo-gpon.png"
               alt="Gpon TELECOM S.A. DE C.V."
+              alt="GPON TELECOM S.A. DE C.V."
               className="w-full h-auto object-contain"
               alt="GPON TELECOM S.A. DE C.V."
               className="h-14 sm:h-16 w-auto object-contain"
@@ -76,6 +80,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 z-10">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 z-10">
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 py-8 px-6 shadow-xl dark:shadow-2xl rounded-2xl sm:px-10 backdrop-blur transition-colors">
           {/* Encabezado dentro del Panel */}
           <div className="text-center mb-6">
