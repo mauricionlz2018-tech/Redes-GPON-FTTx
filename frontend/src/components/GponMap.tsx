@@ -1,10 +1,7 @@
-import React, { useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import React, { useMemo, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel } from '../types';
-import { Network, Server, MapPin, Radio, Compass } from 'lucide-react';
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
 import { Network, Server, Radio, Compass, Navigation, X } from 'lucide-react';
 
@@ -59,7 +56,6 @@ const createOdfIcon = () => {
   });
 };
 
-const createNapIcon = (nap: NapBox, isSelected: boolean) => {
 const createNapIcon = (nap: NapBox, isSelected: boolean, isRouteDestination: boolean) => {
   const metricas = nap.metricas;
   const pct = metricas ? metricas.porcentajeSaturacion : 0;
@@ -69,25 +65,15 @@ const createNapIcon = (nap: NapBox, isSelected: boolean, isRouteDestination: boo
   // Código de colores estricto según especificación
   let bgColor = 'bg-emerald-500'; // Verde: <80%
   let borderColor = 'border-emerald-300';
-  let badgeColor = 'bg-emerald-700';
 
   if (pct >= 100) {
-    bgColor = 'bg-red-600'; // Rojo: Saturada
-    borderColor = 'border-red-300';
-    badgeColor = 'bg-red-800';
     bgColor = 'bg-red-600'; // Rojo: saturada o dañada
     borderColor = 'border-red-400';
   } else if (pct >= 80) {
     bgColor = 'bg-amber-500'; // Amarillo: >=80%
-    borderColor = 'border-amber-200';
-    badgeColor = 'bg-amber-700';
     borderColor = 'border-amber-300';
   }
 
-  const selectedRing = isSelected ? 'ring-4 ring-white shadow-2xl scale-110' : 'shadow-md';
-  const ringStyle = isSelected
-    ? 'ring-4 ring-sky-400 scale-110 shadow-sky-500/50 shadow-md'
-    : 'ring-2 ring-white/90 shadow-md';
   let ringStyle = 'ring-2 ring-white/90 shadow-md';
   if (isRouteDestination) {
     ringStyle = 'ring-4 ring-indigo-500 scale-125 shadow-indigo-500/60 shadow-xl animate-bounce';
@@ -98,8 +84,6 @@ const createNapIcon = (nap: NapBox, isSelected: boolean, isRouteDestination: boo
   return L.divIcon({
     className: 'custom-nap-marker',
     html: `
-      <div class="relative flex flex-col items-center cursor-pointer transition-transform ${selectedRing}">
-        <div class="flex items-center justify-center w-9 h-9 ${bgColor} border-2 ${borderColor} rounded-full text-white font-bold text-xs shadow-lg">
       <div class="relative flex flex-col items-center group cursor-pointer transition-all duration-200">
         <div class="w-8 h-8 rounded-full ${bgColor} border-2 ${borderColor} ${ringStyle} text-white flex items-center justify-center font-bold text-[11px]">
           ${ocupados}/${total}
@@ -122,7 +106,6 @@ export const GponMap: React.FC<GponMapProps> = ({
   selectedNap,
   onSelectNap,
   onViewPorts,
-  onOpenGpsModal
   onOpenGpsModal,
   activeRoute,
   onRequestRoute,
@@ -253,7 +236,6 @@ export const GponMap: React.FC<GponMapProps> = ({
         {naps.map((nap) => {
           if (!nap.coordenadas_gps) return null;
           const isSelected = selectedNap?.id_nap === nap.id_nap;
-          const icon = createNapIcon(nap, isSelected);
           const isRouteDestination = Boolean(activeRoute && selectedNap?.id_nap === nap.id_nap);
           const icon = createNapIcon(nap, isSelected, isRouteDestination);
           const m = nap.metricas;
@@ -269,7 +251,6 @@ export const GponMap: React.FC<GponMapProps> = ({
               }}
             >
               <Popup>
-                <div className="p-1 min-w-[210px] text-slate-800 dark:text-slate-100">
                 <div className="p-1 min-w-[220px] text-slate-800 dark:text-slate-100">
                   <div className="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 mb-2">
                     <span className="font-bold text-sm text-sky-600 dark:text-sky-400 flex items-center gap-1">
@@ -336,7 +317,6 @@ export const GponMap: React.FC<GponMapProps> = ({
                           }
                         }
                       }}
-                      className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow active:scale-95 cursor-pointer"
                       className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
                     >
                       <Radio className="w-3.5 h-3.5" />
@@ -358,8 +338,6 @@ export const GponMap: React.FC<GponMapProps> = ({
       </MapContainer>
 
       {/* Leyenda del Mapa flotante en esquina */}
-      <div className="absolute bottom-4 left-4 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-700 dark:text-slate-300 shadow-lg dark:shadow-xl max-w-[200px] transition-colors">
-        <span className="font-semibold text-slate-900 dark:text-white block mb-1.5">Semáforo de Saturación</span>
       <div className="absolute bottom-4 left-4 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-700 dark:text-slate-300 shadow-lg dark:shadow-xl max-w-[210px] transition-colors">
         <span className="font-semibold text-slate-900 dark:text-white block mb-1.5">Semaforo de Saturacion</span>
         <div className="flex items-center gap-2 mb-1">
@@ -376,7 +354,6 @@ export const GponMap: React.FC<GponMapProps> = ({
         </div>
         <div className="flex items-center gap-2 pt-1 border-t border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 font-medium">
           <span className="w-3 h-0.5 bg-sky-500" />
-          <span>Fibra Óptica ODF</span>
           <span>Fibra Optica ODF</span>
         </div>
         {activeRoute && (
@@ -389,4 +366,3 @@ export const GponMap: React.FC<GponMapProps> = ({
     </div>
   );
 };
-

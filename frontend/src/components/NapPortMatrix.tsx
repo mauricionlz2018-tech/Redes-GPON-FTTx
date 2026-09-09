@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { NapBox, NapPort, UserRole } from '../types';
 import { NapBox, NapPort, UserRole, Client } from '../types';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
@@ -17,7 +16,6 @@ import {
   Info,
   Edit3,
   X,
-  ArrowUp
   ArrowUp,
   Navigation
 } from 'lucide-react';
@@ -35,7 +33,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   nap,
   onPortSelectToAssign,
   onRefreshNap,
-  onScrollToMap
   onScrollToMap,
   onRequestRoute
 }) => {
@@ -50,7 +47,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
   // Liberar puerto
   const handleReleasePort = async (port: NapPort) => {
-    // Validación de RBAC del lado del cliente
     if (user?.rol === 'Tecnico') {
       setRbacError(
         "Permiso denegado (HTTP 403 Forbidden): El rol 'Tecnico' tiene acceso de solo lectura y registro inicial. La corrección o liberación de puertos ocupados es exclusiva de Soporte y Administrador."
@@ -108,10 +104,8 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
       onRefreshNap();
     } catch (error: any) {
       if (error.response && error.response.status === 403) {
-        setRbacError(error.response.data.message);
         setRbacError(error.response.data.message || '403 Forbidden: Sin autorización');
       } else {
-        alert('Error al actualizar estado: ' + (error.response?.data?.message || error.message));
         // Fallback interactivo si el backend no está disponible (ej. Vercel)
         port.estado = nuevoEstado as any;
         if (nuevoEstado !== 'Ocupado') {
@@ -126,12 +120,10 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
     }
   };
 
-  const getStatusColor = (estado: string) => {
   const getPortBadgeStyle = (estado: string) => {
     switch (estado) {
       case 'Libre':
         return {
-          bg: 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400',
           bg: 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-300',
           led: 'bg-emerald-500 shadow-emerald-500/50 shadow-sm',
           label: 'Libre'
@@ -252,15 +244,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         </div>
       )}
 
-      {/* Matriz Visual Física de los 16 Puertos (Estilo Panel de Fibra SC-APC) */}
-      <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 mb-4 transition-colors">
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-3 px-1">
-          <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-700 dark:text-slate-300">
-            Panel Físico de Puertos Ópticos (1 a 16)
-          </span>
-          <span className="text-[11px] text-sky-600 dark:text-sky-400 flex items-center gap-1 font-medium">
-            <Info className="w-3 h-3" /> Haz clic en un puerto para interactuar
-          </span>
       {/* Matriz física de 16 puertos en 2 filas de 8 */}
       <div className="space-y-2 mb-4">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 px-1">
@@ -268,25 +251,14 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           <span className="text-[11px] text-slate-400 dark:text-slate-500">Selecciona un puerto para operar</span>
         </div>
 
-        {/* Rejilla de 16 puertos (8 columnas en desktop, 4 en tablet/móvil) */}
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 bg-slate-100 dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800/80">
           {ports.map((port) => {
-            const statusStyle = getStatusColor(port.estado);
             const style = getPortBadgeStyle(port.estado);
             const isSelected = selectedPort?.id_puerto === port.id_puerto;
 
             return (
               <button
                 key={port.id_puerto}
-                onClick={() => {
-                  setSelectedPort(port);
-                  setRbacError(null);
-                  setActionSuccess(null);
-                }}
-                className={`flex flex-col items-center justify-between p-2 rounded-lg border transition-all relative ${
-                  statusStyle.bg
-                } ${isSelected ? 'ring-2 ring-sky-500 scale-105 shadow-md shadow-sky-500/20 font-bold' : ''}`}
                 onClick={() => setSelectedPort(port)}
                 className={`relative flex flex-col items-center justify-between p-2 rounded-lg border text-center transition-all cursor-pointer ${
                   style.bg
@@ -296,22 +268,14 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                     : 'hover:scale-102'
                 }`}
               >
-                {/* Luz LED indicadora */}
                 {/* LED Indicador */}
                 <div className="flex items-center justify-between w-full mb-1">
-                  <span className="text-[10px] font-bold opacity-70">P#{port.indice_puerto}</span>
-                  <span className={`w-2 h-2 rounded-full ${statusStyle.led}`} />
                   <span className={`w-2 h-2 rounded-full ${style.led}`} />
                   <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">
                     #{port.indice_puerto}
                   </span>
                 </div>
 
-                {/* Icono conector de fibra */}
-                <div className="w-7 h-7 bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-700 flex items-center justify-center my-1 shadow-sm">
-                  <span className="text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300">
-                    {port.indice_puerto}
-                  </span>
                 {/* Ícono de Estado */}
                 <div className="my-1">
                   {port.estado === 'Ocupado' ? (
@@ -323,9 +287,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   )}
                 </div>
 
-                {/* Etiqueta de estado */}
-                <span className="text-[9px] font-semibold truncate max-w-full">
-                  {statusStyle.label}
                 <span className="text-[10px] font-semibold truncate max-w-full">
                   {style.label}
                 </span>
@@ -336,21 +297,14 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
       </div>
 
       {/* Detalle y Operaciones del Puerto Seleccionado */}
-      {selectedPort ? (
-        <div className="bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl p-4 animate-fadeIn transition-colors">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 mb-3">
       {selectedPort && (
         <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 bg-slate-50 dark:bg-slate-800/50 space-y-3 transition-all animate-fadeIn">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700/80 pb-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-slate-900 dark:text-white">
-                Detalle del Puerto #{selectedPort.indice_puerto}
               <span className="font-bold text-sm text-slate-900 dark:text-white">
                 Detalle Puerto #{selectedPort.indice_puerto}
               </span>
               <span
-                className={`text-xs px-2 py-0.5 rounded font-semibold ${
-                  getStatusColor(selectedPort.estado).bg
                 className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                   getPortBadgeStyle(selectedPort.estado).bg
                 }`}
@@ -360,68 +314,12 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             </div>
             <button
               onClick={() => setSelectedPort(null)}
-              className="text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
               className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
             >
-              Cerrar
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Caso 1: Puerto Libre -> Botón de Asignación */}
-          {selectedPort.estado === 'Libre' && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/30 dark:border-emerald-900/50 p-3 rounded-lg">
-              <div>
-                <p className="text-xs text-emerald-800 dark:text-emerald-300 font-medium">
-                  El puerto #{selectedPort.indice_puerto} se encuentra disponible para nueva instalación.
-                </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Permitido para Técnicos de campo, Soporte y Administradores.
-                </p>
-              </div>
-              <button
-                onClick={() => onPortSelectToAssign(selectedPort)}
-                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs py-2 px-4 rounded-lg flex items-center justify-center gap-1.5 shadow"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Asignar Abonado</span>
-              </button>
-            </div>
-          )}
-
-          {/* Caso 2: Puerto Ocupado -> Ficha del Abonado */}
-          {selectedPort.estado === 'Ocupado' && (
-            <div className="space-y-3">
-              {selectedPort.cliente ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-white dark:bg-slate-900/80 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                  <div>
-                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Abonado Conectado:</span>
-                    <strong className="text-slate-900 dark:text-white text-sm">
-                      {selectedPort.cliente.nombre_completo}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Cód. Cliente:</span>
-                    <span className="font-mono font-semibold text-sky-600 dark:text-sky-400">
-                      {selectedPort.cliente.numero_cliente}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">ONT Marca:</span>
-                    <span className="text-slate-800 dark:text-slate-200">
-                      {selectedPort.cliente.marca_ont} (MAC: {selectedPort.cliente.ont_mac})
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Potencia Rx Estimada:</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
-                      {selectedPort.cliente.potencia_rx_estimada} dBm
-                    </span>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Dirección Instalación:</span>
-                    <span className="text-slate-700 dark:text-slate-300">{selectedPort.cliente.direccion}</span>
-                  </div>
           {/* Información del Cliente si está ocupado */}
           {selectedPort.cliente ? (
             <div className="space-y-2 text-xs">
@@ -432,10 +330,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                     {selectedPort.cliente.nombre_completo}
                   </strong>
                 </div>
-              ) : (
-                <div className="bg-white dark:bg-slate-900/80 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
-                  <span className="text-sky-600 dark:text-sky-400 font-semibold block text-[12px] mb-1">
-                    Puerto en Servicio FTTx Activo
                 <div>
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 block">Número de Cuenta:</span>
                   <strong className="text-sky-600 dark:text-sky-400 font-mono">
@@ -451,44 +345,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   <span>
                     {selectedPort.cliente.marca_ont} (MAC: {selectedPort.cliente.ont_mac || 'N/A'})
                   </span>
-                  <p className="text-slate-600 dark:text-slate-300 text-[11px]">
-                    Abonado conectado en la base de datos de Neon. Haz clic en "Liberar Puerto" si deseas ponerlo disponible.
-                  </p>
                 </div>
-              )}
-
-              {/* Botón de Liberación de Puerto */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                  {user?.rol === 'Tecnico' ? (
-                    <span className="text-amber-600 dark:text-amber-400 font-medium">
-                      * Rol Técnico: no autorizado para liberar o reasignar abonados.
-                    </span>
-                  ) : (
-                    <span>
-                      * Soporte/Admin: puedes liberar el puerto para dejarlo disponible nuevamente.
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {selectedPort.cliente && (
-                    <button
-                      onClick={() => setIsEditClientModalOpen(true)}
-                      className="bg-sky-50 hover:bg-sky-100 dark:bg-sky-600/20 dark:hover:bg-sky-600 text-sky-700 hover:text-sky-900 dark:text-sky-300 dark:hover:text-white border border-sky-300 dark:border-sky-500/30 text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors font-medium"
-                      title="Editar datos técnicos y contrato del abonado"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>Editar Datos</span>
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => handleReleasePort(selectedPort)}
-                    disabled={isProcessing}
-                    className={`text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors font-medium ${
-                      user?.rol === 'Tecnico'
-                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 cursor-not-allowed'
-                        : 'bg-red-50 hover:bg-red-100 dark:bg-red-600/20 dark:hover:bg-red-600 text-red-700 hover:text-red-900 dark:text-red-300 dark:hover:text-white border border-red-300 dark:border-red-500/30'
                 <div className="sm:col-span-2">
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 block">Potencia Óptica Rx:</span>
                   <span
@@ -497,11 +354,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                         ? 'text-red-500'
                         : 'text-emerald-600 dark:text-emerald-400'
                     }`}
-                    title={user?.rol === 'Tecnico' ? 'Acción restringida para Técnicos' : 'Liberar puerto'}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Liberar Puerto</span>
-                  </button>
                     {selectedPort.cliente.potencia_rx_estimada
                       ? `${selectedPort.cliente.potencia_rx_estimada} dBm (Rango Operativo Óptimo)`
                       : '-19.2 dBm (Simulada)'}
@@ -526,23 +379,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             </div>
           )}
 
-          {/* Caso 3: Puerto Dañado o en Mantenimiento */}
-          {selectedPort.estado === 'Dañado' && (
-            <div className="bg-red-500/10 dark:bg-red-950/30 border border-red-500/30 dark:border-red-900/50 p-3 rounded-lg text-xs flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
-                <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400" />
-                <span>Este puerto está marcado como DAÑADO por falla en splitter o conector SC.</span>
-              </div>
-              {user?.rol !== 'Tecnico' && (
-                <button
-                  onClick={() => handleChangeStatus(selectedPort, 'Libre')}
-                  className="bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-1 rounded text-xs border border-slate-300 dark:border-slate-600 shadow-sm"
-                >
-                  Restablecer a Libre
-                </button>
-              )}
-            </div>
-          )}
           {/* Botones de Acción sobre el Puerto */}
           <div className="flex flex-wrap gap-2 pt-1">
             {selectedPort.estado === 'Libre' && (
@@ -594,23 +430,13 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             )}
           </div>
         </div>
-      ) : (
-        <div className="text-center py-3 text-xs text-slate-500 dark:text-slate-400 border border-dashed border-slate-300 dark:border-slate-800 rounded-lg">
-          Selecciona cualquiera de los 16 puertos en la matriz para ver su detalle u operar sobre él.
-        </div>
       )}
 
-      {/* Modal para editar y corregir datos del abonado */}
       {/* Modal para Editar Datos del Abonado */}
       {isEditClientModalOpen && selectedPort?.cliente && (
         <EditClientModal
           client={selectedPort.cliente}
           onClose={() => setIsEditClientModalOpen(false)}
-          onClientUpdated={(updatedClient) => {
-            if (selectedPort) {
-              selectedPort.cliente = updatedClient;
-            }
-            setActionSuccess(`Datos del abonado '${updatedClient.nombre_completo}' actualizados exitosamente.`);
           onClientUpdated={(updatedClient: Client) => {
             selectedPort.cliente = updatedClient;
             setActionSuccess(`Datos del abonado ${updatedClient.nombre_completo} actualizados.`);
@@ -621,4 +447,3 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
     </div>
   );
 };
-
