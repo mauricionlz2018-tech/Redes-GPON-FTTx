@@ -35,10 +35,12 @@ export const MapViewPage: React.FC = () => {
   const [naps, setNaps] = useState<NapBox[]>(mockNaps);
   const [odf, setOdf] = useState<OdfPanel | null>(mockOdf);
   const [selectedNap, setSelectedNap] = useState<NapBox | null>(mockNaps[0]); // Mostrar la primera NAP por defecto
+  const [selectedNap, setSelectedNap] = useState<NapBox | null>(mockNaps[0]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [loading, setLoading] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [, setIsDemoMode] = useState(false);
 
   // Estados para el módulo de navegación y trazado de rutas (Modo Pruebas)
   const [isRouteActive, setIsRouteActive] = useState<boolean>(false);
@@ -48,6 +50,7 @@ export const MapViewPage: React.FC = () => {
   const [userCoordinates, setUserCoordinates] = useState<Coordinates | null>(null);
 
   // Referencia para scroll suave al panel de puertos (útil en móviles)
+  // Referencia para scroll suave al panel de puertos
   const portsPanelRef = useRef<HTMLDivElement>(null);
 
   const scrollToPortsPanel = () => {
@@ -96,6 +99,7 @@ export const MapViewPage: React.FC = () => {
   const fetchData = useCallback(async () => {
     try {
       // 1. Intentar cargar desde Backend
+      setLoading(true);
       const [napsRes, odfRes] = await Promise.all([
         api.get('/naps'),
         api.get('/odf')
@@ -118,6 +122,7 @@ export const MapViewPage: React.FC = () => {
       }
     } catch (err) {
       console.warn('Backend no disponible, activando modo demostración interactivo con topología de San José del Rincón.');
+      console.warn('Backend no disponible, activando modo interactivo de respaldo.');
       setIsDemoMode(true);
       // Si hay datos en Dexie, usarlos; de lo contrario, cargar mockNaps
       const cached = await offlineDb.cached_naps.toArray();
@@ -128,6 +133,8 @@ export const MapViewPage: React.FC = () => {
         setOdf(mockOdf);
         setSelectedNap(mockNaps[0]);
       }
+    } finally {
+      setLoading(false);
     }
   }, []);
 
