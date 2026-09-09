@@ -99,6 +99,7 @@ export const GponMap: React.FC<GponMapProps> = ({
   const odfIcon = useMemo(() => createOdfIcon(), []);
 
   return (
+    <div className="relative w-full h-full min-h-[480px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors">
     <div id="seccion-mapa-gpon" className="relative w-full h-full min-h-[480px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors scroll-mt-24">
       <MapContainer
         center={defaultCenter}
