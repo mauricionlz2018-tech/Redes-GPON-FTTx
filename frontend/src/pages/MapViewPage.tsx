@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GponMap } from '../components/GponMap';
 import { NapPortMatrix } from '../components/NapPortMatrix';
 import { AssignClientModal } from '../components/AssignClientModal';
@@ -31,6 +32,45 @@ export const MapViewPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [loading, setLoading] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Referencia para scroll suave al panel de puertos (útil en móviles)
+  const portsPanelRef = useRef<HTMLDivElement>(null);
+
+  const scrollToPortsPanel = () => {
+    setTimeout(() => {
+      const panel = portsPanelRef.current || document.getElementById('panel-puertos-nap');
+      if (panel) {
+        const navBar = document.querySelector('header');
+        const roleBar = document.querySelector('aside');
+        const offset = (navBar?.offsetHeight || 56) + (roleBar?.offsetHeight || 30) + 16;
+        const elementPosition = panel.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+        window.scrollTo({
+          top: Math.max(0, offsetPosition),
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
+  };
+
+  const scrollToMap = () => {
+    const mapEl = document.getElementById('seccion-mapa-gpon');
+    if (mapEl) {
+      const navBar = document.querySelector('header');
+      const roleBar = document.querySelector('aside');
+      const offset = (navBar?.offsetHeight || 56) + (roleBar?.offsetHeight || 30) + 16;
+      const elementPosition = mapEl.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: Math.max(0, offsetPosition),
+        behavior: 'smooth'
+      });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   // Modales
   const { user } = useAuth();
@@ -183,17 +223,27 @@ export const MapViewPage: React.FC = () => {
             odf={odf}
             selectedNap={selectedNap}
             onSelectNap={(nap) => setSelectedNap(nap)}
+            onViewPorts={(nap) => {
+              setSelectedNap(nap);
+              scrollToPortsPanel();
+            }}
             onOpenGpsModal={(nap) => setGpsModalNap(nap)}
           />
         </div>
 
         {/* Panel lateral: Selección de NAP y Matriz de 16 Puertos */}
         <div className="lg:col-span-5 xl:col-span-4 space-y-4">
+        <div
+          id="panel-puertos-nap"
+          ref={portsPanelRef}
+          className="lg:col-span-5 xl:col-span-4 space-y-4 scroll-mt-24"
+        >
           {selectedNap ? (
             <NapPortMatrix
               nap={selectedNap}
               onPortSelectToAssign={(port) => setAssigningPort(port)}
               onRefreshNap={refreshSelectedNap}
+              onScrollToMap={scrollToMap}
             />
           ) : (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center space-y-3 shadow-sm dark:shadow-xl transition-colors">
@@ -215,6 +265,11 @@ export const MapViewPage: React.FC = () => {
                     key={n.id_nap}
                     onClick={() => setSelectedNap(n)}
                     className="w-full text-left bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 flex items-center justify-between transition-colors"
+                    onClick={() => {
+                      setSelectedNap(n);
+                      scrollToPortsPanel();
+                    }}
+                    className="w-full text-left bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 flex items-center justify-between transition-colors cursor-pointer"
                   >
                     <div>
                       <span className="font-bold text-xs text-sky-600 dark:text-sky-400 block">

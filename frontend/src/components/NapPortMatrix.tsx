@@ -15,7 +15,8 @@ import {
   ShieldAlert,
   Info,
   Edit3,
-  X
+  X,
+  ArrowUp
 } from 'lucide-react';
 import { EditClientModal } from './EditClientModal';
 
@@ -23,12 +24,14 @@ interface NapPortMatrixProps {
   nap: NapBox;
   onPortSelectToAssign: (port: NapPort) => void;
   onRefreshNap: () => void;
+  onScrollToMap?: () => void;
 }
 
 export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   nap,
   onPortSelectToAssign,
-  onRefreshNap
+  onRefreshNap,
+  onScrollToMap
 }) => {
   const { user } = useAuth();
   const [selectedPort, setSelectedPort] = useState<NapPort | null>(null);
@@ -158,6 +161,17 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {onScrollToMap && (
+            <button
+              onClick={onScrollToMap}
+              className="lg:hidden flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Volver arriba al mapa"
+            >
+              <ArrowUp className="w-3.5 h-3.5" />
+              <span>Mapa</span>
+            </button>
+          )}
+
           <div className="text-right">
             <span className="text-xs text-slate-500 dark:text-slate-400">Saturación:</span>
             <span

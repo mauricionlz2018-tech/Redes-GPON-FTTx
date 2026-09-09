@@ -9,6 +9,7 @@ interface GponMapProps {
   odf: OdfPanel | null;
   selectedNap: NapBox | null;
   onSelectNap: (nap: NapBox) => void;
+  onViewPorts?: (nap: NapBox) => void;
   onOpenGpsModal: (nap: NapBox) => void;
 }
 
@@ -44,19 +45,27 @@ const createNapIcon = (nap: NapBox, isSelected: boolean) => {
     bgColor = 'bg-red-600'; // Rojo: Saturada
     borderColor = 'border-red-300';
     badgeColor = 'bg-red-800';
+    bgColor = 'bg-red-600'; // Rojo: saturada o dañada
+    borderColor = 'border-red-400';
   } else if (pct >= 80) {
     bgColor = 'bg-amber-500'; // Amarillo: >=80%
     borderColor = 'border-amber-200';
     badgeColor = 'bg-amber-700';
+    borderColor = 'border-amber-300';
   }
 
   const selectedRing = isSelected ? 'ring-4 ring-white shadow-2xl scale-110' : 'shadow-md';
+  const ringStyle = isSelected
+    ? 'ring-4 ring-sky-400 scale-110 shadow-sky-500/50 shadow-md'
+    : 'ring-2 ring-white/90 shadow-md';
 
   return L.divIcon({
     className: 'custom-nap-marker',
     html: `
       <div class="relative flex flex-col items-center cursor-pointer transition-transform ${selectedRing}">
         <div class="flex items-center justify-center w-9 h-9 ${bgColor} border-2 ${borderColor} rounded-full text-white font-bold text-xs shadow-lg">
+      <div class="relative flex flex-col items-center group cursor-pointer transition-all duration-200">
+        <div class="w-8 h-8 rounded-full ${bgColor} border-2 ${borderColor} ${ringStyle} text-white flex items-center justify-center font-bold text-[11px]">
           ${ocupados}/${total}
         </div>
         <div class="w-2 h-2 ${bgColor} rotate-45 -mt-1 shadow-sm"></div>
@@ -76,6 +85,7 @@ export const GponMap: React.FC<GponMapProps> = ({
   odf,
   selectedNap,
   onSelectNap,
+  onViewPorts,
   onOpenGpsModal
 }) => {
   // Centro por defecto: San José del Rincón, Edo. Méx.
@@ -89,7 +99,7 @@ export const GponMap: React.FC<GponMapProps> = ({
   const odfIcon = useMemo(() => createOdfIcon(), []);
 
   return (
-    <div className="relative w-full h-full min-h-[480px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors">
+    <div id="seccion-mapa-gpon" className="relative w-full h-full min-h-[480px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors scroll-mt-24">
       <MapContainer
         center={defaultCenter}
         zoom={14}
@@ -212,9 +222,22 @@ export const GponMap: React.FC<GponMapProps> = ({
                     <button
                       onClick={() => onSelectNap(nap)}
                       className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium py-1.5 px-2 rounded-md transition-colors flex items-center justify-center gap-1 shadow"
+                      onClick={() => {
+                        onSelectNap(nap);
+                        if (onViewPorts) {
+                          onViewPorts(nap);
+                        } else {
+                          const panel = document.getElementById('panel-puertos-nap');
+                          if (panel) {
+                            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }
+                      }}
+                      className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow active:scale-95 cursor-pointer"
                     >
                       <Radio className="w-3.5 h-3.5" />
                       <span>Ver Panel de 16 Puertos</span>
+                      <span>Ver Panel de {nap.total_puertos || 16} Puertos</span>
                     </button>
                     <button
                       onClick={() => onOpenGpsModal(nap)}
