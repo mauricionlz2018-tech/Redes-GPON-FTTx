@@ -17,6 +17,8 @@ import {
   Edit3,
   X,
   ArrowUp
+  ArrowUp,
+  Navigation
 } from 'lucide-react';
 import { EditClientModal } from './EditClientModal';
 
@@ -25,6 +27,7 @@ interface NapPortMatrixProps {
   onPortSelectToAssign: (port: NapPort) => void;
   onRefreshNap: () => void;
   onScrollToMap?: () => void;
+  onRequestRoute?: (nap: NapBox) => void;
 }
 
 export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
@@ -32,6 +35,8 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   onPortSelectToAssign,
   onRefreshNap,
   onScrollToMap
+  onScrollToMap,
+  onRequestRoute
 }) => {
   const { user } = useAuth();
   const [selectedPort, setSelectedPort] = useState<NapPort | null>(null);
@@ -161,6 +166,17 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {onRequestRoute && (
+            <button
+              onClick={() => onRequestRoute(nap)}
+              className="flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800/80 px-2.5 py-1 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Trazar ruta vial desde la Empresa hacia esta caja"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>Ruta de llegada</span>
+            </button>
+          )}
+
           {onScrollToMap && (
             <button
               onClick={onScrollToMap}

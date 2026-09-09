@@ -1,8 +1,12 @@
 import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import React, { useMemo, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel } from '../types';
 import { Network, Server, MapPin, Radio, Compass } from 'lucide-react';
+import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
+import { Network, Server, Radio, Compass, Navigation, X } from 'lucide-react';
 
 interface GponMapProps {
   naps: NapBox[];
@@ -11,7 +15,32 @@ interface GponMapProps {
   onSelectNap: (nap: NapBox) => void;
   onViewPorts?: (nap: NapBox) => void;
   onOpenGpsModal: (nap: NapBox) => void;
+  activeRoute?: RouteResult | null;
+  onRequestRoute?: (nap: NapBox) => void;
+  onClearRoute?: () => void;
 }
+
+// Componente para ajustar dinámicamente el encuadre del mapa a la ruta trazada
+const MapBoundsAdjuster: React.FC<{ coordinates?: [number, number][] }> = ({ coordinates }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (coordinates && coordinates.length > 1) {
+      try {
+        const bounds = L.latLngBounds(coordinates);
+        map.fitBounds(bounds, {
+          padding: [50, 50],
+          maxZoom: 16,
+          animate: true
+        });
+      } catch (e) {
+        console.warn('No se pudo ajustar el encuadre a la ruta:', e);
+      }
+    }
+  }, [coordinates, map]);
+
+  return null;
+};
 
 // Generador de iconos Leaflet personalizados
 const createOdfIcon = () => {
@@ -31,6 +60,7 @@ const createOdfIcon = () => {
 };
 
 const createNapIcon = (nap: NapBox, isSelected: boolean) => {
+const createNapIcon = (nap: NapBox, isSelected: boolean, isRouteDestination: boolean) => {
   const metricas = nap.metricas;
   const pct = metricas ? metricas.porcentajeSaturacion : 0;
   const ocupados = metricas ? metricas.ocupados : 0;
@@ -58,6 +88,12 @@ const createNapIcon = (nap: NapBox, isSelected: boolean) => {
   const ringStyle = isSelected
     ? 'ring-4 ring-sky-400 scale-110 shadow-sky-500/50 shadow-md'
     : 'ring-2 ring-white/90 shadow-md';
+  let ringStyle = 'ring-2 ring-white/90 shadow-md';
+  if (isRouteDestination) {
+    ringStyle = 'ring-4 ring-indigo-500 scale-125 shadow-indigo-500/60 shadow-xl animate-bounce';
+  } else if (isSelected) {
+    ringStyle = 'ring-4 ring-sky-400 scale-110 shadow-sky-500/50 shadow-md';
+  }
 
   return L.divIcon({
     className: 'custom-nap-marker',
@@ -87,6 +123,10 @@ export const GponMap: React.FC<GponMapProps> = ({
   onSelectNap,
   onViewPorts,
   onOpenGpsModal
+  onOpenGpsModal,
+  activeRoute,
+  onRequestRoute,
+  onClearRoute
 }) => {
   // Centro por defecto: San José del Rincón, Edo. Méx.
   const defaultCenter: [number, number] = useMemo(() => {
@@ -100,12 +140,33 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   return (
     <div id="seccion-mapa-gpon" className="relative w-full h-full min-h-[480px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors scroll-mt-24">
+      {/* Banner flotante superior si hay una ruta vial activa */}
+      {activeRoute && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur text-white px-3.5 py-1.5 rounded-full shadow-lg border border-slate-700 flex items-center gap-2.5 text-xs font-semibold">
+          <Navigation className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+          <span>
+            Ruta activa: {formatDistance(activeRoute.distanceMeters)} ({formatDuration(activeRoute.durationSeconds)})
+          </span>
+          {onClearRoute && (
+            <button
+              onClick={onClearRoute}
+              className="ml-1 text-slate-400 hover:text-white p-0.5 rounded transition-colors"
+              title="Quitar ruta"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      )}
+
       <MapContainer
         center={defaultCenter}
         zoom={14}
         scrollWheelZoom={true}
         className="w-full h-full"
       >
+        <MapBoundsAdjuster coordinates={activeRoute?.coordinates} />
+
         {/* Capa de Cartografía Oficial OpenStreetMap */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -158,11 +219,43 @@ export const GponMap: React.FC<GponMapProps> = ({
             );
           })}
 
+        {/* Trazado de Ruta Vial de Navegación (Modo Pruebas OSRM) */}
+        {activeRoute && activeRoute.coordinates.length > 1 && (
+          <>
+            {/* Contorno oscuro para alto contraste vial */}
+            <Polyline
+              key="route-outline"
+              positions={activeRoute.coordinates}
+              pathOptions={{
+                color: '#1e1b4b',
+                weight: 7,
+                opacity: 0.75,
+                lineCap: 'round',
+                lineJoin: 'round'
+              }}
+            />
+            {/* Línea de navegación índigo */}
+            <Polyline
+              key="route-line"
+              positions={activeRoute.coordinates}
+              pathOptions={{
+                color: '#6366f1',
+                weight: 4.5,
+                opacity: 1,
+                lineCap: 'round',
+                lineJoin: 'round'
+              }}
+            />
+          </>
+        )}
+
         {/* Marcadores de Cajas NAP con colores según saturación */}
         {naps.map((nap) => {
           if (!nap.coordenadas_gps) return null;
           const isSelected = selectedNap?.id_nap === nap.id_nap;
           const icon = createNapIcon(nap, isSelected);
+          const isRouteDestination = Boolean(activeRoute && selectedNap?.id_nap === nap.id_nap);
+          const icon = createNapIcon(nap, isSelected, isRouteDestination);
           const m = nap.metricas;
           const pct = m ? m.porcentajeSaturacion : 0;
 
@@ -177,6 +270,7 @@ export const GponMap: React.FC<GponMapProps> = ({
             >
               <Popup>
                 <div className="p-1 min-w-[210px] text-slate-800 dark:text-slate-100">
+                <div className="p-1 min-w-[220px] text-slate-800 dark:text-slate-100">
                   <div className="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 mb-2">
                     <span className="font-bold text-sm text-sky-600 dark:text-sky-400 flex items-center gap-1">
                       <Network className="w-3.5 h-3.5" />
@@ -219,6 +313,17 @@ export const GponMap: React.FC<GponMapProps> = ({
 
                   {/* Botones de acción */}
                   <div className="flex flex-col gap-1.5">
+                    {/* Botón de Trazar Ruta para Técnicos Nuevos */}
+                    {onRequestRoute && (
+                      <button
+                        onClick={() => onRequestRoute(nap)}
+                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                      >
+                        <Navigation className="w-3.5 h-3.5" />
+                        <span>Trazar Ruta de Llegada</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => {
                         onSelectNap(nap);
@@ -232,6 +337,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                         }
                       }}
                       className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow active:scale-95 cursor-pointer"
+                      className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
                     >
                       <Radio className="w-3.5 h-3.5" />
                       <span>Ver Panel de {nap.total_puertos || 16} Puertos</span>
@@ -254,6 +360,8 @@ export const GponMap: React.FC<GponMapProps> = ({
       {/* Leyenda del Mapa flotante en esquina */}
       <div className="absolute bottom-4 left-4 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-700 dark:text-slate-300 shadow-lg dark:shadow-xl max-w-[200px] transition-colors">
         <span className="font-semibold text-slate-900 dark:text-white block mb-1.5">Semáforo de Saturación</span>
+      <div className="absolute bottom-4 left-4 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-700 dark:text-slate-300 shadow-lg dark:shadow-xl max-w-[210px] transition-colors">
+        <span className="font-semibold text-slate-900 dark:text-white block mb-1.5">Semaforo de Saturacion</span>
         <div className="flex items-center gap-2 mb-1">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20" />
           <span>&lt; 80% Disponible</span>
@@ -269,7 +377,14 @@ export const GponMap: React.FC<GponMapProps> = ({
         <div className="flex items-center gap-2 pt-1 border-t border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 font-medium">
           <span className="w-3 h-0.5 bg-sky-500" />
           <span>Fibra Óptica ODF</span>
+          <span>Fibra Optica ODF</span>
         </div>
+        {activeRoute && (
+          <div className="flex items-center gap-2 pt-1 border-t border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 font-medium">
+            <span className="w-3 h-1 bg-indigo-500 rounded-full" />
+            <span>Ruta Vial (Pruebas)</span>
+          </div>
+        )}
       </div>
     </div>
   );

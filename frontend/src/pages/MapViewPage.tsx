@@ -4,10 +4,16 @@ import { NapPortMatrix } from '../components/NapPortMatrix';
 import { AssignClientModal } from '../components/AssignClientModal';
 import { GpsCaptureModal } from '../components/GpsCaptureModal';
 import { CreateNapModal } from '../components/CreateNapModal';
+import { RouteNavigationCard } from '../components/RouteNavigationCard';
 import { useAuth } from '../context/AuthContext';
 import { NapBox, NapPort, OdfPanel } from '../types';
 import { offlineDb } from '../db/offlineDb';
 import api from '../api/client';
+import {
+  fetchDrivingRoute,
+  RouteResult,
+  Coordinates
+} from '../services/routingService';
 import {
   Radio,
   Layers,
@@ -19,6 +25,8 @@ import {
   XCircle,
   Compass,
   Plus
+  Plus,
+  Navigation
 } from 'lucide-react';
 
 import { mockNaps, mockOdf } from '../data/mockGponData';
@@ -31,6 +39,13 @@ export const MapViewPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [loading, setLoading] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Estados para el módulo de navegación y trazado de rutas (Modo Pruebas)
+  const [isRouteActive, setIsRouteActive] = useState<boolean>(false);
+  const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
+  const [isRouteLoading, setIsRouteLoading] = useState<boolean>(false);
+  const [originType, setOriginType] = useState<'odf' | 'user'>('odf');
+  const [userCoordinates, setUserCoordinates] = useState<Coordinates | null>(null);
 
   // Referencia para scroll suave al panel de puertos (útil en móviles)
   const portsPanelRef = useRef<HTMLDivElement>(null);
@@ -137,6 +152,84 @@ export const MapViewPage: React.FC = () => {
     }
   };
 
+  // Cálculo de ruta OSRM
+  const calculateRouteToNap = useCallback(
+    async (targetNap: NapBox, type: 'odf' | 'user' = originType, userCoordOverride?: Coordinates) => {
+      if (!targetNap.coordenadas_gps) {
+        alert('Esta caja NAP no tiene coordenadas GPS registradas para trazar ruta.');
+        return;
+      }
+
+      let origin: Coordinates | null = null;
+
+      if (type === 'user') {
+        origin = userCoordOverride || userCoordinates;
+        if (!origin) {
+          if (navigator.geolocation) {
+            setIsRouteLoading(true);
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                const userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                setUserCoordinates(userLoc);
+                calculateRouteToNap(targetNap, 'user', userLoc);
+              },
+              (err) => {
+                console.warn('GPS no disponible en navegador, usando Central:', err);
+                setOriginType('odf');
+                if (odf?.coordenadas_gps) {
+                  calculateRouteToNap(targetNap, 'odf');
+                }
+              }
+            );
+            return;
+          } else {
+            origin = odf?.coordenadas_gps || null;
+          }
+        }
+      } else {
+        origin = odf?.coordenadas_gps || null;
+      }
+
+      if (!origin) {
+        alert('No se cuenta con las coordenadas de origen de la Central.');
+        return;
+      }
+
+      try {
+        setIsRouteLoading(true);
+        setIsRouteActive(true);
+        const result = await fetchDrivingRoute(origin, targetNap.coordenadas_gps);
+        setRouteResult(result);
+        scrollToMap();
+      } catch (err) {
+        console.error('Error al calcular ruta vial:', err);
+      } finally {
+        setIsRouteLoading(false);
+      }
+    },
+    [odf, originType, userCoordinates]
+  );
+
+  // Manejador para solicitar ruta desde popup del mapa o botón
+  const handleRequestRoute = (nap: NapBox) => {
+    setSelectedNap(nap);
+    calculateRouteToNap(nap, originType);
+  };
+
+  // Manejador para cambiar origen de ruta
+  const handleOriginChange = (type: 'odf' | 'user') => {
+    setOriginType(type);
+    if (selectedNap) {
+      calculateRouteToNap(selectedNap, type);
+    }
+  };
+
+  // Limpiar/Cerrar la ruta activa
+  const handleClearRoute = () => {
+    setIsRouteActive(false);
+    setRouteResult(null);
+  };
+
   // Filtrado de NAPs en el listado
   const filteredNaps = naps.filter((nap) => {
     const matchSearch =
@@ -186,11 +279,36 @@ export const MapViewPage: React.FC = () => {
               <option value="disponible">🟢 Disponibles (&lt;80%)</option>
               <option value="alerta">🟡 En Alerta (&ge;80%)</option>
               <option value="saturada">🔴 Saturadas (100%)</option>
+              <option value="disponible">Disponibles (&lt;80%)</option>
+              <option value="alerta">En Alerta (&ge;80%)</option>
+              <option value="saturada">Saturadas (100%)</option>
             </select>
           </div>
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          {/* Botón de alternar ruta rápida hacia la caja seleccionada */}
+          {selectedNap && (
+            <button
+              onClick={() => {
+                if (isRouteActive) {
+                  handleClearRoute();
+                } else {
+                  handleRequestRoute(selectedNap);
+                }
+              }}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all shadow-sm active:scale-95 cursor-pointer ${
+                isRouteActive
+                  ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-500'
+                  : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50'
+              }`}
+              title="Calcular ruta vial de llegada desde la Empresa hacia la caja seleccionada"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja (Prueba)'}</span>
+            </button>
+          )}
+
           {user?.rol !== 'Tecnico' && (
             <button
               onClick={() => setIsCreateNapOpen(true)}
@@ -222,26 +340,51 @@ export const MapViewPage: React.FC = () => {
             odf={odf}
             selectedNap={selectedNap}
             onSelectNap={(nap) => setSelectedNap(nap)}
+            onSelectNap={(nap) => {
+              setSelectedNap(nap);
+              if (isRouteActive) {
+                calculateRouteToNap(nap, originType);
+              }
+            }}
             onViewPorts={(nap) => {
               setSelectedNap(nap);
               scrollToPortsPanel();
             }}
             onOpenGpsModal={(nap) => setGpsModalNap(nap)}
+            activeRoute={isRouteActive ? routeResult : null}
+            onRequestRoute={handleRequestRoute}
+            onClearRoute={handleClearRoute}
           />
         </div>
 
         {/* Panel lateral: Selección de NAP y Matriz de 16 Puertos */}
+        {/* Panel lateral: Tarjeta de Navegación + Selección de NAP y Matriz de 16 Puertos */}
         <div
           id="panel-puertos-nap"
           ref={portsPanelRef}
           className="lg:col-span-5 xl:col-span-4 space-y-4 scroll-mt-24"
         >
+          {/* Tarjeta de Navegación cuando está activa la ruta */}
+          {isRouteActive && selectedNap && (
+            <RouteNavigationCard
+              nap={selectedNap}
+              odf={odf}
+              routeResult={routeResult}
+              isLoading={isRouteLoading}
+              originType={originType}
+              userCoordinates={userCoordinates}
+              onOriginChange={handleOriginChange}
+              onClose={handleClearRoute}
+            />
+          )}
+
           {selectedNap ? (
             <NapPortMatrix
               nap={selectedNap}
               onPortSelectToAssign={(port) => setAssigningPort(port)}
               onRefreshNap={refreshSelectedNap}
               onScrollToMap={scrollToMap}
+              onRequestRoute={handleRequestRoute}
             />
           ) : (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center space-y-3 shadow-sm dark:shadow-xl transition-colors">
