@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback } from 'react';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GponMap } from '../components/GponMap';
 import { NapPortMatrix } from '../components/NapPortMatrix';
@@ -231,6 +232,7 @@ export const MapViewPage: React.FC = () => {
         </div>
 
         {/* Panel lateral: Selección de NAP y Matriz de 16 Puertos */}
+        <div className="lg:col-span-5 xl:col-span-4 space-y-4">
         <div
           id="panel-puertos-nap"
           ref={portsPanelRef}
@@ -261,6 +263,8 @@ export const MapViewPage: React.FC = () => {
                 {filteredNaps.map((n) => (
                   <button
                     key={n.id_nap}
+                    onClick={() => setSelectedNap(n)}
+                    className="w-full text-left bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 flex items-center justify-between transition-colors"
                     onClick={() => {
                       setSelectedNap(n);
                       scrollToPortsPanel();
