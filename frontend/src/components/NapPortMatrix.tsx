@@ -15,7 +15,6 @@ import {
   ShieldAlert,
   Info,
   Edit3,
-  X
   X,
   ArrowUp
 } from 'lucide-react';
@@ -31,7 +30,6 @@ interface NapPortMatrixProps {
 export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   nap,
   onPortSelectToAssign,
-  onRefreshNap
   onRefreshNap,
   onScrollToMap
 }) => {

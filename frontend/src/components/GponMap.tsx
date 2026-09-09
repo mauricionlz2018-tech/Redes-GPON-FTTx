@@ -99,7 +99,6 @@ export const GponMap: React.FC<GponMapProps> = ({
   const odfIcon = useMemo(() => createOdfIcon(), []);
 
   return (
-    <div className="relative w-full h-full min-h-[480px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors">
     <div id="seccion-mapa-gpon" className="relative w-full h-full min-h-[480px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors scroll-mt-24">
       <MapContainer
         center={defaultCenter}
@@ -221,8 +220,6 @@ export const GponMap: React.FC<GponMapProps> = ({
                   {/* Botones de acción */}
                   <div className="flex flex-col gap-1.5">
                     <button
-                      onClick={() => onSelectNap(nap)}
-                      className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium py-1.5 px-2 rounded-md transition-colors flex items-center justify-center gap-1 shadow"
                       onClick={() => {
                         onSelectNap(nap);
                         if (onViewPorts) {
@@ -237,7 +234,6 @@ export const GponMap: React.FC<GponMapProps> = ({
                       className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow active:scale-95 cursor-pointer"
                     >
                       <Radio className="w-3.5 h-3.5" />
-                      <span>Ver Panel de 16 Puertos</span>
                       <span>Ver Panel de {nap.total_puertos || 16} Puertos</span>
                     </button>
                     <button
