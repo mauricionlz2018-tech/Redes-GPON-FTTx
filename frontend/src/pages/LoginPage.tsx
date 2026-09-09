@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Shield, ShieldAlert, Wrench, Lock, Mail, ArrowRight, MapPin } from 'lucide-react';
+import { Shield, ShieldAlert, Wrench, Lock, Mail, ArrowRight, MapPin, ShieldCheck } from 'lucide-react';
 import { UserRole } from '../types';
+import { DataDisclaimerModal } from '../components/DataDisclaimerModal';
 
 export const LoginPage: React.FC = () => {
   const { login, switchRole } = useAuth();
@@ -12,6 +13,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +72,24 @@ export const LoginPage: React.FC = () => {
               {errorMsg}
             </div>
           )}
+
+          {/* Alerta de Datos de Prueba y Protección de Datos Personales */}
+          <div className="mb-5 p-3.5 bg-sky-50/90 dark:bg-sky-950/40 border border-sky-200/90 dark:border-sky-800/80 rounded-xl flex items-start gap-2.5 text-left shadow-xs">
+            <ShieldCheck className="w-4 h-4 text-sky-600 dark:text-sky-400 flex-shrink-0 mt-0.5" />
+            <div className="text-[11px] leading-relaxed text-sky-900 dark:text-sky-200">
+              <span className="font-bold block text-sky-950 dark:text-sky-100">
+                Aviso: Entorno de Pruebas y Protección de Datos
+              </span>
+              Los datos mostrados son de prueba para validar el funcionamiento del sistema. La información e identidad de personas y clientes reales se encuentra debidamente resguardada y protegida.
+              <button
+                type="button"
+                onClick={() => setIsDisclaimerOpen(true)}
+                className="ml-1.5 text-sky-600 dark:text-sky-400 underline font-semibold hover:text-sky-800 dark:hover:text-sky-300 inline cursor-pointer"
+              >
+                Ver aviso completo
+              </button>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -163,6 +183,12 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal interactivo de aviso de privacidad y datos de prueba */}
+      <DataDisclaimerModal
+        isOpen={isDisclaimerOpen}
+        onClose={() => setIsDisclaimerOpen(false)}
+      />
     </div>
   );
 };

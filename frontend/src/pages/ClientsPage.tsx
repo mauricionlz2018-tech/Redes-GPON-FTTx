@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Client } from '../types';
 import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
-import { Search, Users, Wifi, Filter, RefreshCw, Server, Edit3 } from 'lucide-react';
+import { Search, Users, Wifi, Filter, RefreshCw, Server, Edit3, ShieldCheck } from 'lucide-react';
 import { EditClientModal } from '../components/EditClientModal';
 
 export const ClientsPage: React.FC = () => {
@@ -78,6 +78,27 @@ export const ClientsPage: React.FC = () => {
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
+        </div>
+      </div>
+
+      {/* Banner Informativo de Privacidad y Protección de Datos */}
+      <div className="bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/70 p-3 sm:p-4 rounded-xl flex items-start gap-3 text-xs text-sky-900 dark:text-sky-200 shadow-sm">
+        <ShieldCheck className="w-5 h-5 text-sky-600 dark:text-sky-400 flex-shrink-0 mt-0.5" />
+        <div className="flex-1 space-y-1">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="font-bold text-sky-950 dark:text-sky-100 flex items-center gap-1.5">
+              Entorno Demostrativo • Protección de Datos Personales
+            </span>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('open-gpon-disclaimer'))}
+              className="text-[11px] underline font-semibold text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-white cursor-pointer"
+            >
+              Ver aviso completo
+            </button>
+          </div>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+            Los nombres, domicilios y contratos mostrados son datos ficticios generados para comprobar el aprovisionamiento de fibra óptica. La información e identidad de personas y clientes reales se encuentra protegida bajo estrictas políticas de confidencialidad.
+          </p>
         </div>
       </div>
 

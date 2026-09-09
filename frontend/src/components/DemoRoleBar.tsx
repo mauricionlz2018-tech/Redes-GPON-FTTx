@@ -1,10 +1,22 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield, ShieldAlert, Wrench, CheckCircle2 } from 'lucide-react';
+import { Shield, ShieldAlert, Wrench, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { UserRole } from '../types';
 
-export const DemoRoleBar: React.FC = () => {
+interface DemoRoleBarProps {
+  onOpenDisclaimer?: () => void;
+}
+
+export const DemoRoleBar: React.FC<DemoRoleBarProps> = ({ onOpenDisclaimer }) => {
   const { user, switchRole } = useAuth();
+
+  const handleOpenDisclaimer = () => {
+    if (onOpenDisclaimer) {
+      onOpenDisclaimer();
+    } else {
+      window.dispatchEvent(new CustomEvent('open-gpon-disclaimer'));
+    }
+  };
 
   if (!user) return null;
 
@@ -35,9 +47,21 @@ export const DemoRoleBar: React.FC = () => {
   return (
     <aside aria-label="Selector de rol demo" className="bg-slate-100 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-xs w-full overflow-hidden transition-colors">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 flex-shrink-0">
-          <span className="font-semibold text-slate-800 dark:text-slate-300 text-[11px] sm:text-xs">RBAC:</span>
-          <span className="hidden md:inline text-slate-500 dark:text-slate-400">Simulador de roles de campo</span>
+        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-slate-800 dark:text-slate-300 text-[11px] sm:text-xs">RBAC:</span>
+            <span className="hidden md:inline text-slate-500 dark:text-slate-400">Simulador de roles</span>
+          </div>
+
+          <button
+            onClick={handleOpenDisclaimer}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-sky-500/10 dark:bg-sky-400/10 text-sky-700 dark:text-sky-300 border border-sky-500/30 hover:bg-sky-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
+            title="Aviso: Este sistema utiliza datos de prueba y protege la información sensible de personas reales"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 flex-shrink-0" />
+            <span className="hidden sm:inline">Datos de Prueba</span>
+            <span className="text-[9px] bg-sky-600 text-white dark:bg-sky-500 px-1 py-0.2 rounded font-bold">Protegidos</span>
+          </button>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar">
