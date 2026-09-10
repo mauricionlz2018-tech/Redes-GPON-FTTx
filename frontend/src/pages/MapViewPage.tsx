@@ -16,15 +16,10 @@ import {
 } from '../services/routingService';
 import {
   Radio,
-  Layers,
   RefreshCw,
   Search,
   Filter,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
   Compass,
-  Plus
   Plus,
   Navigation
 } from 'lucide-react';
@@ -34,12 +29,10 @@ import { mockNaps, mockOdf } from '../data/mockGponData';
 export const MapViewPage: React.FC = () => {
   const [naps, setNaps] = useState<NapBox[]>(mockNaps);
   const [odf, setOdf] = useState<OdfPanel | null>(mockOdf);
-  const [selectedNap, setSelectedNap] = useState<NapBox | null>(mockNaps[0]); // Mostrar la primera NAP por defecto
   const [selectedNap, setSelectedNap] = useState<NapBox | null>(mockNaps[0]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [loading, setLoading] = useState(false);
-  const [isDemoMode, setIsDemoMode] = useState(false);
   const [, setIsDemoMode] = useState(false);
 
   // Estados para el módulo de navegación y trazado de rutas (Modo Pruebas)
@@ -49,7 +42,6 @@ export const MapViewPage: React.FC = () => {
   const [originType, setOriginType] = useState<'odf' | 'user'>('odf');
   const [userCoordinates, setUserCoordinates] = useState<Coordinates | null>(null);
 
-  // Referencia para scroll suave al panel de puertos (útil en móviles)
   // Referencia para scroll suave al panel de puertos
   const portsPanelRef = useRef<HTMLDivElement>(null);
 
@@ -98,7 +90,6 @@ export const MapViewPage: React.FC = () => {
   // Cargar NAPs y ODF
   const fetchData = useCallback(async () => {
     try {
-      // 1. Intentar cargar desde Backend
       setLoading(true);
       const [napsRes, odfRes] = await Promise.all([
         api.get('/naps'),
@@ -108,7 +99,6 @@ export const MapViewPage: React.FC = () => {
       if (napsRes.data.success && napsRes.data.data.length > 0) {
         setNaps(napsRes.data.data);
         setIsDemoMode(false);
-        // Guardar en Dexie IndexedDB para respaldo offline
         try {
           await offlineDb.cached_naps.clear();
           await offlineDb.cached_naps.bulkAdd(napsRes.data.data);
@@ -121,10 +111,8 @@ export const MapViewPage: React.FC = () => {
         setOdf(odfRes.data.data[0]);
       }
     } catch (err) {
-      console.warn('Backend no disponible, activando modo demostración interactivo con topología de San José del Rincón.');
       console.warn('Backend no disponible, activando modo interactivo de respaldo.');
       setIsDemoMode(true);
-      // Si hay datos en Dexie, usarlos; de lo contrario, cargar mockNaps
       const cached = await offlineDb.cached_naps.toArray();
       if (cached.length > 0) {
         setNaps(cached);
@@ -142,14 +130,12 @@ export const MapViewPage: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
-  // Recargar detalle de la NAP seleccionada tras mutaciones
   const refreshSelectedNap = async () => {
     if (!selectedNap) return;
     try {
       const res = await api.get(`/naps/${selectedNap.id_nap}`);
       if (res.data.success) {
         setSelectedNap(res.data.data);
-        // Actualizar en el array general
         setNaps((prev) =>
           prev.map((n) => (n.id_nap === selectedNap.id_nap ? res.data.data : n))
         );
@@ -217,13 +203,11 @@ export const MapViewPage: React.FC = () => {
     [odf, originType, userCoordinates]
   );
 
-  // Manejador para solicitar ruta desde popup del mapa o botón
   const handleRequestRoute = (nap: NapBox) => {
     setSelectedNap(nap);
     calculateRouteToNap(nap, originType);
   };
 
-  // Manejador para cambiar origen de ruta
   const handleOriginChange = (type: 'odf' | 'user') => {
     setOriginType(type);
     if (selectedNap) {
@@ -231,7 +215,6 @@ export const MapViewPage: React.FC = () => {
     }
   };
 
-  // Limpiar/Cerrar la ruta activa
   const handleClearRoute = () => {
     setIsRouteActive(false);
     setRouteResult(null);
@@ -283,9 +266,6 @@ export const MapViewPage: React.FC = () => {
               className="w-full sm:w-auto bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
             >
               <option value="todos">Todos los Estados</option>
-              <option value="disponible">🟢 Disponibles (&lt;80%)</option>
-              <option value="alerta">🟡 En Alerta (&ge;80%)</option>
-              <option value="saturada">🔴 Saturadas (100%)</option>
               <option value="disponible">Disponibles (&lt;80%)</option>
               <option value="alerta">En Alerta (&ge;80%)</option>
               <option value="saturada">Saturadas (100%)</option>
@@ -294,7 +274,6 @@ export const MapViewPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-          {/* Botón de alternar ruta rápida hacia la caja seleccionada */}
           {selectedNap && (
             <button
               onClick={() => {
@@ -346,7 +325,6 @@ export const MapViewPage: React.FC = () => {
             naps={filteredNaps}
             odf={odf}
             selectedNap={selectedNap}
-            onSelectNap={(nap) => setSelectedNap(nap)}
             onSelectNap={(nap) => {
               setSelectedNap(nap);
               if (isRouteActive) {
@@ -364,7 +342,6 @@ export const MapViewPage: React.FC = () => {
           />
         </div>
 
-        {/* Panel lateral: Selección de NAP y Matriz de 16 Puertos */}
         {/* Panel lateral: Tarjeta de Navegación + Selección de NAP y Matriz de 16 Puertos */}
         <div
           id="panel-puertos-nap"
@@ -485,4 +462,3 @@ export const MapViewPage: React.FC = () => {
     </div>
   );
 };
-

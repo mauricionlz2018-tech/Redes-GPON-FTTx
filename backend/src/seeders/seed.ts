@@ -71,46 +71,260 @@ export async function runSeed() {
     potencia_tx_dbm: 4.8
   });
 
-  // 6. Crear Cajas NAP con sus 16 puertos cada una
+  // 6. Crear 25 Cajas NAP Reales con sus 16 puertos cada una (KMZ SJR)
   const napsData = [
     {
       identificador: 'NAP-SJR-01',
-      zona: 'Centro / Plaza Principal',
+      zona: 'San José del Rincón - Sur',
       id_puerto_pon: pon1.id_puerto_pon,
       total_puertos: 16,
-      direccion_texto: 'Av. Benito Juárez esq. Morelos, Poste CFE #45',
-      coordenadas_gps: { lat: 19.6655, lng: -100.1465 },
-      occupiedCount: 13 // >= 80% (13/16 = 81.2%) -> Estado Alerta Amarillo
-    },
-    {
-      identificador: 'NAP-SJR-02',
-      zona: 'Barrio San Pedro',
-      id_puerto_pon: pon1.id_puerto_pon,
-      total_puertos: 16,
-      direccion_texto: 'Calle Libertad #24 frente a Capilla',
-      coordenadas_gps: { lat: 19.6680, lng: -100.1420 },
-      occupiedCount: 16 // 100% -> Estado Saturada Rojo
-    },
-    {
-      identificador: 'NAP-SJR-03',
-      zona: 'Colonia Guadalupe',
-      id_puerto_pon: pon2.id_puerto_pon,
-      total_puertos: 16,
-      direccion_texto: 'Calle 16 de Septiembre esq. Jacarandas #102',
-      coordenadas_gps: { lat: 19.6610, lng: -100.1510 },
-      occupiedCount: 4, // 25% -> Estado Disponible Verde
+      direccion_texto: 'Carretera Principal SJR #15',
+      coordenadas_gps: { lat: 19.69812321305894, lng: -100.1159390724763 },
+      occupiedCount: 14,
       hasDamaged: true
     },
     {
-      identificador: 'NAP-SJR-04',
-      zona: 'Las Rosas / Carretera Norte',
+      identificador: 'NAP-SJR-02',
+      zona: 'San José del Rincón - Sur',
       id_puerto_pon: pon2.id_puerto_pon,
       total_puertos: 16,
-      direccion_texto: 'Km 2.5 Carretera San José - Providencia, Poste #12',
-      coordenadas_gps: { lat: 19.6710, lng: -100.1540 },
-      occupiedCount: 2 // 12.5% -> Estado Disponible Verde
+      direccion_texto: 'Carretera Principal SJR #16',
+      coordenadas_gps: { lat: 19.69812673661189, lng: -100.1171563548064 },
+      occupiedCount: 16,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-03',
+      zona: 'La Presa - Manzana',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Camino a la Presa, Poste CFE #22',
+      coordenadas_gps: { lat: 19.70086393818054, lng: -100.1171010702103 },
+      occupiedCount: 12,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-04',
+      zona: 'La Presa - Manzana',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Camino a la Presa, Poste CFE #23',
+      coordenadas_gps: { lat: 19.70218887882606, lng: -100.1142261628823 },
+      occupiedCount: 15,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-05',
+      zona: 'La Presa - Manzana',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Camino a la Presa, Poste CFE #24',
+      coordenadas_gps: { lat: 19.70155257680219, lng: -100.1156247558254 },
+      occupiedCount: 8,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-06',
+      zona: 'La Presa - Manzana',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Camino a la Presa, Poste CFE #25',
+      coordenadas_gps: { lat: 19.70183374145083, lng: -100.1150477139243 },
+      occupiedCount: 16,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-07',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #17',
+      coordenadas_gps: { lat: 19.70434508510973, lng: -100.1116251363456 },
+      occupiedCount: 5,
+      hasDamaged: true
+    },
+    {
+      identificador: 'NAP-SJR-08',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #19',
+      coordenadas_gps: { lat: 19.70519383777912, lng: -100.1098194504984 },
+      occupiedCount: 4,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-09',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #21',
+      coordenadas_gps: { lat: 19.70581860242822, lng: -100.108477272282 },
+      occupiedCount: 13,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-10',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #23',
+      coordenadas_gps: { lat: 19.70410754991645, lng: -100.1017088428748 },
+      occupiedCount: 11,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-11',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #25',
+      coordenadas_gps: { lat: 19.70403664574141, lng: -100.1010671479049 },
+      occupiedCount: 7,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-12',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #27',
+      coordenadas_gps: { lat: 19.70385056302065, lng: -100.1006683067842 },
+      occupiedCount: 14,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-13',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #29',
+      coordenadas_gps: { lat: 19.70333943951259, lng: -100.0998755829779 },
+      occupiedCount: 16,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-14',
+      zona: 'La Presa - Manzana',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Camino a la Presa, Poste CFE #33',
+      coordenadas_gps: { lat: 19.70271268592046, lng: -100.098387535694 },
+      occupiedCount: 9,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-15',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #33',
+      coordenadas_gps: { lat: 19.70555547606913, lng: -100.1001937086599 },
+      occupiedCount: 3,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-16',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #35',
+      coordenadas_gps: { lat: 19.70565243124017, lng: -100.0990648318555 },
+      occupiedCount: 6,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-17',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #37',
+      coordenadas_gps: { lat: 19.70765867300566, lng: -100.0995686767321 },
+      occupiedCount: 15,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-18',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #39',
+      coordenadas_gps: { lat: 19.70741888016319, lng: -100.1008666862248 },
+      occupiedCount: 12,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-19',
+      zona: 'San Francisco de la Loma - Norte',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Av. Principal San Francisco Norte #64',
+      coordenadas_gps: { lat: 19.71068484498344, lng: -100.1017234989169 },
+      occupiedCount: 10,
+      hasDamaged: true
+    },
+    {
+      identificador: 'NAP-SJR-20',
+      zona: 'San Francisco de la Loma - Norte',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Av. Principal San Francisco Norte #67',
+      coordenadas_gps: { lat: 19.71162227901236, lng: -100.1016716447679 },
+      occupiedCount: 4,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-21',
+      zona: 'San Francisco de la Loma - Norte',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Av. Principal San Francisco Norte #70',
+      coordenadas_gps: { lat: 19.70852506306401, lng: -100.1011607973532 },
+      occupiedCount: 13,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-22',
+      zona: 'San Francisco de la Loma - Centro',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Calle Los Encinos esq. Jacarandas #47',
+      coordenadas_gps: { lat: 19.70743218950118, lng: -100.1028417721292 },
+      occupiedCount: 16,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-23',
+      zona: 'San Francisco de la Loma - Norte',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Av. Principal San Francisco Norte #76',
+      coordenadas_gps: { lat: 19.70928631295908, lng: -100.104295482757 },
+      occupiedCount: 8,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-24',
+      zona: 'San José del Rincón - Sur',
+      id_puerto_pon: pon2.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Carretera Principal SJR #38',
+      coordenadas_gps: { lat: 19.69675486793837, lng: -100.1150025923476 },
+      occupiedCount: 5,
+      hasDamaged: false
+    },
+    {
+      identificador: 'NAP-SJR-25',
+      zona: 'San José del Rincón - Sur',
+      id_puerto_pon: pon1.id_puerto_pon,
+      total_puertos: 16,
+      direccion_texto: 'Carretera Principal SJR #39',
+      coordenadas_gps: { lat: 19.69573472205645, lng: -100.1146596220177 },
+      occupiedCount: 2,
+      hasDamaged: true
     }
   ];
+
 
   const marcasOnt: Array<'ZTE' | 'V-SOL' | 'TP-Link' | 'Huawei'> = ['ZTE', 'Huawei', 'V-SOL', 'TP-Link'];
   const nombresAbonados = [

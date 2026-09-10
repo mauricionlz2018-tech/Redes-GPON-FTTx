@@ -81,3 +81,20 @@ export interface PendingMutation {
   fechaCreacion: string;
   intentos: number;
 }
+
+export interface FiberRoute {
+  id_ruta: string;
+  nombre: string;
+  vertices: number;
+  color: string;
+  grosor: number;
+  tipo: 'troncal' | 'ramal';
+  coordenadas: [number, number][]; // [lat, lng]
+}
+
+export interface EmpalmeClosure {
+  id_empalme: string;
+  nombre: string;
+  coordenadas_gps: GpsCoordinates;
+  tipo_cierre: string;
+}

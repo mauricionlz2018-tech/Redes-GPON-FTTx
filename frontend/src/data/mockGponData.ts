@@ -1,4 +1,6 @@
 import { NapBox, OdfPanel, Client } from '../types';
+// Reexportación centralizada del dataset real extraído del archivo KMZ de San José del Rincón
+import { realOdf, realNaps, realFiberRoutes, realEmpalmes } from './realGponKmzData';
 
 export const mockOdf: OdfPanel = {
   id_odf: 'odf-sjr-01',
@@ -7,6 +9,10 @@ export const mockOdf: OdfPanel = {
   coordenadas_gps: { lat: 19.6642, lng: -100.1472 },
   capacidad_hilos: 48
 };
+export const mockOdf = realOdf;
+export const mockNaps = realNaps;
+export const mockFiberRoutes = realFiberRoutes;
+export const mockEmpalmes = realEmpalmes;
 
 const nombresAbonados = [
   'María Elena González Flores',
@@ -26,6 +32,7 @@ const nombresAbonados = [
   'Dra. Laura Morales Solís',
   'Ing. Fernando Castillo Peña'
 ];
+export { realOdf, realNaps, realFiberRoutes, realEmpalmes };
 
 const marcasOnt: Array<'ZTE' | 'V-SOL' | 'TP-Link' | 'Huawei'> = ['ZTE', 'Huawei', 'V-SOL', 'TP-Link'];
 
