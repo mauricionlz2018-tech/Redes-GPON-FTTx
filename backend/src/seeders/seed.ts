@@ -382,6 +382,8 @@ export async function runSeed() {
         clientCounter++;
         const abonadoNombre = nombresAbonados[clientCounter % nombresAbonados.length];
         const marca = marcasOnt[pIdx % marcasOnt.length];
+        const byte4 = (Math.floor(clientCounter / 256) % 256).toString(16).padStart(2, '0').toUpperCase();
+        const byte5 = (clientCounter % 256).toString(16).padStart(2, '0').toUpperCase();
         const hexMac = pIdx.toString(16).padStart(2, '0').toUpperCase();
         const randMac = clientCounter.toString(16).padStart(2, '0').toUpperCase();
 
@@ -392,6 +394,7 @@ export async function runSeed() {
           marca_ont: marca,
           direccion: `${nData.zona}, Calle Real #${10 + pIdx}`,
           ont_mac: `48:2C:EA:11:${hexMac}:${randMac}`,
+          ont_mac: `48:2C:EA:${byte4}:${hexMac}:${byte5}`,
           potencia_rx_estimada: -17.5 - Number((Math.random() * 5).toFixed(1))
         });
       }
