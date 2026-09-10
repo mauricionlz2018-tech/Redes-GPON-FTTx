@@ -288,3 +288,71 @@ export const createNap = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const deleteNap = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const t = await NapBox.sequelize!.transaction();
+
+  try {
+    const nap = await NapBox.findByPk(id, {
+      include: [
+        {
+          model: NapPort,
+          as: 'puertos',
+          attributes: ['id_puerto']
+        }
+      ],
+      transaction: t
+    });
+
+    if (!nap) {
+      await t.rollback();
+      res.status(404).json({
+        success: false,
+        message: `No se encontró la caja NAP con identificador único '${id}'`
+      });
+      return;
+    }
+
+    const portIds = (nap.puertos || []).map((p: any) => p.id_puerto);
+
+    // 1. Desvincular clientes abonados asignados a los puertos de esta caja
+    if (portIds.length > 0) {
+      await Client.update(
+        { id_puerto_nap: null as any },
+        {
+          where: {
+            id_puerto_nap: portIds
+          },
+          transaction: t
+        }
+      );
+
+      // 2. Eliminar los puertos de la caja NAP
+      await NapPort.destroy({
+        where: {
+          id_nap: id
+        },
+        transaction: t
+      });
+    }
+
+    // 3. Eliminar el chasis de la caja NAP
+    await nap.destroy({ transaction: t });
+
+    await t.commit();
+
+    res.json({
+      success: true,
+      message: `Caja NAP '${nap.identificador}' eliminada exitosamente junto con sus puertos e infraestructura asociada.`
+    });
+  } catch (error: any) {
+    await t.rollback();
+    console.error(`Error al eliminar la caja NAP ${id}:`, error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno al procesar la eliminación de la caja NAP',
+      error: error.message
+    });
+  }
+};

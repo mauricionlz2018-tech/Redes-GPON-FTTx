@@ -27,6 +27,7 @@ interface NapPortMatrixProps {
   onRefreshNap: () => void;
   onScrollToMap?: () => void;
   onRequestRoute?: (nap: NapBox) => void;
+  onDeleteNapRequest?: (nap: NapBox) => void;
 }
 
 export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
@@ -35,6 +36,8 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   onRefreshNap,
   onScrollToMap,
   onRequestRoute
+  onRequestRoute,
+  onDeleteNapRequest
 }) => {
   const { user } = useAuth();
   const [selectedPort, setSelectedPort] = useState<NapPort | null>(null);
@@ -120,6 +123,18 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
     }
   };
 
+  const handleDeleteClick = () => {
+    if (user?.rol === 'Tecnico') {
+      setRbacError(
+        "Permiso denegado (HTTP 403 Forbidden): El rol 'Tecnico' no tiene autorización para dar de baja o eliminar cajas NAP de la infraestructura. Esta acción requiere permisos de Soporte o Administrador."
+      );
+      return;
+    }
+    if (onDeleteNapRequest) {
+      onDeleteNapRequest(nap);
+    }
+  };
+
   const getPortBadgeStyle = (estado: string) => {
     switch (estado) {
       case 'Libre':
@@ -190,6 +205,17 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             >
               <ArrowUp className="w-3.5 h-3.5" />
               <span>Mapa</span>
+            </button>
+          )}
+
+          {onDeleteNapRequest && (
+            <button
+              onClick={handleDeleteClick}
+              className="flex items-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border border-red-200 dark:border-red-800/80 px-2.5 py-1 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Dar de baja o eliminar esta caja NAP de la red"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Eliminar Caja</span>
             </button>
           )}
 

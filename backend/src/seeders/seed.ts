@@ -40,6 +40,7 @@ export async function runSeed() {
     nombre: 'ODF Central San José del Rincón',
     ubicacion_central: 'Calle Hidalgo #10, Centro, San José del Rincón, Edo. Méx.',
     coordenadas_gps: { lat: 19.6642, lng: -100.1472 },
+    coordenadas_gps: { lat: 19.665644, lng: -100.153996 },
     capacidad_hilos: 48
   });
   console.log('✔ ODF Central creado:', odf.nombre);

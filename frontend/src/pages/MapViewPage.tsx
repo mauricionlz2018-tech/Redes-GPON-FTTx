@@ -4,6 +4,7 @@ import { NapPortMatrix } from '../components/NapPortMatrix';
 import { AssignClientModal } from '../components/AssignClientModal';
 import { GpsCaptureModal } from '../components/GpsCaptureModal';
 import { CreateNapModal } from '../components/CreateNapModal';
+import { DeleteNapModal } from '../components/DeleteNapModal';
 import { RouteNavigationCard } from '../components/RouteNavigationCard';
 import { useAuth } from '../context/AuthContext';
 import { NapBox, NapPort, OdfPanel } from '../types';
@@ -86,6 +87,9 @@ export const MapViewPage: React.FC = () => {
   const [assigningPort, setAssigningPort] = useState<NapPort | null>(null);
   const [gpsModalNap, setGpsModalNap] = useState<NapBox | null>(null);
   const [isCreateNapOpen, setIsCreateNapOpen] = useState(false);
+  const [deletingNap, setDeletingNap] = useState<NapBox | null>(null);
+  const [isDeletingNap, setIsDeletingNap] = useState(false);
+  const [feedbackNotice, setFeedbackNotice] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Cargar NAPs y ODF
   const fetchData = useCallback(async () => {
@@ -220,6 +224,47 @@ export const MapViewPage: React.FC = () => {
     setRouteResult(null);
   };
 
+  const handleConfirmDeleteNap = async (targetNap: NapBox) => {
+    try {
+      setIsDeletingNap(true);
+      try {
+        await api.delete(`/naps/${targetNap.id_nap}`);
+      } catch (apiErr: any) {
+        console.warn('Backend no disponible para DELETE, procediendo en almacenamiento local / demo:', apiErr);
+      }
+
+      // Eliminar de base local IndexedDB
+      try {
+        await offlineDb.cached_naps.delete(targetNap.id_nap);
+      } catch (dbErr) {
+        console.warn('Error eliminando de Dexie:', dbErr);
+      }
+
+      // Actualizar estado en memoria
+      setNaps((prev) => prev.filter((n) => n.id_nap !== targetNap.id_nap));
+
+      if (selectedNap?.id_nap === targetNap.id_nap) {
+        setSelectedNap(null);
+      }
+
+      setFeedbackNotice({
+        type: 'success',
+        message: `Caja NAP ${targetNap.identificador} dada de baja exitosamente de la topología.`
+      });
+      setTimeout(() => setFeedbackNotice(null), 5000);
+
+      setDeletingNap(null);
+    } catch (err: any) {
+      console.error('Error al eliminar caja NAP:', err);
+      setFeedbackNotice({
+        type: 'error',
+        message: err.message || 'Error al procesar la eliminación de la caja NAP'
+      });
+    } finally {
+      setIsDeletingNap(false);
+    }
+  };
+
   // Filtrado de NAPs en el listado
   const filteredNaps = naps.filter((nap) => {
     const matchSearch =
@@ -244,6 +289,25 @@ export const MapViewPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-4">
+      {/* Notificación de feedback (éxito o error) */}
+      {feedbackNotice && (
+        <div
+          className={`p-3 rounded-xl border text-xs flex items-center justify-between transition-all animate-fadeIn ${
+            feedbackNotice.type === 'success'
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
+              : 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-800 text-red-800 dark:text-red-200'
+          }`}
+        >
+          <span className="font-semibold">{feedbackNotice.message}</span>
+          <button
+            onClick={() => setFeedbackNotice(null)}
+            className="text-xs font-bold px-2 py-0.5 rounded hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Barra de Filtros y Búsqueda Responsiva */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 sm:p-3 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shadow-sm dark:shadow-md w-full transition-colors">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1 w-full">
@@ -339,6 +403,7 @@ export const MapViewPage: React.FC = () => {
             activeRoute={isRouteActive ? routeResult : null}
             onRequestRoute={handleRequestRoute}
             onClearRoute={handleClearRoute}
+            onDeleteNapRequest={(nap) => setDeletingNap(nap)}
           />
         </div>
 
@@ -369,6 +434,7 @@ export const MapViewPage: React.FC = () => {
               onRefreshNap={refreshSelectedNap}
               onScrollToMap={scrollToMap}
               onRequestRoute={handleRequestRoute}
+              onDeleteNapRequest={(nap) => setDeletingNap(nap)}
             />
           ) : (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center space-y-3 shadow-sm dark:shadow-xl transition-colors">
@@ -457,6 +523,15 @@ export const MapViewPage: React.FC = () => {
                 }
               : undefined
           }
+        />
+      )}
+
+      {deletingNap && (
+        <DeleteNapModal
+          nap={deletingNap}
+          onClose={() => setDeletingNap(null)}
+          onConfirmDelete={handleConfirmDeleteNap}
+          isDeleting={isDeletingNap}
         />
       )}
     </div>

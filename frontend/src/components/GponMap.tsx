@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet';
 import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure } from '../types';
 import { Network, Server, Radio, Compass, Navigation, X, GitCommit } from 'lucide-react';
+import { Network, Server, Radio, Compass, Navigation, X, GitCommit, Trash2 } from 'lucide-react';
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
 import { mockFiberRoutes, mockEmpalmes } from '../data/mockGponData';
 
@@ -18,6 +19,7 @@ interface GponMapProps {
   onClearRoute?: () => void;
   fiberRoutes?: FiberRoute[];
   empalmes?: EmpalmeClosure[];
+  onDeleteNapRequest?: (nap: NapBox) => void;
 }
 
 // Componente para ajustar dinámicamente el encuadre del mapa
@@ -132,6 +134,8 @@ export const GponMap: React.FC<GponMapProps> = ({
   onClearRoute,
   fiberRoutes = mockFiberRoutes,
   empalmes = mockEmpalmes
+  empalmes = mockEmpalmes,
+  onDeleteNapRequest
 }) => {
   // Centro por defecto: Cobertura de la red en San José del Rincón
   const defaultCenter: [number, number] = useMemo(() => {
@@ -374,6 +378,17 @@ export const GponMap: React.FC<GponMapProps> = ({
                       <Compass className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                       <span>Calibrar GPS de Campo</span>
                     </button>
+
+                    {onDeleteNapRequest && (
+                      <button
+                        onClick={() => onDeleteNapRequest(nap)}
+                        className="w-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 text-xs py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-red-200 dark:border-red-800/60 cursor-pointer"
+                        title="Eliminar o dar de baja esta caja NAP"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Eliminar Caja NAP</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </Popup>
