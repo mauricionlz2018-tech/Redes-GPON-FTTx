@@ -2,7 +2,6 @@ import React, { useMemo, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure } from '../types';
-import { Network, Server, Radio, Compass, Navigation, X, GitCommit } from 'lucide-react';
 import { Network, Server, Radio, Compass, Navigation, X, GitCommit, Trash2 } from 'lucide-react';
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
 import { mockFiberRoutes, mockEmpalmes } from '../data/mockGponData';
@@ -133,7 +132,6 @@ export const GponMap: React.FC<GponMapProps> = ({
   onRequestRoute,
   onClearRoute,
   fiberRoutes = mockFiberRoutes,
-  empalmes = mockEmpalmes
   empalmes = mockEmpalmes,
   onDeleteNapRequest
 }) => {

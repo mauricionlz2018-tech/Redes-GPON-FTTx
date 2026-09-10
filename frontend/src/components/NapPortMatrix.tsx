@@ -35,7 +35,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   onPortSelectToAssign,
   onRefreshNap,
   onScrollToMap,
-  onRequestRoute
   onRequestRoute,
   onDeleteNapRequest
 }) => {

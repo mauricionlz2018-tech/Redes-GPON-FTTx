@@ -5,7 +5,6 @@ export const realOdf: OdfPanel = {
   id_odf: 'odf-sjr-central',
   nombre: 'ODF Central San José del Rincón',
   ubicacion_central: 'Calle Hidalgo #10, Centro, San José del Rincón, Edo. Méx.',
-  coordenadas_gps: { lat: 19.665415, lng: -100.147293 },
   coordenadas_gps: { lat: 19.665644, lng: -100.153996 },
   capacidad_hilos: 48
 };
