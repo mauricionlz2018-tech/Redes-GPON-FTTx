@@ -41,7 +41,6 @@ export {
   FiberThread,
   NapBox,
   NapPort,
-  Client
   Client,
   MileageLog
 };

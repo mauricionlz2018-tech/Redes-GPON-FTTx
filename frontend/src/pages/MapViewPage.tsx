@@ -24,7 +24,6 @@ import {
   Filter,
   Compass,
   Plus,
-  Navigation
   Navigation,
   Gauge
 } from 'lucide-react';

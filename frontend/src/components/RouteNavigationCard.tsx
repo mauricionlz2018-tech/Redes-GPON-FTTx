@@ -24,7 +24,6 @@ import {
   ChevronDown,
   ChevronUp,
   LocateFixed,
-  Car
   Car,
   Gauge
 } from 'lucide-react';
@@ -49,7 +48,6 @@ export const RouteNavigationCard: React.FC<RouteNavigationCardProps> = ({
   originType,
   userCoordinates,
   onOriginChange,
-  onClose
   onClose,
   onOpenMileageCapture
 }) => {
