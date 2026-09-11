@@ -65,11 +65,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
         }
       : {
           bgCanvas: '#ffffff',
-          bannerBg: '#0f172a',
-          bannerTitle: '#ffffff',
-          bannerSub: '#38bdf8',
-          bannerDate: '#94a3b8',
-          cardBg: '#f8fafc',
           bannerBg: '#f8fafc',
           bannerBorder: '#cbd5e1',
           bannerAccent: '#0284c7',
@@ -80,9 +75,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
           cardBorder: '#e2e8f0',
           cardTitle: '#64748b',
           sectionTitle: '#0f172a',
-          headerBg: '#1e293b',
-          headerText: '#ffffff',
-          headerBorder: '#334155',
           headerBg: '#f1f5f9',
           headerText: '#0f172a',
           headerBorder: '#cbd5e1',
@@ -109,6 +101,7 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
     });
 
     const filename = `reporte_gpon_saturacion_${isDark ? 'oscuro' : 'claro'}_${new Date().toISOString().slice(0, 10)}.pdf`;
+    const filename = `reporte_gpon_saturacion_${new Date().toISOString().slice(0, 10)}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
 
@@ -142,7 +135,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
     const overallPct = totalPuertosRed > 0 ? Math.round((totalOcupadosRed / totalPuertosRed) * 100) : 0;
 
     // Encabezado Corporativo (Banner Superior)
-    doc.rect(pageLeft, 35, pageWidth, 56).fill(colors.bannerBg);
     if (isDark) {
       doc.rect(pageLeft, 35, pageWidth, 56).fill(colors.bannerBg);
     } else {
@@ -163,7 +155,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
     const validLogoPath = logoCandidates.find((p) => fs.existsSync(p));
     if (validLogoPath) {
       try {
-        doc.roundedRect(pageLeft + pageWidth - 92, 39, 84, 48, 4).fill('#ffffff');
         if (isDark) {
           doc.roundedRect(pageLeft + pageWidth - 92, 39, 84, 48, 4).fill('#ffffff');
         } else {
@@ -192,7 +183,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
       .font('Helvetica')
       .fontSize(8.5)
       .text(
-        `Reporte Ejecutivo de Auditoría de Red, Capacidad FTTx y Abonados (${isDark ? 'Modo Oscuro NOC' : 'Modo Claro'})`,
         `Reporte Ejecutivo de Auditoría de Red, Capacidad FTTx y Abonados`,
         pageLeft + 14,
         60,
@@ -256,13 +246,11 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
     ) => {
       let currentX = pageLeft;
 
-      doc.rect(pageLeft, y, pageWidth, height).fillAndStroke(bgColor, colors.rowBorder);
       doc.rect(pageLeft, y, pageWidth, height).fillAndStroke(bgColor, isHeader ? colors.headerBorder : colors.rowBorder);
 
       columns.forEach((col, idx) => {
         if (idx > 0) {
           doc
-            .strokeColor(colors.rowBorder)
             .strokeColor(isHeader ? colors.headerBorder : colors.rowBorder)
             .lineWidth(0.5)
             .moveTo(currentX, y)
@@ -509,8 +497,8 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
         .font('Helvetica')
         .fontSize(6.8)
         .text(
-          `Documento oficial de auditoría emitido por GPON TELECOM S.A. de C.V. • Modo: ${isDark ? 'Oscuro NOC' : 'Claro Ejecutivo'}`,
           `Documento oficial de auditoría emitido por GPON TELECOM S.A. de C.V. • Formato: ${isDark ? 'Oscuro NOC' : 'Blanco / Claro Impresión'}`,
+          'Documento oficial de auditoría emitido por GPON TELECOM S.A. de C.V.',
           pageLeft,
           746,
           { width: pageWidth - 90, align: 'left', lineBreak: false }

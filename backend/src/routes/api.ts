@@ -3,7 +3,6 @@ import { authenticateToken } from '../middlewares/auth';
 import { requireRoles } from '../middlewares/role';
 import { login, getProfile, listUsers, updateProfile } from '../controllers/authController';
 import { listOdfs, getOdfById } from '../controllers/odfController';
-import { listNaps, getNapById, updateGpsCoordinates, createNap } from '../controllers/napController';
 import { listNaps, getNapById, updateGpsCoordinates, createNap, deleteNap } from '../controllers/napController';
 import { assignPort, releasePort, updatePortStatus } from '../controllers/portController';
 import { listClients, getClientById, updateClient } from '../controllers/clientController';

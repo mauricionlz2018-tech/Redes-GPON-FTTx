@@ -39,7 +39,6 @@ export async function runSeed() {
   const odf = await OdfPanel.create({
     nombre: 'ODF Central San José del Rincón',
     ubicacion_central: 'Calle Hidalgo #10, Centro, San José del Rincón, Edo. Méx.',
-    coordenadas_gps: { lat: 19.6642, lng: -100.1472 },
     coordenadas_gps: { lat: 19.665644, lng: -100.153996 },
     capacidad_hilos: 48
   });
@@ -393,7 +392,6 @@ export async function runSeed() {
           id_puerto_nap: port.id_puerto,
           marca_ont: marca,
           direccion: `${nData.zona}, Calle Real #${10 + pIdx}`,
-          ont_mac: `48:2C:EA:11:${hexMac}:${randMac}`,
           ont_mac: `48:2C:EA:${byte4}:${hexMac}:${byte5}`,
           potencia_rx_estimada: -17.5 - Number((Math.random() * 5).toFixed(1))
         });
