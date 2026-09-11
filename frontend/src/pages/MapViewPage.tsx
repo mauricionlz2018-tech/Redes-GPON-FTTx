@@ -153,7 +153,6 @@ export const MapViewPage: React.FC = () => {
   const calculateRouteToNap = useCallback(
     async (targetNap: NapBox, type: 'odf' | 'user' = originType, userCoordOverride?: Coordinates) => {
       if (!targetNap.coordenadas_gps) {
-        alert('Esta caja NAP no tiene coordenadas GPS registradas para trazar ruta.');
         setFeedbackNotice({
           type: 'error',
           message: 'Esta caja NAP no tiene coordenadas GPS registradas para trazar ruta.'
@@ -193,7 +192,6 @@ export const MapViewPage: React.FC = () => {
       }
 
       if (!origin) {
-        alert('No se cuenta con las coordenadas de origen de la Central.');
         setFeedbackNotice({
           type: 'error',
           message: 'No se cuenta con las coordenadas de origen de la Central ODF para trazar ruta.'
@@ -237,10 +235,6 @@ export const MapViewPage: React.FC = () => {
   const handleConfirmDeleteNap = async (targetNap: NapBox) => {
     try {
       setIsDeletingNap(true);
-      try {
-        await api.delete(`/naps/${targetNap.id_nap}`);
-      } catch (apiErr: any) {
-        console.warn('Backend no disponible para DELETE, procediendo en almacenamiento local / demo:', apiErr);
       const deleteId = targetNap.id_nap || targetNap.identificador;
       const res = await api.delete(`/naps/${deleteId}`);
       if (!res.data?.success && res.status >= 400) {
@@ -255,17 +249,14 @@ export const MapViewPage: React.FC = () => {
       }
 
       // Actualizar estado en memoria
-      setNaps((prev) => prev.filter((n) => n.id_nap !== targetNap.id_nap));
       setNaps((prev) => prev.filter((n) => n.id_nap !== targetNap.id_nap && n.identificador !== targetNap.identificador));
 
-      if (selectedNap?.id_nap === targetNap.id_nap) {
       if (selectedNap?.id_nap === targetNap.id_nap || selectedNap?.identificador === targetNap.identificador) {
         setSelectedNap(null);
       }
 
       setFeedbackNotice({
         type: 'success',
-        message: `Caja NAP ${targetNap.identificador} dada de baja exitosamente de la topología.`
         message: `Caja NAP ${targetNap.identificador} dada de baja exitosamente de la red.`
       });
       setTimeout(() => setFeedbackNotice(null), 5000);
@@ -277,7 +268,6 @@ export const MapViewPage: React.FC = () => {
       const msg = err.response?.data?.message || err.message || 'Error al procesar la eliminación de la caja NAP';
       setFeedbackNotice({
         type: 'error',
-        message: err.message || 'Error al procesar la eliminación de la caja NAP'
         message: `Error al eliminar caja: ${msg}`
       });
       throw new Error(msg);

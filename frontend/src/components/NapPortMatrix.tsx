@@ -48,23 +48,12 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
   const ports = nap.puertos || [];
 
-  // Liberar puerto
-  const handleReleasePort = async (port: NapPort) => {
-    if (user?.rol === 'Tecnico') {
-      setRbacError(
-        "Permiso denegado (HTTP 403 Forbidden): El rol 'Tecnico' tiene acceso de solo lectura y registro inicial. La corrección o liberación de puertos ocupados es exclusiva de Soporte y Administrador."
-      );
-      return;
-    }
   // Iniciar flujo de liberación con modal visual estilizado (sin window.confirm)
   const handleReleaseClick = (port: NapPort) => {
     setRbacError(null);
     setPortToRelease(port);
   };
 
-    if (!window.confirm(`¿Estás seguro de liberar el puerto #${port.indice_puerto}? El abonado será desvinculado.`)) {
-      return;
-    }
   // Confirmar y ejecutar la liberación del puerto en backend y UI
   const handleConfirmReleasePort = async () => {
     if (!portToRelease) return;
@@ -72,8 +61,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
     try {
       setIsProcessing(true);
       setRbacError(null);
-      await api.delete(`/puertos/${port.id_puerto}/liberar`);
-      setActionSuccess(`Puerto #${port.indice_puerto} liberado exitosamente.`);
       await api.delete(`/puertos/${portToRelease.id_puerto}/liberar`);
       setActionSuccess(`Puerto #${portToRelease.indice_puerto} liberado exitosamente.`);
       setPortToRelease(null);
@@ -84,9 +71,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         setRbacError(error.response.data.message || '403 Forbidden: Sin autorización');
         setPortToRelease(null);
       } else {
-        // Fallback interactivo si el backend no está disponible (ej. Vercel)
-        port.estado = 'Libre';
-        port.cliente = null;
         // Fallback interactivo si el backend no está disponible
         portToRelease.estado = 'Libre';
         portToRelease.cliente = null;
@@ -95,7 +79,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           nap.metricas.libres = Math.min(nap.total_puertos, nap.metricas.libres + 1);
           nap.metricas.porcentajeSaturacion = Math.round((nap.metricas.ocupados / nap.total_puertos) * 100);
         }
-        setActionSuccess(`Puerto #${port.indice_puerto} liberado exitosamente (Modo Demo).`);
         setActionSuccess(`Puerto #${portToRelease.indice_puerto} liberado exitosamente.`);
         setPortToRelease(null);
         setSelectedPort(null);
@@ -436,15 +419,9 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
             {selectedPort.estado === 'Ocupado' && (
               <button
-                onClick={() => handleReleasePort(selectedPort)}
                 onClick={() => handleReleaseClick(selectedPort)}
                 disabled={isProcessing}
                 className="flex-1 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-800/80 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95"
-                title={
-                  user?.rol === 'Tecnico'
-                    ? 'Función restringida para rol Técnico (RBAC)'
-                    : 'Liberar puerto ocupado'
-                }
                 title="Liberar puerto ocupado y desvincular abonado"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -463,11 +440,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                 }
                 disabled={isProcessing}
                 className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 disabled:opacity-50 active:scale-95"
-                title={
-                  user?.rol === 'Tecnico'
-                    ? 'Función restringida para rol Técnico (RBAC)'
-                    : 'Cambiar a Libre o Dañado'
-                }
                 title="Cambiar a Libre o Dañado"
               >
                 <Wrench className="w-3.5 h-3.5" />

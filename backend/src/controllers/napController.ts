@@ -294,16 +294,6 @@ export const deleteNap = async (req: Request, res: Response) => {
   const t = await NapBox.sequelize!.transaction();
 
   try {
-    const nap = await NapBox.findByPk(id, {
-      include: [
-        {
-          model: NapPort,
-          as: 'puertos',
-          attributes: ['id_puerto']
-        }
-      ],
-      transaction: t
-    });
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
     const nap = isUuid
       ? await NapBox.findByPk(id, {
@@ -332,7 +322,6 @@ export const deleteNap = async (req: Request, res: Response) => {
       await t.rollback();
       res.status(404).json({
         success: false,
-        message: `No se encontró la caja NAP con identificador único '${id}'`
         message: `No se encontró la caja NAP con identificador '${id}'`
       });
       return;
@@ -340,18 +329,8 @@ export const deleteNap = async (req: Request, res: Response) => {
 
     const portIds = (nap.puertos || []).map((p: any) => p.id_puerto);
 
-    // 1. Desvincular clientes abonados asignados a los puertos de esta caja
     // 1. Eliminar clientes abonados vinculados a los puertos de esta caja
     if (portIds.length > 0) {
-      await Client.update(
-        { id_puerto_nap: null as any },
-        {
-          where: {
-            id_puerto_nap: portIds
-          },
-          transaction: t
-        }
-      );
       await Client.destroy({
         where: {
           id_puerto_nap: portIds
@@ -362,7 +341,6 @@ export const deleteNap = async (req: Request, res: Response) => {
       // 2. Eliminar los puertos de la caja NAP
       await NapPort.destroy({
         where: {
-          id_nap: id
           id_nap: nap.id_nap
         },
         transaction: t
@@ -383,7 +361,6 @@ export const deleteNap = async (req: Request, res: Response) => {
     console.error(`Error al eliminar la caja NAP ${id}:`, error);
     res.status(500).json({
       success: false,
-      message: 'Error interno al procesar la eliminación de la caja NAP',
       message: 'Error interno al procesar la eliminación de la caja NAP: ' + error.message,
       error: error.message
     });

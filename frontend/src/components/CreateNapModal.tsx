@@ -51,7 +51,6 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
   // Obtener geolocalización actual del navegador / smartphone
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert('Tu navegador no soporta geolocalización GPS.');
       setErrorMsg('Tu navegador o dispositivo no soporta geolocalización GPS.');
       return;
     }
@@ -65,7 +64,6 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
       },
       (err) => {
         console.warn('Error al capturar GPS:', err);
-        alert('No se pudo obtener la ubicación GPS precisa. Puedes escribir las coordenadas manualmente.');
         setErrorMsg('No se pudo obtener la ubicación GPS precisa. Puedes escribir las coordenadas manualmente.');
         setLocating(false);
       },
