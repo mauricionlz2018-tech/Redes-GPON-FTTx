@@ -7,14 +7,30 @@ interface CreateNapModalProps {
   onClose: () => void;
   onCreatedSuccess: (newNap: NapBox) => void;
   defaultCoordinates?: { lat: number; lng: number };
+  existingNaps?: NapBox[];
 }
+
+const getInitialIdentificador = (naps?: NapBox[]) => {
+  if (!naps || naps.length === 0) return 'NAP-SJR-26';
+  let maxNum = 0;
+  naps.forEach((n) => {
+    const match = n.identificador.match(/NAP-SJR-(\d+)/i);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNum) maxNum = num;
+    }
+  });
+  const nextNum = maxNum > 0 ? maxNum + 1 : naps.length + 1;
+  return `NAP-SJR-${nextNum.toString().padStart(2, '0')}`;
+};
 
 export const CreateNapModal: React.FC<CreateNapModalProps> = ({
   onClose,
   onCreatedSuccess,
-  defaultCoordinates
+  defaultCoordinates,
+  existingNaps
 }) => {
-  const [identificador, setIdentificador] = useState('NAP-SJR-05');
+  const [identificador, setIdentificador] = useState(() => getInitialIdentificador(existingNaps));
   const [zona, setZona] = useState('');
   const [direccionTexto, setDireccionTexto] = useState('');
   const [lat, setLat] = useState<string | number>(defaultCoordinates?.lat ?? 19.6670);
@@ -24,6 +40,13 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Validación en tiempo real si el nombre ya existe en la red
+  const trimmedId = identificador.trim().toUpperCase();
+  const duplicateMatch = existingNaps?.find(
+    (n) => n.identificador.trim().toUpperCase() === trimmedId
+  );
+  const isDuplicateName = Boolean(trimmedId && duplicateMatch);
 
   // Obtener geolocalización actual del navegador / smartphone
   const handleGetCurrentLocation = () => {
@@ -52,6 +75,12 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
     e.preventDefault();
     setErrorMsg(null);
 
+    // Si el nombre ya existe, bloquea rotundamente la creación
+    if (isDuplicateName) {
+      setErrorMsg(`¡Alerta! Ya existe una caja NAP registrada con el nombre "${trimmedId}" en la zona "${duplicateMatch?.zona}". Debes cambiar el nombre antes de poder crearla.`);
+      return;
+    }
+
     if (!identificador.trim() || !zona.trim() || !direccionTexto.trim()) {
       setErrorMsg('Por favor completa todos los campos requeridos.');
       return;
@@ -66,7 +95,7 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
     }
 
     const payload = {
-      identificador: identificador.trim().toUpperCase(),
+      identificador: trimmedId,
       zona: zona.trim(),
       direccion_texto: direccionTexto.trim(),
       total_puertos: Number(totalPuertos),
@@ -84,34 +113,16 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
         onClose();
       }
     } catch (err: any) {
-      console.warn('Error conectando a la API, creando en modo local/demo...', err);
-      // Fallback Demo en caso de que el backend no responda
-      const mockCreated: NapBox = {
-        id_nap: `nap-${Date.now()}`,
-        identificador: payload.identificador,
-        zona: payload.zona,
-        id_puerto_pon: 'pon-1',
-        total_puertos: payload.total_puertos,
-        direccion_texto: payload.direccion_texto,
-        coordenadas_gps: payload.coordenadas_gps,
-        metricas: {
-          total: payload.total_puertos,
-          libres: payload.total_puertos,
-          ocupados: 0,
-          danados: 0,
-          porcentajeSaturacion: 0,
-          estadoSaturacion: 'disponible'
-        },
-        puertos: Array.from({ length: payload.total_puertos }).map((_, i) => ({
-          id_puerto: `port-demo-${Date.now()}-${i + 1}`,
-          id_nap: `nap-${Date.now()}`,
-          indice_puerto: i + 1,
-          estado: 'Libre'
-        }))
-      };
-
-      onCreatedSuccess(mockCreated);
-      onClose();
+      console.warn('Error al registrar caja NAP:', err);
+      if (err.response) {
+        // El servidor respondió con un error (ej. 409 Conflicto por nombre duplicado o 400/403)
+        const serverMsg = err.response.data?.message || 'Error del servidor al registrar la caja';
+        setErrorMsg(serverMsg);
+        return;
+      } else {
+        setErrorMsg('Error de conexión: No se pudo conectar con el servidor para registrar la caja.');
+        return;
+      }
     } finally {
       setLoading(false);
     }
@@ -157,10 +168,26 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
                 type="text"
                 required
                 value={identificador}
-                onChange={(e) => setIdentificador(e.target.value)}
-                placeholder="Ej. NAP-SJR-05"
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white uppercase focus:outline-none focus:border-sky-500"
+                onChange={(e) => {
+                  setIdentificador(e.target.value);
+                  if (errorMsg) setErrorMsg(null);
+                }}
+                placeholder="Ej. NAP-SJR-26"
+                className={`w-full bg-slate-50 dark:bg-slate-800 border rounded-lg px-3 py-2 text-xs font-mono uppercase focus:outline-none transition-colors ${
+                  isDuplicateName
+                    ? 'border-red-500 text-red-700 dark:text-red-400 focus:border-red-600 bg-red-50/50 dark:bg-red-950/30'
+                    : 'border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-sky-500'
+                }`}
               />
+              {isDuplicateName && (
+                <div className="mt-1.5 p-2 rounded-lg bg-red-50 dark:bg-red-950/60 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 text-[11px] flex items-start gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
+                  <div>
+                    <strong className="block font-semibold">¡Nombre de caja ya registrado!</strong>
+                    <span>Ya existe una caja registrada como <strong>"{trimmedId}"</strong>{duplicateMatch?.zona ? ` en la zona "${duplicateMatch.zona}"` : ''}. Debes ingresar un nombre o número diferente para poder crearla.</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
@@ -262,11 +289,21 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="px-5 py-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-lg shadow-sky-900/30 flex items-center gap-1.5 transition-all disabled:opacity-50"
+              disabled={loading || isDuplicateName}
+              className={`px-5 py-2 text-xs font-bold text-white rounded-lg shadow-lg flex items-center gap-1.5 transition-all ${
+                isDuplicateName
+                  ? 'bg-rose-700/80 cursor-not-allowed opacity-80'
+                  : 'bg-sky-600 hover:bg-sky-500 shadow-sky-900/30 disabled:opacity-50'
+              }`}
             >
               <CheckCircle className="w-4 h-4" />
-              <span>{loading ? 'Creando caja y puertos...' : 'Guardar y Desplegar Caja'}</span>
+              <span>
+                {isDuplicateName
+                  ? 'Nombre Duplicado - Cambiar Nombre'
+                  : loading
+                  ? 'Creando caja y puertos...'
+                  : 'Guardar y Desplegar Caja'}
+              </span>
             </button>
           </div>
         </form>

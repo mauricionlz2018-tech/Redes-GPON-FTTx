@@ -510,6 +510,7 @@ export const MapViewPage: React.FC = () => {
       {isCreateNapOpen && (
         <CreateNapModal
           onClose={() => setIsCreateNapOpen(false)}
+          existingNaps={naps}
           onCreatedSuccess={(newNap) => {
             setNaps((prev) => [newNap, ...prev]);
             setSelectedNap(newNap);
