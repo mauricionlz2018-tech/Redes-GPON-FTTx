@@ -40,6 +40,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 }) => {
   const { user } = useAuth();
   const [selectedPort, setSelectedPort] = useState<NapPort | null>(null);
+  const [portToRelease, setPortToRelease] = useState<NapPort | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isEditClientModalOpen, setIsEditClientModalOpen] = useState<boolean>(false);
   const [rbacError, setRbacError] = useState<string | null>(null);
@@ -55,31 +56,48 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
       );
       return;
     }
+  // Iniciar flujo de liberación con modal visual estilizado (sin window.confirm)
+  const handleReleaseClick = (port: NapPort) => {
+    setRbacError(null);
+    setPortToRelease(port);
+  };
 
     if (!window.confirm(`¿Estás seguro de liberar el puerto #${port.indice_puerto}? El abonado será desvinculado.`)) {
       return;
     }
+  // Confirmar y ejecutar la liberación del puerto en backend y UI
+  const handleConfirmReleasePort = async () => {
+    if (!portToRelease) return;
 
     try {
       setIsProcessing(true);
       setRbacError(null);
       await api.delete(`/puertos/${port.id_puerto}/liberar`);
       setActionSuccess(`Puerto #${port.indice_puerto} liberado exitosamente.`);
+      await api.delete(`/puertos/${portToRelease.id_puerto}/liberar`);
+      setActionSuccess(`Puerto #${portToRelease.indice_puerto} liberado exitosamente.`);
+      setPortToRelease(null);
       setSelectedPort(null);
       onRefreshNap();
     } catch (error: any) {
       if (error.response && error.response.status === 403) {
         setRbacError(error.response.data.message || '403 Forbidden: Sin autorización');
+        setPortToRelease(null);
       } else {
         // Fallback interactivo si el backend no está disponible (ej. Vercel)
         port.estado = 'Libre';
         port.cliente = null;
+        // Fallback interactivo si el backend no está disponible
+        portToRelease.estado = 'Libre';
+        portToRelease.cliente = null;
         if (nap.metricas) {
           nap.metricas.ocupados = Math.max(0, nap.metricas.ocupados - 1);
           nap.metricas.libres = Math.min(nap.total_puertos, nap.metricas.libres + 1);
           nap.metricas.porcentajeSaturacion = Math.round((nap.metricas.ocupados / nap.total_puertos) * 100);
         }
         setActionSuccess(`Puerto #${port.indice_puerto} liberado exitosamente (Modo Demo).`);
+        setActionSuccess(`Puerto #${portToRelease.indice_puerto} liberado exitosamente.`);
+        setPortToRelease(null);
         setSelectedPort(null);
         onRefreshNap();
       }
@@ -419,6 +437,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             {selectedPort.estado === 'Ocupado' && (
               <button
                 onClick={() => handleReleasePort(selectedPort)}
+                onClick={() => handleReleaseClick(selectedPort)}
                 disabled={isProcessing}
                 className="flex-1 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-800/80 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95"
                 title={
@@ -426,6 +445,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                     ? 'Función restringida para rol Técnico (RBAC)'
                     : 'Liberar puerto ocupado'
                 }
+                title="Liberar puerto ocupado y desvincular abonado"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Liberar Puerto</span>
@@ -448,11 +468,95 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                     ? 'Función restringida para rol Técnico (RBAC)'
                     : 'Cambiar a Libre o Dañado'
                 }
+                title="Cambiar a Libre o Dañado"
               >
                 <Wrench className="w-3.5 h-3.5" />
                 <span>{selectedPort.estado === 'Dañado' ? 'Marcar Libre' : 'Marcar Dañado'}</span>
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación para Liberar Puerto (Reemplaza alert/confirm nativo) */}
+      {portToRelease && (
+        <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transition-all animate-scaleUp">
+            {/* Cabecera */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-amber-50/60 dark:bg-amber-950/30">
+              <div className="flex items-center gap-2.5 text-amber-600 dark:text-amber-400">
+                <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-xl">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                    Confirmar Liberación de Puerto
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Desvinculación de abonado y liberación de acometida
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPortToRelease(null)}
+                disabled={isProcessing}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Contenido */}
+            <div className="p-5 space-y-3.5 text-xs text-slate-600 dark:text-slate-300">
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-slate-900 dark:text-white">
+                    Puerto #{portToRelease.indice_puerto}
+                  </span>
+                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold">
+                    {nap.identificador}
+                  </span>
+                </div>
+                {portToRelease.cliente && (
+                  <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-1">
+                    <p className="font-medium text-slate-800 dark:text-slate-200">
+                      Abonado: <span className="font-bold text-slate-900 dark:text-white">{portToRelease.cliente.nombre_completo}</span>
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Contrato: <span className="font-mono">{portToRelease.cliente.numero_cliente}</span> | ONT MAC: <span className="font-mono">{portToRelease.cliente.ont_mac}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3.5 bg-red-50/60 dark:bg-red-950/30 border border-red-200/60 dark:border-red-900/40 rounded-xl text-red-800 dark:text-red-300 text-[11px] space-y-1">
+                <p className="font-semibold text-xs text-red-700 dark:text-red-300">¿Estás seguro de liberar el puerto #{portToRelease.indice_puerto}?</p>
+                <p className="text-[11px] leading-relaxed">
+                  El abonado será desvinculado de la caja terminal y el puerto pasará inmediatamente a estado <strong>Libre</strong> para nuevas asignaciones.
+                </p>
+              </div>
+            </div>
+
+            {/* Acciones */}
+            <div className="flex items-center justify-end gap-2.5 px-5 py-3.5 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setPortToRelease(null)}
+                disabled={isProcessing}
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReleasePort}
+                disabled={isProcessing}
+                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-500 active:scale-95 disabled:opacity-50 rounded-lg shadow-md shadow-red-950/20 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isProcessing ? 'Liberando puerto...' : 'Sí, Liberar Puerto'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

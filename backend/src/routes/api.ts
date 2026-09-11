@@ -29,8 +29,10 @@ router.get('/odf/:id', authenticateToken, getOdfById);
 // ============================
 router.get('/naps', authenticateToken, listNaps);
 router.post('/naps', authenticateToken, requireRoles(['Admin', 'Soporte']), createNap);
+router.post('/naps', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createNap);
 router.get('/naps/:id', authenticateToken, getNapById);
 router.delete('/naps/:id', authenticateToken, requireRoles(['Admin', 'Soporte']), deleteNap);
+router.delete('/naps/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), deleteNap);
 // Actualizar GPS en campo: Permitido para todos los roles de campo
 router.patch('/naps/:id/gps', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), updateGpsCoordinates);
 
@@ -42,6 +44,8 @@ router.post('/puertos/asignar', authenticateToken, requireRoles(['Admin', 'Sopor
 
 // Liberar puerto: PROHIBIDO para Técnico (403 Forbidden), permitido para Soporte y Admin
 router.delete('/puertos/:id/liberar', authenticateToken, requireRoles(['Admin', 'Soporte']), releasePort);
+// Liberar puerto: Permitido para Técnico, Soporte y Admin
+router.delete('/puertos/:id/liberar', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), releasePort);
 
 // Modificar estado de puerto (Dañado, En Mantenimiento, etc.): PROHIBIDO para Técnico (403 Forbidden)
 router.patch('/puertos/:id/estado', authenticateToken, requireRoles(['Admin', 'Soporte']), updatePortStatus);
