@@ -1,12 +1,16 @@
 export interface KnowledgeItem {
   id: string;
-  category: 'operacion' | 'roles' | 'tecnico' | 'red' | 'general';
+  category: 'operacion' | 'roles' | 'tecnico' | 'red' | 'general' | 'personalizado';
   title: string;
   keywords: string[];
   shortAnswer: string;
   detailedSteps?: string[];
   tips?: string[];
   allowedRoles?: ('Admin' | 'Soporte' | 'Tecnico')[];
+  isLearned?: boolean;
+  learnedId?: string;
+  author?: string;
+  createdAt?: string;
 }
 
 export interface ManualModule {
@@ -237,6 +241,110 @@ export const KNOWLEDGE_BASE: KnowledgeItem[] = [
     tips: [
       'Para marcar un puerto como Dañado o ponerlo nuevamente Disponible, selecciónalo y utiliza las opciones de cambio de estado en la tarjeta de detalle.'
     ]
+  },
+  {
+    id: 'eliminar_caja_nap',
+    category: 'red',
+    title: '¿Cómo eliminar una Caja NAP y darla de baja de la red de forma definitiva?',
+    keywords: [
+      'eliminar', 'eliminar caja', 'borrar caja', 'quitar caja', 'baja nap',
+      'eliminar nap', 'desconectar caja', 'destruir nap', 'borrar nap', 'baja'
+    ],
+    shortAnswer:
+      'Para dar de baja una Caja NAP de forma definitiva, selecciónala en el mapa, abre el panel de la caja y pulsa el botón rojo "Eliminar Caja NAP". Se abrirá un modal de seguridad que solicitará confirmar el nombre de la caja si tiene puertos en uso.',
+    detailedSteps: [
+      '1. Localiza la Caja NAP en el mapa y haz clic sobre su marcador o en el panel de puertos.',
+      '2. En el panel de acciones de la caja, presiona el botón rojo "Eliminar Caja NAP".',
+      '3. Se desplegará el modal de confirmación segura con el conteo de puertos y abonados vinculados.',
+      '4. Si la caja contiene clientes activos, escribe el nombre de la caja (ej. NAP-SJR-01) en el campo de texto para habilitar el botón.',
+      '5. Presiona "Confirmar Baja Definitiva". El backend ejecutará la transacción en PostgreSQL eliminando clientes, puertos y la caja, actualizando la topología en todos los dispositivos.'
+    ],
+    tips: [
+      'Esta operación es permanente y purga la caja en la base de datos central.',
+      'Requiere rol Administrador o Soporte Central.'
+    ],
+    allowedRoles: ['Admin', 'Soporte']
+  },
+  {
+    id: 'caja_no_aparece',
+    category: 'tecnico',
+    title: '¿Por qué no aparecía mi Caja NAP recién creada y cómo sincronizar?',
+    keywords: [
+      'no aparece', 'no se ve', 'desaparece', 'telefono', 'celular', 'movil',
+      'no muestra', 'no guarda', 'actualizar', 'sincronizar', 'recargar'
+    ],
+    shortAnswer:
+      'Las cajas registradas se guardan de forma permanente en PostgreSQL. Si diste de alta una caja y en tu teléfono celular o navegador no la ves de inmediato, presiona el botón "Actualizar" en la barra de herramientas del mapa.',
+    detailedSteps: [
+      '1. En la parte superior del Mapa de Red, presiona el botón "Actualizar" (icono de flechas circulares).',
+      '2. El sistema consultará la base de datos central y descargará la topología fresca.',
+      '3. Si estabas en campo sin señal celular, la caja quedó registrada en modo Offline (IndexedDB) y se enviará al servidor tan pronto tu teléfono recupere cobertura.',
+      '4. Recuerda verificar los filtros de búsqueda ("Todos los Estados" o escribir el nombre de la caja en el buscador).'
+    ],
+    tips: [
+      'El sistema ya no borra cajas al recargar: cada registro queda resguardado en la base de datos de forma definitiva.'
+    ]
+  },
+  {
+    id: 'rutas_fibra_vial',
+    category: 'red',
+    title: '¿Cómo trazar rutas viales y de fibra óptica hacia una Caja NAP?',
+    keywords: [
+      'ruta', 'trazar ruta', 'camino', 'vial', 'como llegar', 'navegacion',
+      'osrm', 'odf a nap', 'vehicular', 'distancia', 'tiempo'
+    ],
+    shortAnswer:
+      'El sistema incluye un motor de navegación vial (OSRM) para guiar a las cuadrillas de técnicos en vehículo desde la Central ODF hasta la Caja NAP en campo.',
+    detailedSteps: [
+      '1. En el Mapa de Red, haz clic sobre la Caja NAP a la que deseas desplazarte.',
+      '2. Presiona el botón azul "Ruta a Caja (Prueba)" o "Trazar Ruta Vial".',
+      '3. El mapa calculará la ruta óptima por calles transitables, indicando distancia total en kilómetros y tiempo estimado de traslado en minutos.',
+      '4. En el mapa se trazará la línea vial en color azul/índigo y en la parte superior aparecerá el banner de ruta activa.',
+      '5. Para despejar la ruta del mapa, pulsa la "X" en el banner superior.'
+    ],
+    tips: [
+      'Las líneas moradas y celestes representan las rutas físicas de cables de fibra óptica troncal provenientes del KMZ de la red.'
+    ]
+  },
+  {
+    id: 'muffas_empalmes',
+    category: 'red',
+    title: '¿Qué son las muffas y empalmes y cuál es su diferencia con las NAP?',
+    keywords: [
+      'muffas', 'empalmes', 'cierre de empalme', 'domo', 'fusion',
+      'fibra troncal', 'diferencia', 'caja hermetica'
+    ],
+    shortAnswer:
+      'Las muffas (puntos anaranjados en el mapa) son cierres de empalme herméticos donde se fusionan hilos de fibra óptica del cable troncal hacia cables de distribución. No tienen conectores para abonados.',
+    detailedSteps: [
+      'Muffas / Cierres de Empalme (Icono Cuadrado Naranja): Elementos pasivos herméticos que albergan bandejas de fusión de fibra óptica (ej. 24 a 96 hilos). Sirven para derivar o continuar el cable troncal.',
+      'Cajas NAP (Icono Circular Verde/Azul/Rojo): Cajas terminales de distribución con splitters ópticos donde se conectan las acometidas (drop) hacia las casas de los clientes mediante conectores SC/APC.',
+      'Ambos elementos georreferenciados conforman la topología híbrida de la red GPON en San José del Rincón.'
+    ],
+    tips: [
+      'Puedes consultar la leyenda del mapa para ver el total de muffas y rutas de fibra activas en la zona.'
+    ]
+  },
+  {
+    id: 'instalar_app_pwa',
+    category: 'tecnico',
+    title: '¿Cómo instalar la aplicación en mi teléfono celular (PWA / APK)?',
+    keywords: [
+      'instalar', 'app', 'pwa', 'apk', 'telefono', 'celular', 'smartphone',
+      'pantalla de inicio', 'descargar app', 'android', 'iphone'
+    ],
+    shortAnswer:
+      'Puedes instalar la plataforma como una App nativa directamente desde el navegador de tu celular sin necesidad de tiendas de aplicaciones ni archivos externos.',
+    detailedSteps: [
+      '1. Abre la dirección web de la plataforma en Google Chrome (en Android) o Safari (en iOS).',
+      '2. En la barra superior, haz clic en el botón verde con icono de descarga "APK".',
+      '3. Si estás en Android, presiona el botón "Instalar Aplicación". Chrome añadirá la App a tu cajón de aplicaciones.',
+      '4. Si estás en iPhone / iPad, pulsa el botón "Compartir" de Safari y selecciona "Agregar al inicio".',
+      '5. Al abrir el icono desde tu pantalla de inicio, la aplicación se ejecutará a pantalla completa y con capacidad offline.'
+    ],
+    tips: [
+      'La versión instalada ocupa menos de 2 MB y se actualiza sola cada vez que te conectas a internet.'
+    ]
   }
 ];
 
@@ -376,16 +484,218 @@ export const MANUAL_MODULES: ManualModule[] = [
 
 export const QUICK_QUESTIONS = [
   '¿Cómo asignar un cliente a un puerto?',
-  '¿Cómo editar datos de un cliente si me equivoqué?',
+  '¿Cómo eliminar una Caja NAP de forma definitiva?',
+  '¿Por qué no aparecía mi caja y cómo sincronizar?',
+  '¿Cómo trazar rutas viales y de fibra?',
   '¿Por qué el Técnico no puede liberar puertos?',
-  '¿Cómo capturar las coordenadas GPS en campo?',
-  '¿Cómo funciona el modo sin conexión (Offline)?',
-  '¿Cómo descargar el reporte de saturación en PDF?',
   '¿Cuáles son los valores recomendados de potencia (dBm)?',
-  '¿Qué significan los colores de los puertos?'
+  '¿Qué son las muffas y empalmes?',
+  '¿Cómo capturar las coordenadas GPS en campo?',
+  '¿Cómo instalar la app en mi teléfono celular?'
 ];
 
-// Motor de búsqueda en lenguaje natural para la base de conocimiento
+export interface PredeterminedCategory {
+  id: string;
+  name: string;
+  iconName: string;
+  description: string;
+  questions: {
+    question: string;
+    summary: string;
+  }[];
+}
+
+export const PREDETERMINED_CATEGORIES: PredeterminedCategory[] = [
+  {
+    id: 'cat_naps',
+    name: 'Cajas NAP y Topología',
+    iconName: 'MapPin',
+    description: 'Alta, baja, sincronización de cajas y rutas viales',
+    questions: [
+      {
+        question: '¿Cómo registrar una nueva Caja NAP en el mapa?',
+        summary: 'Formulario de registro, capacidad de 16 puertos y GPS'
+      },
+      {
+        question: '¿Cómo eliminar una Caja NAP y darla de baja de la red de forma definitiva?',
+        summary: 'Baja atómica segura en base de datos PostgreSQL'
+      },
+      {
+        question: '¿Por qué no aparecía mi Caja NAP recién creada y cómo sincronizar?',
+        summary: 'Sincronización en servidor y botón de Actualizar'
+      },
+      {
+        question: '¿Cómo trazar rutas viales y de fibra óptica hacia una Caja NAP?',
+        summary: 'Navegación vehicular OSRM y trazado de fibra del KMZ'
+      },
+      {
+        question: '¿Qué son las muffas y empalmes y cuál es su diferencia con las NAP?',
+        summary: 'Puntos pasivos de fusión sin puertos a usuarios'
+      }
+    ]
+  },
+  {
+    id: 'cat_puertos',
+    name: 'Puertos y Clientes',
+    iconName: 'Layers',
+    description: 'Asignación, edición, liberación y códigos de color',
+    questions: [
+      {
+        question: '¿Cómo asignar un cliente a un puerto libre?',
+        summary: 'Formulario de abonado, MAC y potencia en dBm'
+      },
+      {
+        question: '¿Cómo liberar un puerto ocupado y por qué se restringe al Técnico?',
+        summary: 'Desconexión autorizada y auditoría'
+      },
+      {
+        question: '¿Qué significan los colores de los puertos en la matriz de la NAP?',
+        summary: 'Verde (Libre), Azul (Ocupado), Rojo (Dañado)'
+      },
+      {
+        question: '¿Cómo editar o corregir los datos de un cliente?',
+        summary: 'Corrección de MAC, potencia o nombre sin liberar puerto'
+      }
+    ]
+  },
+  {
+    id: 'cat_potencia',
+    name: 'Potencia Óptica (dBm)',
+    iconName: 'Activity',
+    description: 'Niveles óptimos, atenuación y diagnóstico en campo',
+    questions: [
+      {
+        question: '¿Cuáles son los valores recomendados de potencia óptica (dBm)?',
+        summary: 'Rango óptimo -15 a -25 dBm y umbrales de falla'
+      }
+    ]
+  },
+  {
+    id: 'cat_roles',
+    name: 'Roles y Seguridad',
+    iconName: 'Shield',
+    description: 'Niveles de acceso y permisos de Administrador, Soporte y Técnico',
+    questions: [
+      {
+        question: '¿Qué roles existen en el sistema y qué permisos tiene cada uno?',
+        summary: 'Control de acceso RBAC por perfil operativo'
+      },
+      {
+        question: '¿Por qué el Técnico no puede liberar puertos?',
+        summary: 'Protección operativa y prevención de cortes de servicio'
+      }
+    ]
+  },
+  {
+    id: 'cat_reportes',
+    name: 'Reportes y PDF',
+    iconName: 'FileText',
+    description: 'Generación y descarga de auditorías de saturación en PDF',
+    questions: [
+      {
+        question: '¿Cómo descargar el reporte ejecutivo de saturación en PDF?',
+        summary: 'Descarga al vuelo de métricas ejecutivas membretadas'
+      }
+    ]
+  },
+  {
+    id: 'cat_movil',
+    name: 'Móvil, GPS y Offline',
+    iconName: 'Compass',
+    description: 'Operación en campo sin cobertura e instalación como App',
+    questions: [
+      {
+        question: '¿Cómo capturar y actualizar las coordenadas GPS en campo?',
+        summary: 'Uso del sensor de ubicación del teléfono celular'
+      },
+      {
+        question: '¿Cómo funciona el modo sin conexión (Offline)?',
+        summary: 'Persistencia en IndexedDB y sincronización automática'
+      },
+      {
+        question: '¿Cómo instalar la aplicación en mi teléfono celular (PWA / APK)?',
+        summary: 'Instalación nativa rápida desde Chrome o Safari'
+      }
+    ]
+  }
+];
+
+export interface LearnedKnowledgeItem {
+  id: string;
+  question: string;
+  answer: string;
+  keywords: string[];
+  createdAt: string;
+  author?: string;
+}
+
+const LEARNED_KEY = 'gpon_assistant_learned_v1';
+
+export function getLearnedKnowledge(): LearnedKnowledgeItem[] {
+  try {
+    const raw = localStorage.getItem(LEARNED_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn('Error al leer conocimiento aprendido:', e);
+    return [];
+  }
+}
+
+export function saveLearnedKnowledge(
+  question: string,
+  answer: string,
+  author?: string
+): LearnedKnowledgeItem {
+  const cleanQ = question.trim();
+  const cleanA = answer.trim();
+
+  // Generar palabras clave automáticamente
+  const autoKeywords = cleanQ
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
+
+  const newItem: LearnedKnowledgeItem = {
+    id: `learned-${Date.now()}`,
+    question: cleanQ,
+    answer: cleanA,
+    keywords: Array.from(new Set(autoKeywords)),
+    createdAt: new Date().toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    author: author || 'Usuario'
+  };
+
+  const current = getLearnedKnowledge();
+  const updated = [newItem, ...current];
+  try {
+    localStorage.setItem(LEARNED_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.warn('Error al persistir nuevo conocimiento:', e);
+  }
+
+  return newItem;
+}
+
+export function deleteLearnedKnowledge(id: string): void {
+  const current = getLearnedKnowledge();
+  const updated = current.filter((item) => item.id !== id);
+  try {
+    localStorage.setItem(LEARNED_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.warn('Error al eliminar conocimiento aprendido:', e);
+  }
+}
+
+// Motor de búsqueda en lenguaje natural que consulta tanto la base oficial como lo aprendido por el usuario
 export function searchKnowledge(query: string): { item: KnowledgeItem; score: number } | null {
   const cleanQuery = query
     .toLowerCase()
@@ -400,6 +710,48 @@ export function searchKnowledge(query: string): { item: KnowledgeItem; score: nu
   let bestItem: KnowledgeItem | null = null;
   let bestScore = 0;
 
+  // 1. Primero evaluar si hay alguna respuesta aprendida por el usuario
+  const learnedItems = getLearnedKnowledge();
+  for (const l of learnedItems) {
+    let score = 0;
+    const cleanQ = l.question
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    if (cleanQ.includes(cleanQuery) || cleanQuery.includes(cleanQ)) {
+      score += 25; // Gran prioridad a lo que el equipo enseñó al bot
+    }
+
+    for (const kw of l.keywords) {
+      if (cleanQuery.includes(kw)) score += 10;
+      for (const qw of queryWords) {
+        if (kw.includes(qw)) score += 5;
+      }
+    }
+
+    for (const qw of queryWords) {
+      if (cleanQ.includes(qw)) score += 6;
+      if (l.answer.toLowerCase().includes(qw)) score += 3;
+    }
+
+    if (score > bestScore && score >= 5) {
+      bestScore = score;
+      bestItem = {
+        id: l.id,
+        category: 'personalizado',
+        title: l.question,
+        keywords: l.keywords,
+        shortAnswer: l.answer,
+        isLearned: true,
+        learnedId: l.id,
+        author: l.author,
+        createdAt: l.createdAt
+      };
+    }
+  }
+
+  // 2. Si no superó umbral alto en aprendizaje, evaluar base de conocimiento del sistema
   for (const item of KNOWLEDGE_BASE) {
     let score = 0;
 
@@ -410,7 +762,7 @@ export function searchKnowledge(query: string): { item: KnowledgeItem; score: nu
       .replace(/[\u0300-\u036f]/g, '');
 
     if (cleanTitle.includes(cleanQuery)) {
-      score += 15;
+      score += 18;
     }
 
     // Coincidencia en palabras clave
@@ -421,19 +773,19 @@ export function searchKnowledge(query: string): { item: KnowledgeItem; score: nu
         .replace(/[\u0300-\u036f]/g, '');
 
       if (cleanQuery.includes(cleanKw) || cleanKw.includes(cleanQuery)) {
-        score += 8;
+        score += 10;
       }
 
       for (const qw of queryWords) {
         if (cleanKw.includes(qw)) {
-          score += 3;
+          score += 4;
         }
       }
     }
 
     // Coincidencia en contenido y pasos
     for (const qw of queryWords) {
-      if (cleanTitle.includes(qw)) score += 4;
+      if (cleanTitle.includes(qw)) score += 5;
       if (item.shortAnswer.toLowerCase().includes(qw)) score += 2;
     }
 

@@ -129,7 +129,7 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-scaleUp text-slate-900 dark:text-white transition-colors">
         {/* Cabecera del Modal */}
         <div className="bg-slate-100 dark:bg-gradient-to-r dark:from-slate-800 dark:to-sky-950 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">

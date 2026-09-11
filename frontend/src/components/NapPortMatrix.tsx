@@ -452,7 +452,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
       {/* Modal de Confirmación para Liberar Puerto (Reemplaza alert/confirm nativo) */}
       {portToRelease && (
-        <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transition-all animate-scaleUp">
             {/* Cabecera */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-amber-50/60 dark:bg-amber-950/30">
