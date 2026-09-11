@@ -55,7 +55,6 @@ export const ReportsPage: React.FC = () => {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `reporte_gpon_saturacion_${pdfTheme}_${new Date().toISOString().slice(0, 10)}.pdf`;
       link.download = `reporte_gpon_saturacion_${new Date().toISOString().slice(0, 10)}.pdf`;
       document.body.appendChild(link);
       link.click();
@@ -90,53 +89,29 @@ export const ReportsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Botones de Descarga en Formato Blanco / Claro y Modo Oscuro */}
         {/* Acciones de Descarga e Impresión */}
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <button
             onClick={() => handleDownloadPdf('light')}
             disabled={!!downloadingTheme}
-            className="flex items-center gap-1.5 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-600 text-xs font-semibold py-2 px-3.5 rounded-xl shadow-sm transition-all disabled:opacity-50 active:scale-95"
-            title="Generar PDF corporativo 100% en formato blanco/claro, con encabezados claros y sin fondos oscuros"
             className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-sm transition-all disabled:opacity-50 active:scale-95"
             title="Descargar reporte ejecutivo oficial en formato PDF"
           >
-            {downloadingTheme === 'light' ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-500" />
             {downloadingTheme ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
             ) : (
-              <Sun className="w-3.5 h-3.5 text-amber-500" />
               <Download className="w-3.5 h-3.5" />
             )}
-            <span>PDF Formato Blanco / Claro</span>
             <span>Descargar Reporte PDF</span>
           </button>
 
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 text-xs font-semibold py-2 px-3 rounded-xl shadow-sm transition-all active:scale-95"
-            title="Imprimir vista de reporte directamente en papel o guardar como PDF en formato blanco"
             className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 text-xs font-semibold py-2 px-3.5 rounded-xl shadow-sm transition-all active:scale-95"
             title="Imprimir vista de reporte directamente o guardar en PDF"
           >
             <Printer className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
-            <span className="hidden sm:inline">Imprimir Vista</span>
             <span>Imprimir Vista</span>
-          </button>
-
-          <button
-            onClick={() => handleDownloadPdf('dark')}
-            disabled={!!downloadingTheme}
-            className="flex items-center gap-1.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white text-xs font-semibold py-2 px-3.5 rounded-xl shadow-md shadow-sky-950/20 transition-all disabled:opacity-50 active:scale-95"
-            title="Generar PDF con estética oscura NOC para monitores y salas de control"
-          >
-            {downloadingTheme === 'dark' ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Moon className="w-3.5 h-3.5 text-sky-300" />
-            )}
-            <span>PDF Modo Oscuro (NOC)</span>
           </button>
         </div>
       </div>

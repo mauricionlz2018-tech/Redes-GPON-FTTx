@@ -100,7 +100,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
       bufferPages: true
     });
 
-    const filename = `reporte_gpon_saturacion_${isDark ? 'oscuro' : 'claro'}_${new Date().toISOString().slice(0, 10)}.pdf`;
     const filename = `reporte_gpon_saturacion_${new Date().toISOString().slice(0, 10)}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
@@ -497,7 +496,6 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
         .font('Helvetica')
         .fontSize(6.8)
         .text(
-          `Documento oficial de auditoría emitido por GPON TELECOM S.A. de C.V. • Formato: ${isDark ? 'Oscuro NOC' : 'Blanco / Claro Impresión'}`,
           'Documento oficial de auditoría emitido por GPON TELECOM S.A. de C.V.',
           pageLeft,
           746,
