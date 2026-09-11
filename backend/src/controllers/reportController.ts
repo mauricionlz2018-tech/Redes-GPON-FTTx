@@ -37,6 +37,8 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
       ? {
           bgCanvas: '#0b132b',
           bannerBg: '#111c3a',
+          bannerBorder: '#243356',
+          bannerAccent: '#38bdf8',
           bannerTitle: '#ffffff',
           bannerSub: '#38bdf8',
           bannerDate: '#94a3b8',
@@ -68,12 +70,22 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
           bannerSub: '#38bdf8',
           bannerDate: '#94a3b8',
           cardBg: '#f8fafc',
+          bannerBg: '#f8fafc',
+          bannerBorder: '#cbd5e1',
+          bannerAccent: '#0284c7',
+          bannerTitle: '#0f172a',
+          bannerSub: '#0284c7',
+          bannerDate: '#475569',
+          cardBg: '#ffffff',
           cardBorder: '#e2e8f0',
           cardTitle: '#64748b',
           sectionTitle: '#0f172a',
           headerBg: '#1e293b',
           headerText: '#ffffff',
           headerBorder: '#334155',
+          headerBg: '#f1f5f9',
+          headerText: '#0f172a',
+          headerBorder: '#cbd5e1',
           rowEven: '#ffffff',
           rowOdd: '#f8fafc',
           rowText: '#0f172a',
@@ -131,6 +143,13 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
 
     // Encabezado Corporativo (Banner Superior)
     doc.rect(pageLeft, 35, pageWidth, 56).fill(colors.bannerBg);
+    if (isDark) {
+      doc.rect(pageLeft, 35, pageWidth, 56).fill(colors.bannerBg);
+    } else {
+      // Formato Blanco / Claro: Fondo suave con borde sutil y línea acento superior
+      doc.rect(pageLeft, 35, pageWidth, 56).fillAndStroke(colors.bannerBg, colors.bannerBorder);
+      doc.rect(pageLeft, 35, pageWidth, 3).fill(colors.bannerAccent);
+    }
 
     // Insertar logo corporativo oficial si existe el archivo
     const logoCandidates = [
@@ -145,6 +164,11 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
     if (validLogoPath) {
       try {
         doc.roundedRect(pageLeft + pageWidth - 92, 39, 84, 48, 4).fill('#ffffff');
+        if (isDark) {
+          doc.roundedRect(pageLeft + pageWidth - 92, 39, 84, 48, 4).fill('#ffffff');
+        } else {
+          doc.roundedRect(pageLeft + pageWidth - 92, 39, 84, 48, 4).fillAndStroke('#ffffff', colors.cardBorder);
+        }
         doc.image(validLogoPath, pageLeft + pageWidth - 88, 42, {
           width: 76,
           height: 42,
@@ -169,6 +193,7 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
       .fontSize(8.5)
       .text(
         `Reporte Ejecutivo de Auditoría de Red, Capacidad FTTx y Abonados (${isDark ? 'Modo Oscuro NOC' : 'Modo Claro'})`,
+        `Reporte Ejecutivo de Auditoría de Red, Capacidad FTTx y Abonados`,
         pageLeft + 14,
         60,
         { width: pageWidth - 115, lineBreak: false }
@@ -232,11 +257,13 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
       let currentX = pageLeft;
 
       doc.rect(pageLeft, y, pageWidth, height).fillAndStroke(bgColor, colors.rowBorder);
+      doc.rect(pageLeft, y, pageWidth, height).fillAndStroke(bgColor, isHeader ? colors.headerBorder : colors.rowBorder);
 
       columns.forEach((col, idx) => {
         if (idx > 0) {
           doc
             .strokeColor(colors.rowBorder)
+            .strokeColor(isHeader ? colors.headerBorder : colors.rowBorder)
             .lineWidth(0.5)
             .moveTo(currentX, y)
             .lineTo(currentX, y + height)
@@ -483,6 +510,7 @@ export const generateSaturationReport = async (req: Request, res: Response) => {
         .fontSize(6.8)
         .text(
           `Documento oficial de auditoría emitido por GPON TELECOM S.A. de C.V. • Modo: ${isDark ? 'Oscuro NOC' : 'Claro Ejecutivo'}`,
+          `Documento oficial de auditoría emitido por GPON TELECOM S.A. de C.V. • Formato: ${isDark ? 'Oscuro NOC' : 'Blanco / Claro Impresión'}`,
           pageLeft,
           746,
           { width: pageWidth - 90, align: 'left', lineBreak: false }

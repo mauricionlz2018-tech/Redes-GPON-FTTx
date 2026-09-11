@@ -73,3 +73,32 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* Soporte de Impresión Oficial en Formato Blanco / Claro */
+@media print {
+  header, nav, .print\:hidden {
+    display: none !important;
+  }
+  body, html, #root {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  .dark {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  .dark .bg-slate-900,
+  .dark .bg-slate-950,
+  .dark .bg-slate-800 {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #e2e8f0 !important;
+  }
+  .dark thead {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+  .dark tr {
+    border-color: #e2e8f0 !important;
+  }
+}
