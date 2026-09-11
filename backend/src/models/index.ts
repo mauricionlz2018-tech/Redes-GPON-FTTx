@@ -6,6 +6,7 @@ import { FiberThread } from './FiberThread';
 import { NapBox } from './NapBox';
 import { NapPort } from './NapPort';
 import { Client } from './Client';
+import { MileageLog } from './MileageLog';
 
 // Relaciones ODF -> PON Ports
 OdfPanel.hasMany(PonPort, { foreignKey: 'id_odf', as: 'puertos_pon', onDelete: 'CASCADE' });
@@ -27,6 +28,11 @@ NapPort.belongsTo(NapBox, { foreignKey: 'id_nap', as: 'caja_nap' });
 NapPort.hasOne(Client, { foreignKey: 'id_puerto_nap', as: 'cliente', onDelete: 'SET NULL' });
 Client.belongsTo(NapPort, { foreignKey: 'id_puerto_nap', as: 'puerto_nap' });
 
+// Sincronizar tabla de kilometraje de forma segura
+MileageLog.sync({ alter: false }).catch((err) => {
+  console.warn('Aviso: sincronización de tabla mileage_logs diferida:', err?.message);
+});
+
 export {
   sequelize,
   User,
@@ -36,5 +42,7 @@ export {
   NapBox,
   NapPort,
   Client
+  Client,
+  MileageLog
 };
 

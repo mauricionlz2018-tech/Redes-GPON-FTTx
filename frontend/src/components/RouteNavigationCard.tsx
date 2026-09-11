@@ -25,6 +25,8 @@ import {
   ChevronUp,
   LocateFixed,
   Car
+  Car,
+  Gauge
 } from 'lucide-react';
 
 interface RouteNavigationCardProps {
@@ -36,6 +38,7 @@ interface RouteNavigationCardProps {
   userCoordinates: Coordinates | null;
   onOriginChange: (type: 'odf' | 'user') => void;
   onClose: () => void;
+  onOpenMileageCapture?: (nap: NapBox, distanceKm?: number) => void;
 }
 
 export const RouteNavigationCard: React.FC<RouteNavigationCardProps> = ({
@@ -47,6 +50,8 @@ export const RouteNavigationCard: React.FC<RouteNavigationCardProps> = ({
   userCoordinates,
   onOriginChange,
   onClose
+  onClose,
+  onOpenMileageCapture
 }) => {
   const [showSteps, setShowSteps] = useState(false);
 
@@ -230,6 +235,26 @@ export const RouteNavigationCard: React.FC<RouteNavigationCardProps> = ({
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Botón para Grabar Kilometraje del Traslado */}
+            {onOpenMileageCapture && (
+              <button
+                type="button"
+                onClick={() =>
+                  onOpenMileageCapture(
+                    nap,
+                    routeResult ? Number((routeResult.distanceMeters / 1000).toFixed(1)) : undefined
+                  )
+                }
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                title="Capturar y registrar el kilometraje del vehículo para este traslado"
+              >
+                <Gauge className="w-3.5 h-3.5" />
+                <span>
+                  Grabar Kilometraje de Traslado {routeResult ? `(${(routeResult.distanceMeters / 1000).toFixed(1)} km)` : ''}
+                </span>
+              </button>
             )}
 
             {/* Botones de Navegación Externa para Técnicos en Campo */}

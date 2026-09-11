@@ -7,6 +7,7 @@ import { listNaps, getNapById, updateGpsCoordinates, createNap, deleteNap } from
 import { assignPort, releasePort, updatePortStatus } from '../controllers/portController';
 import { listClients, getClientById, updateClient } from '../controllers/clientController';
 import { generateSaturationReport } from '../controllers/reportController';
+import { listMileageLogs, createMileageLog, deleteMileageLog } from '../controllers/mileageController';
 
 const router = Router();
 
@@ -60,6 +61,13 @@ router.put('/clientes/:id', authenticateToken, requireRoles(['Admin', 'Soporte',
 // Rutas de Reportes
 // ============================
 router.get('/reportes/saturacion-pdf', authenticateToken, generateSaturationReport);
+
+// ============================
+// Rutas de Bitácora de Kilometraje de Técnicos
+// ============================
+router.get('/kilometraje', authenticateToken, listMileageLogs);
+router.post('/kilometraje', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createMileageLog);
+router.delete('/kilometraje/:id', authenticateToken, requireRoles(['Admin', 'Soporte']), deleteMileageLog);
 
 export default router;
 

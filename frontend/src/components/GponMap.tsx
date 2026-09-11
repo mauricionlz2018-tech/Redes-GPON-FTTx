@@ -2,7 +2,22 @@ import React, { useMemo, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure } from '../types';
-import { Network, Server, Radio, Compass, Navigation, X, GitCommit, Trash2, Layers, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Network,
+  Server,
+  Radio,
+  Compass,
+  Navigation,
+  X,
+  GitCommit,
+  Trash2,
+  Layers,
+  ChevronDown,
+  ChevronUp,
+  Map,
+  Satellite,
+  Car
+} from 'lucide-react';
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
 import { mockFiberRoutes, mockEmpalmes } from '../data/mockGponData';
 
@@ -19,6 +34,8 @@ interface GponMapProps {
   fiberRoutes?: FiberRoute[];
   empalmes?: EmpalmeClosure[];
   onDeleteNapRequest?: (nap: NapBox) => void;
+  onOpenMileageCapture?: (nap: NapBox) => void;
+  onOpenMileageCapture?: (nap: NapBox, distanceKm?: number) => void;
 }
 
 // Componente para ajustar dinámicamente el encuadre del mapa
@@ -133,7 +150,8 @@ export const GponMap: React.FC<GponMapProps> = ({
   onClearRoute,
   fiberRoutes = mockFiberRoutes,
   empalmes = mockEmpalmes,
-  onDeleteNapRequest
+  onDeleteNapRequest,
+  onOpenMileageCapture
 }) => {
   // Centro por defecto: Cobertura de la red en San José del Rincón
   const defaultCenter: [number, number] = useMemo(() => {
@@ -144,8 +162,64 @@ export const GponMap: React.FC<GponMapProps> = ({
   const empalmeIcon = useMemo(() => createEmpalmeIcon(), []);
   const [isLegendOpen, setIsLegendOpen] = React.useState(true);
 
+  // Estado para alternar entre vista estándar de calles, satélite real e híbrido
+  const [mapLayer, setMapLayer] = React.useState<'streets' | 'satellite' | 'hybrid'>(() => {
+    try {
+      const saved = localStorage.getItem('gpon_map_layer');
+      if (saved === 'satellite' || saved === 'hybrid' || saved === 'streets') return saved;
+    } catch {}
+    return 'streets';
+  });
+
+  const handleSelectMapLayer = (layer: 'streets' | 'satellite' | 'hybrid') => {
+    setMapLayer(layer);
+    try {
+      localStorage.setItem('gpon_map_layer', layer);
+    } catch {}
+  };
+
   return (
     <div id="seccion-mapa-gpon" className="relative isolate w-full h-full min-h-[520px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors scroll-mt-24">
+      {/* Selector flotante de Capas de Mapa: Calles vs Vista Satélite vs Híbrido */}
+      <div className="absolute top-3 right-3 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-lg flex items-center gap-1">
+        <button
+          onClick={() => handleSelectMapLayer('streets')}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            mapLayer === 'streets'
+              ? 'bg-sky-600 text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+          title="Vista de calles y cartografía base (OpenStreetMap)"
+        >
+          <Map className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Calles</span>
+        </button>
+        <button
+          onClick={() => handleSelectMapLayer('satellite')}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            mapLayer === 'satellite'
+              ? 'bg-sky-600 text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+          title="Vista satelital real de alta resolución (Esri World Imagery)"
+        >
+          <Satellite className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Satélite</span>
+        </button>
+        <button
+          onClick={() => handleSelectMapLayer('hybrid')}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            mapLayer === 'hybrid'
+              ? 'bg-sky-600 text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+          title="Vista satelital con nombres de calles y referencias poblacionales"
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Híbrido</span>
+        </button>
+      </div>
+
       {/* Banner flotante superior si hay una ruta vial activa */}
       {activeRoute && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur text-white px-3.5 py-1.5 rounded-full shadow-lg border border-slate-700 flex items-center gap-2.5 text-xs font-semibold">
@@ -173,11 +247,35 @@ export const GponMap: React.FC<GponMapProps> = ({
       >
         <MapBoundsAdjuster coordinates={activeRoute?.coordinates} />
 
-        {/* Capa de Cartografía Oficial OpenStreetMap */}
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        {/* 1. Capa de Calles (OpenStreetMap) */}
+        {mapLayer === 'streets' && (
+          <TileLayer
+            key="osm-streets"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+        )}
+
+        {/* 2. Capa Satélite Real de Alta Definición (Esri World Imagery) */}
+        {(mapLayer === 'satellite' || mapLayer === 'hybrid') && (
+          <TileLayer
+            key="esri-satellite"
+            attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={19}
+          />
+        )}
+
+        {/* 3. Capa de Referencias y Nombres de Calles sobre Satélite (Modo Híbrido) */}
+        {mapLayer === 'hybrid' && (
+          <TileLayer
+            key="esri-hybrid-labels"
+            attribution='&copy; Esri References'
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={19}
+            opacity={0.9}
+          />
+        )}
 
         {/* 1. Trazado de Rutas Reales de Fibra Óptica (Troncales y Ramales del KMZ) */}
         {fiberRoutes.map((route) => (
@@ -377,6 +475,23 @@ export const GponMap: React.FC<GponMapProps> = ({
                       <Compass className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                       <span>Calibrar GPS de Campo</span>
                     </button>
+
+                    {onOpenMileageCapture && (
+                      <button
+                        onClick={() => onOpenMileageCapture(nap)}
+                        onClick={() =>
+                          onOpenMileageCapture(
+                            nap,
+                            activeRoute ? Number((activeRoute.distanceMeters / 1000).toFixed(1)) : undefined
+                          )
+                        }
+                        className="w-full bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-emerald-200 dark:border-emerald-800/60 cursor-pointer"
+                        title="Capturar y grabar kilometraje del técnico hacia esta caja"
+                      >
+                        <Car className="w-3.5 h-3.5" />
+                        <span>Grabar Kilometraje de Traslado</span>
+                      </button>
+                    )}
 
                     {onDeleteNapRequest && (
                       <button

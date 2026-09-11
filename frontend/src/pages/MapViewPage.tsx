@@ -6,6 +6,8 @@ import { GpsCaptureModal } from '../components/GpsCaptureModal';
 import { CreateNapModal } from '../components/CreateNapModal';
 import { DeleteNapModal } from '../components/DeleteNapModal';
 import { RouteNavigationCard } from '../components/RouteNavigationCard';
+import { MileageCaptureModal } from '../components/MileageCaptureModal';
+import { MileageLogModal } from '../components/MileageLogModal';
 import { useAuth } from '../context/AuthContext';
 import { NapBox, NapPort, OdfPanel } from '../types';
 import { offlineDb } from '../db/offlineDb';
@@ -23,6 +25,8 @@ import {
   Compass,
   Plus,
   Navigation
+  Navigation,
+  Gauge
 } from 'lucide-react';
 
 import { mockNaps, mockOdf } from '../data/mockGponData';
@@ -90,6 +94,12 @@ export const MapViewPage: React.FC = () => {
   const [deletingNap, setDeletingNap] = useState<NapBox | null>(null);
   const [isDeletingNap, setIsDeletingNap] = useState(false);
   const [feedbackNotice, setFeedbackNotice] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isMileageLogOpen, setIsMileageLogOpen] = useState(false);
+  const [mileageCaptureData, setMileageCaptureData] = useState<{
+    isOpen: boolean;
+    nap?: NapBox | null;
+    distanceKm?: number;
+  }>({ isOpen: false });
 
   // Cargar NAPs y ODF
   const fetchData = useCallback(async () => {
@@ -382,6 +392,15 @@ export const MapViewPage: React.FC = () => {
           )}
 
           <button
+            onClick={() => setIsMileageLogOpen(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm active:scale-95 cursor-pointer"
+            title="Abrir bitácora de kilometraje y traslados de técnicos"
+          >
+            <Gauge className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>Bitácora Km</span>
+          </button>
+
+          <button
             onClick={fetchData}
             disabled={loading}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm disabled:opacity-50 active:scale-95"
@@ -415,6 +434,9 @@ export const MapViewPage: React.FC = () => {
             onRequestRoute={handleRequestRoute}
             onClearRoute={handleClearRoute}
             onDeleteNapRequest={(nap) => setDeletingNap(nap)}
+            onOpenMileageCapture={(nap: NapBox, dist?: number) =>
+              setMileageCaptureData({ isOpen: true, nap, distanceKm: dist })
+            }
           />
         </div>
 
@@ -435,6 +457,9 @@ export const MapViewPage: React.FC = () => {
               userCoordinates={userCoordinates}
               onOriginChange={handleOriginChange}
               onClose={handleClearRoute}
+              onOpenMileageCapture={(nap: NapBox, dist?: number) =>
+                setMileageCaptureData({ isOpen: true, nap, distanceKm: dist })
+              }
             />
           )}
 
@@ -544,6 +569,36 @@ export const MapViewPage: React.FC = () => {
           onClose={() => setDeletingNap(null)}
           onConfirmDelete={handleConfirmDeleteNap}
           isDeleting={isDeletingNap}
+        />
+      )}
+
+      {/* Modal de Captura de Kilometraje del Técnico */}
+      {mileageCaptureData.isOpen && (
+        <MileageCaptureModal
+          nap={mileageCaptureData.nap}
+          distanceKm={mileageCaptureData.distanceKm}
+          availableNaps={naps}
+          onClose={() => setMileageCaptureData({ isOpen: false })}
+          onSaved={(record) => {
+            setFeedbackNotice({
+              type: 'success',
+              message: `Kilometraje grabado correctamente: ${record.km_recorridos} km para ${record.destino_nombre} (${record.tecnico_nombre}).`
+            });
+            setTimeout(() => setFeedbackNotice(null), 6000);
+          }}
+        />
+      )}
+
+      {/* Modal de Bitácora de Kilometraje Completa con KPIs y Exportación */}
+      {isMileageLogOpen && (
+        <MileageLogModal
+          onClose={() => setIsMileageLogOpen(false)}
+          onOpenCapture={() => {
+            setMileageCaptureData({
+              isOpen: true,
+              nap: selectedNap
+            });
+          }}
         />
       )}
     </div>
