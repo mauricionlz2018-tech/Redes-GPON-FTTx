@@ -1,5 +1,6 @@
 export interface KnowledgeItem {
   id: string;
+  category: 'operacion' | 'roles' | 'tecnico' | 'red' | 'general';
   category: 'operacion' | 'roles' | 'tecnico' | 'red' | 'general' | 'personalizado';
   title: string;
   keywords: string[];
@@ -484,6 +485,7 @@ export const MANUAL_MODULES: ManualModule[] = [
 
 export const QUICK_QUESTIONS = [
   '¿Cómo asignar un cliente a un puerto?',
+  '¿Cómo editar datos de un cliente si me equivoqué?',
   '¿Cómo eliminar una Caja NAP de forma definitiva?',
   '¿Por qué no aparecía mi caja y cómo sincronizar?',
   '¿Cómo trazar rutas viales y de fibra?',
@@ -491,9 +493,14 @@ export const QUICK_QUESTIONS = [
   '¿Cuáles son los valores recomendados de potencia (dBm)?',
   '¿Qué son las muffas y empalmes?',
   '¿Cómo capturar las coordenadas GPS en campo?',
+  '¿Cómo funciona el modo sin conexión (Offline)?',
+  '¿Cómo descargar el reporte de saturación en PDF?',
+  '¿Cuáles son los valores recomendados de potencia (dBm)?',
+  '¿Qué significan los colores de los puertos?'
   '¿Cómo instalar la app en mi teléfono celular?'
 ];
 
+// Motor de búsqueda en lenguaje natural para la base de conocimiento
 export interface PredeterminedCategory {
   id: string;
   name: string;
@@ -762,6 +769,7 @@ export function searchKnowledge(query: string): { item: KnowledgeItem; score: nu
       .replace(/[\u0300-\u036f]/g, '');
 
     if (cleanTitle.includes(cleanQuery)) {
+      score += 15;
       score += 18;
     }
 
@@ -773,11 +781,13 @@ export function searchKnowledge(query: string): { item: KnowledgeItem; score: nu
         .replace(/[\u0300-\u036f]/g, '');
 
       if (cleanQuery.includes(cleanKw) || cleanKw.includes(cleanQuery)) {
+        score += 8;
         score += 10;
       }
 
       for (const qw of queryWords) {
         if (cleanKw.includes(qw)) {
+          score += 3;
           score += 4;
         }
       }
@@ -785,6 +795,7 @@ export function searchKnowledge(query: string): { item: KnowledgeItem; score: nu
 
     // Coincidencia en contenido y pasos
     for (const qw of queryWords) {
+      if (cleanTitle.includes(qw)) score += 4;
       if (cleanTitle.includes(qw)) score += 5;
       if (item.shortAnswer.toLowerCase().includes(qw)) score += 2;
     }

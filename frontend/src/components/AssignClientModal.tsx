@@ -97,6 +97,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
   };
 
   return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl max-w-lg w-full p-6 shadow-2xl relative text-slate-900 dark:text-white transition-colors">
         {/* Botón cerrar */}
