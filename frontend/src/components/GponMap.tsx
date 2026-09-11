@@ -34,7 +34,6 @@ interface GponMapProps {
   fiberRoutes?: FiberRoute[];
   empalmes?: EmpalmeClosure[];
   onDeleteNapRequest?: (nap: NapBox) => void;
-  onOpenMileageCapture?: (nap: NapBox) => void;
   onOpenMileageCapture?: (nap: NapBox, distanceKm?: number) => void;
 }
 
@@ -478,7 +477,6 @@ export const GponMap: React.FC<GponMapProps> = ({
 
                     {onOpenMileageCapture && (
                       <button
-                        onClick={() => onOpenMileageCapture(nap)}
                         onClick={() =>
                           onOpenMileageCapture(
                             nap,
