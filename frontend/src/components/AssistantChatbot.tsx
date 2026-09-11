@@ -6,7 +6,6 @@ import {
   QUICK_QUESTIONS,
   PREDETERMINED_CATEGORIES,
   searchKnowledge,
-  KnowledgeItem
   getLearnedKnowledge,
   saveLearnedKnowledge,
   deleteLearnedKnowledge,
@@ -34,7 +33,6 @@ import {
   Activity,
   AlertCircle,
   CheckCircle2,
-  Search
   Search,
   GraduationCap,
   Plus,
@@ -55,7 +53,6 @@ interface ChatMessage {
 export const AssistantChatbot: React.FC = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'manual'>('chat');
   const [activeTab, setActiveTab] = useState<'chat' | 'faq' | 'learn' | 'manual'>('chat');
   const [inputQuery, setInputQuery] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -85,7 +82,6 @@ export const AssistantChatbot: React.FC = () => {
     return {
       id: 'msg-initial',
       sender: 'bot',
-      text: `Hola ${user?.nombre_completo || 'Compañero'}, bienvenido al Asistente Virtual GPON. Tu sesión actual tiene rol de ${roleName}. ¿En qué proceso de la red o del sistema te puedo apoyar hoy?`,
       text: `¡Hola ${user?.nombre_completo || 'Compañero'}! Bienvenido al Asistente Inteligente GPON. Tu sesión actual tiene rol de ${roleName}.\n\nPuedes hacerme cualquier consulta técnica sobre cajas NAP, puertos, potencias en dBm, reportes PDF o navegación en campo. También puedes explorar las preguntas predeterminadas o enseñarme nuevas respuestas.`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
@@ -127,7 +123,6 @@ export const AssistantChatbot: React.FC = () => {
     if (!textToSend) setInputQuery('');
     setIsTyping(true);
 
-    // Simular procesamiento del asistente
     // Procesamiento con búsqueda local (NLP + Base de Aprendizaje)
     setTimeout(() => {
       const match = searchKnowledge(query);
@@ -147,7 +142,6 @@ export const AssistantChatbot: React.FC = () => {
           id: `bot-${Date.now()}`,
           sender: 'bot',
           text:
-            'No encontré una respuesta directa para esa consulta exacta, pero puedes seleccionar alguna de las preguntas frecuentes abajo o explorar el Manual Rápido en la pestaña superior.',
             'No encontré una respuesta directa para esa consulta exacta en la base técnica.',
           unresolvedQuery: query,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -156,7 +150,6 @@ export const AssistantChatbot: React.FC = () => {
 
       setMessages((prev) => [...prev, botResponse]);
       setIsTyping(false);
-    }, 350);
     }, 300);
   };
 
@@ -210,13 +203,9 @@ export const AssistantChatbot: React.FC = () => {
       )
   );
 
-  const getModuleIcon = (iconName: string) => {
   const getCategoryIcon = (iconName: string) => {
     switch (iconName) {
       case 'MapPin':
-        return <MapPin className="w-4 h-4 text-sky-400" />;
-      case 'UserCheck':
-        return <UserCheck className="w-4 h-4 text-emerald-400" />;
         return <MapPin className="w-3.5 h-3.5 text-sky-400" />;
       case 'Layers':
         return <Layers className="w-3.5 h-3.5 text-emerald-400" />;
@@ -227,42 +216,27 @@ export const AssistantChatbot: React.FC = () => {
       case 'FileText':
         return <FileText className="w-3.5 h-3.5 text-cyan-400" />;
       case 'Compass':
-        return <Compass className="w-4 h-4 text-amber-400" />;
-      case 'WifiOff':
-        return <WifiOff className="w-4 h-4 text-orange-400" />;
-      case 'FileText':
-        return <FileText className="w-4 h-4 text-cyan-400" />;
-      case 'Shield':
-        return <Shield className="w-4 h-4 text-purple-400" />;
         return <Compass className="w-3.5 h-3.5 text-orange-400" />;
       default:
-        return <Activity className="w-4 h-4 text-blue-400" />;
         return <Bot className="w-3.5 h-3.5 text-blue-400" />;
     }
   };
 
   return (
     <>
-      {/* Botón Flotante en la esquina inferior derecha */}
-      <div className="fixed bottom-5 right-5 z-40">
       {/* Botón Flotante: Circular y compacto en celular, pill estilizado en PC */}
       <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
         {!isOpen ? (
           <button
             onClick={() => setIsOpen(true)}
-            className="group flex items-center gap-2.5 bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white px-4 py-3 rounded-full shadow-xl shadow-sky-950/40 border border-sky-400/30 transition-all duration-300 hover:scale-105 active:scale-95"
-            title="Abrir Asistente Virtual y Manual GPON"
             className="group flex items-center justify-center sm:gap-2.5 bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white w-12 h-12 sm:w-auto sm:px-4 sm:py-3 rounded-full shadow-2xl shadow-sky-950/60 border border-sky-300/40 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
             title="Abrir Asistente Virtual GPON"
             aria-label="Abrir Asistente Virtual GPON"
           >
-            <div className="relative">
             <div className="relative flex items-center justify-center">
               <Bot className="w-5 h-5 animate-pulse" />
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-900 rounded-full" />
             </div>
-            <span className="font-semibold text-xs tracking-wide">Asistente GPON</span>
-            <Sparkles className="w-3.5 h-3.5 text-sky-200 group-hover:rotate-12 transition-transform" />
             <span className="hidden sm:inline font-semibold text-xs tracking-wide">Asistente GPON</span>
             <Sparkles className="hidden sm:inline w-3.5 h-3.5 text-sky-200 group-hover:rotate-12 transition-transform" />
           </button>
@@ -271,12 +245,8 @@ export const AssistantChatbot: React.FC = () => {
 
       {/* Ventana Flotante del Asistente Virtual */}
       {isOpen && (
-        <div className="fixed bottom-5 right-5 z-50 w-[94vw] sm:w-[440px] h-[580px] max-h-[85vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fadeIn">
         <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] w-[95vw] sm:w-[480px] h-[85vh] sm:h-[620px] max-h-[85vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fadeIn text-slate-100">
           {/* Cabecera del Asistente */}
-          <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-800 p-3.5 border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md border border-slate-700 flex-shrink-0">
           <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-800 p-3 sm:p-3.5 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md border border-slate-700 flex-shrink-0">
@@ -286,30 +256,23 @@ export const AssistantChatbot: React.FC = () => {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-xs sm:text-sm text-white">Asistente GPON Telecom</h3>
-                  <span className="inline-flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full font-medium">
                   <h3 className="font-bold text-xs sm:text-sm text-white truncate">Asistente GPON Telecom</h3>
                   <span className="inline-flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full font-medium shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                     En línea
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-400">
-                  ISP EDOMEX - Soporte y Guía de Operación
                 <p className="text-[10px] text-slate-400 truncate">
                   ISP EDOMEX • Soporte Técnico y Guía Inteligente
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={handleResetChat}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
                 className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                 title="Reiniciar conversación"
               >
@@ -317,7 +280,6 @@ export const AssistantChatbot: React.FC = () => {
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
                 className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                 title="Cerrar ventana"
               >
@@ -326,21 +288,16 @@ export const AssistantChatbot: React.FC = () => {
             </div>
           </div>
 
-          {/* Selector de Pestañas: Chatbot vs Manual */}
-          <div className="flex items-center bg-slate-950/80 p-1 border-b border-slate-800">
           {/* Selector de Pestañas: Chatbot, FAQ Predeterminado, Enseñar al Bot, Manual */}
           <div className="flex items-center bg-slate-950/90 p-1 border-b border-slate-800 gap-1 flex-shrink-0 overflow-x-auto scrollbar-none">
             <button
               onClick={() => setActiveTab('chat')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               className={`flex-1 min-w-[70px] flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
                 activeTab === 'chat'
                   ? 'bg-sky-600 text-white shadow-md shadow-sky-950/50'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
-              <MessageSquare className="w-3.5 h-3.5" />
-              <span>Chatbot Asistente</span>
               <MessageSquare className="w-3.5 h-3.5 shrink-0" />
               <span>Chat</span>
             </button>
@@ -377,15 +334,12 @@ export const AssistantChatbot: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('manual')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               className={`flex-1 min-w-[75px] flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
                 activeTab === 'manual'
                   ? 'bg-sky-600 text-white shadow-md shadow-sky-950/50'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Manual Rápido</span>
               <BookOpen className="w-3.5 h-3.5 shrink-0" />
               <span>Manual</span>
             </button>
@@ -396,14 +350,8 @@ export const AssistantChatbot: React.FC = () => {
           {/* ================================================================ */}
           {activeTab === 'chat' && (
             <div className="flex-1 flex flex-col min-h-0 bg-slate-900/90">
-              {/* Chips de Preguntas Frecuentes Rápidas */}
               {/* Chips de Preguntas Rápidas en la parte superior */}
               <div className="p-2 border-b border-slate-800 bg-slate-950/40">
-                <span className="text-[10px] text-slate-400 font-semibold block mb-1 px-1">
-                  Preguntas frecuentes:
-                </span>
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
-                  {QUICK_QUESTIONS.slice(0, 5).map((q, idx) => (
                 <div className="flex items-center justify-between mb-1 px-1">
                   <span className="text-[10px] text-slate-400 font-semibold">
                     Consultas frecuentes (toca para preguntar):
@@ -421,7 +369,6 @@ export const AssistantChatbot: React.FC = () => {
                     <button
                       key={idx}
                       onClick={() => handleAskQuestionChip(q)}
-                      className="text-[11px] whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-sky-200 border border-slate-700 px-2.5 py-1 rounded-full transition-colors flex-shrink-0"
                       className="text-[11px] whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-sky-200 border border-slate-750 hover:border-sky-500/40 px-2.5 py-1 rounded-full transition-colors flex-shrink-0 cursor-pointer"
                     >
                       {q}
@@ -438,7 +385,6 @@ export const AssistantChatbot: React.FC = () => {
                     className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
                   >
                     <div
-                      className={`max-w-[88%] rounded-2xl p-3 text-xs leading-relaxed shadow-sm ${
                       className={`max-w-[90%] sm:max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed shadow-sm ${
                         msg.sender === 'user'
                           ? 'bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-br-none'
@@ -446,9 +392,6 @@ export const AssistantChatbot: React.FC = () => {
                       }`}
                     >
                       {msg.sender === 'bot' && (
-                        <div className="flex items-center gap-1.5 mb-1.5 text-sky-400 font-bold text-[11px]">
-                          <Bot className="w-3.5 h-3.5" />
-                          <span>Asistente GPON</span>
                         <div className="flex items-center justify-between gap-1.5 mb-1.5">
                           <div className="flex items-center gap-1.5 text-sky-400 font-bold text-[11px]">
                             <Bot className="w-3.5 h-3.5" />
@@ -467,23 +410,9 @@ export const AssistantChatbot: React.FC = () => {
 
                       <p className="whitespace-pre-line">{msg.text}</p>
 
-                      {/* Tarjeta detallada si hay un item de conocimiento */}
-                      {msg.knowledgeItem && (
                       {/* Tarjeta de pasos si viene de base técnica */}
                       {msg.knowledgeItem?.detailedSteps && (
                         <div className="mt-2.5 pt-2 border-t border-slate-700/80 space-y-2">
-                          {msg.knowledgeItem.detailedSteps && (
-                            <div>
-                              <span className="text-[10px] uppercase font-bold text-sky-400 block mb-1">
-                                Procedimiento Paso a Paso:
-                              </span>
-                              <div className="space-y-1 bg-slate-900/70 p-2 rounded-lg border border-slate-750">
-                                {msg.knowledgeItem.detailedSteps.map((step, sIdx) => (
-                                  <div key={sIdx} className="text-[11px] text-slate-300 flex items-start gap-1.5">
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                    <span>{step}</span>
-                                  </div>
-                                ))}
                           <span className="text-[10px] uppercase font-bold text-sky-400 block mb-1">
                             Procedimiento Paso a Paso:
                           </span>
@@ -493,26 +422,11 @@ export const AssistantChatbot: React.FC = () => {
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                                 <span>{step}</span>
                               </div>
-                            </div>
-                          )}
                             ))}
                           </div>
                         </div>
                       )}
 
-                          {msg.knowledgeItem.tips && msg.knowledgeItem.tips.length > 0 && (
-                            <div className="bg-sky-950/40 border border-sky-800/60 p-2 rounded-lg">
-                              <span className="text-[10px] font-bold text-sky-300 flex items-center gap-1 mb-0.5">
-                                <AlertCircle className="w-3 h-3" />
-                                Recomendación Técnica:
-                              </span>
-                              {msg.knowledgeItem.tips.map((tip, tIdx) => (
-                                <p key={tIdx} className="text-[10px] text-slate-300">
-                                  {tip}
-                                </p>
-                              ))}
-                            </div>
-                          )}
                       {/* Recomendación Técnica */}
                       {msg.knowledgeItem?.tips && msg.knowledgeItem.tips.length > 0 && (
                         <div className="mt-2 bg-sky-950/40 border border-sky-800/60 p-2 rounded-lg">
@@ -551,7 +465,6 @@ export const AssistantChatbot: React.FC = () => {
                 {isTyping && (
                   <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-800/70 border border-slate-700 w-fit px-3 py-2 rounded-2xl rounded-bl-none">
                     <Bot className="w-3.5 h-3.5 text-sky-400 animate-bounce" />
-                    <span className="text-[11px]">Consultando manual y base técnica...</span>
                     <span className="text-[11px]">Consultando base técnica y conocimientos...</span>
                   </div>
                 )}
@@ -564,21 +477,18 @@ export const AssistantChatbot: React.FC = () => {
                   e.preventDefault();
                   handleSendMessage();
                 }}
-                className="p-2.5 bg-slate-950 border-t border-slate-800 flex items-center gap-2"
                 className="p-2.5 bg-slate-950 border-t border-slate-800 flex items-center gap-2 flex-shrink-0"
               >
                 <input
                   type="text"
                   value={inputQuery}
                   onChange={(e) => setInputQuery(e.target.value)}
-                  placeholder="Escribe tu duda (ej. cómo asignar cliente, dBm, GPS)..."
                   placeholder="Escribe tu consulta (ej. eliminar caja, dBm, sincronizar)..."
                   className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
                 />
                 <button
                   type="submit"
                   disabled={!inputQuery.trim()}
-                  className="bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white p-2 rounded-xl transition-colors shadow-md flex-shrink-0"
                   className="bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white p-2 rounded-xl transition-colors shadow-md flex-shrink-0 cursor-pointer"
                   title="Enviar consulta"
                 >
@@ -588,7 +498,6 @@ export const AssistantChatbot: React.FC = () => {
             </div>
           )}
 
-          {/* PESTAÑA 2: MANUAL RÁPIDO ILUSTRADO */}
           {/* ================================================================ */}
           {/* PESTAÑA 2: PREGUNTAS PREDETERMINADAS POR CATEGORÍA */}
           {/* ================================================================ */}
@@ -816,12 +725,10 @@ export const AssistantChatbot: React.FC = () => {
                     >
                       <button
                         onClick={() => setExpandedModule(isExpanded ? null : mod.id)}
-                        className="w-full p-3 flex items-center justify-between text-left hover:bg-slate-800/80 transition-colors"
                         className="w-full p-3 flex items-center justify-between text-left hover:bg-slate-800/80 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2.5">
                           <div className="p-1.5 rounded-lg bg-slate-800 border border-slate-700">
-                            {getModuleIcon(mod.iconName)}
                             {getCategoryIcon(mod.iconName)}
                           </div>
                           <div>
@@ -867,7 +774,6 @@ export const AssistantChatbot: React.FC = () => {
 
                           <button
                             onClick={() => handleAskQuestionChip(`Quiero saber más sobre: ${mod.title}`)}
-                            className="w-full mt-2 py-1.5 px-3 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors"
                             className="w-full mt-2 py-1.5 px-3 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                           >
                             <MessageSquare className="w-3 h-3" />
