@@ -45,13 +45,6 @@ export const DemoRoleBar: React.FC<DemoRoleBarProps> = ({ onOpenDisclaimer }) =>
   ];
 
   return (
-    <aside aria-label="Selector de rol demo" className="bg-slate-100 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-xs w-full overflow-hidden transition-colors">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 flex-shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-slate-800 dark:text-slate-300 text-[11px] sm:text-xs">RBAC:</span>
-            <span className="hidden md:inline text-slate-500 dark:text-slate-400">Simulador de roles</span>
-          </div>
     <aside aria-label="Selector de rol demo" className="bg-slate-100 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 px-2 sm:px-4 py-1 sm:py-1.5 text-xs w-full overflow-hidden transition-colors">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-1 sm:gap-2">
         <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 shrink-0">
@@ -59,21 +52,15 @@ export const DemoRoleBar: React.FC<DemoRoleBarProps> = ({ onOpenDisclaimer }) =>
 
           <button
             onClick={handleOpenDisclaimer}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-sky-500/10 dark:bg-sky-400/10 text-sky-700 dark:text-sky-300 border border-sky-500/30 hover:bg-sky-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
             className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-semibold bg-sky-500/10 dark:bg-sky-400/10 text-sky-700 dark:text-sky-300 border border-sky-500/30 hover:bg-sky-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
             title="Aviso: Este sistema utiliza datos de prueba y protege la información sensible de personas reales"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 flex-shrink-0" />
             <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
             <span className="hidden sm:inline">Datos de Prueba</span>
-            <span className="text-[9px] bg-sky-600 text-white dark:bg-sky-500 px-1 py-0.2 rounded font-bold">Protegidos</span>
-            <ShieldCheck className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0" />
-            <span className="hidden sm:inline">Datos</span>
             <span className="text-[8px] sm:text-[9px] bg-sky-600 text-white dark:bg-sky-500 px-1 py-0.2 rounded font-bold">Demo</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar">
         <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none shrink-0 py-0.5">
           {roles.map((r) => {
             const Icon = r.icon;
@@ -83,18 +70,14 @@ export const DemoRoleBar: React.FC<DemoRoleBarProps> = ({ onOpenDisclaimer }) =>
                 key={r.role}
                 onClick={() => switchRole(r.role)}
                 title={r.desc}
-                className={`flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-medium whitespace-nowrap transition-all ${
                 className={`flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
-                    ? `${r.color} shadow-sm ring-1 sm:ring-2 ring-indigo-500/30 dark:ring-white/20 font-semibold`
                     ? `${r.color} shadow-sm ring-1 sm:ring-2 ring-indigo-500/30 dark:ring-white/20`
                     : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-300 dark:border-transparent dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-300'
                 }`}
               >
-                <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                 <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
                 <span>{r.role}</span>
-                {isActive && <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 ml-0.5 text-emerald-300" />}
                 {isActive && <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-300 shrink-0" />}
               </button>
             );
@@ -104,4 +87,3 @@ export const DemoRoleBar: React.FC<DemoRoleBarProps> = ({ onOpenDisclaimer }) =>
     </aside>
   );
 };
-
