@@ -173,13 +173,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm dark:shadow-xl transition-colors">
       {/* Cabecera del Chasis de la NAP */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Server className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-            <h3 className="font-bold text-base text-slate-900 dark:text-white">{nap.identificador}</h3>
-            <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-medium">
-              {nap.zona}
       <div className="border-b border-slate-200 dark:border-slate-800 pb-3 mb-4 space-y-2.5">
         {/* Fila 1: Título de la NAP, Zona y Badge de Saturación */}
         <div className="flex items-start justify-between gap-2">
@@ -215,20 +208,17 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
               {nap.metricas?.porcentajeSaturacion ?? 0}% ({nap.metricas?.ocupados ?? 0}/{nap.total_puertos})
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{nap.direccion_texto}</p>
         </div>
 
-        <div className="flex items-center gap-2">
         {/* Fila 2: Botones de Acción de la Caja (Ruta, Volver a Mapa, Eliminar) */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {onRequestRoute && (
             <button
               onClick={() => onRequestRoute(nap)}
-              className="flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800/80 px-2.5 py-1 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
               className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
               title="Trazar ruta vial desde la Empresa hacia esta caja"
             >
-              <Navigation className="w-3.5 h-3.5" />
+              <Navigation className="w-3.5 h-3.5 shrink-0" />
               <span>Ruta de llegada</span>
             </button>
           )}
@@ -236,12 +226,10 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           {onScrollToMap && (
             <button
               onClick={onScrollToMap}
-              className="lg:hidden flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
               className="lg:hidden flex-1 sm:flex-none flex items-center justify-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
               title="Volver arriba al mapa"
             >
-              <ArrowUp className="w-3.5 h-3.5" />
-              <span>Mapa</span>
+              <ArrowUp className="w-3.5 h-3.5 shrink-0" />
               <span>Subir a Mapa</span>
             </button>
           )}
@@ -249,28 +237,13 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           {onDeleteNapRequest && (
             <button
               onClick={handleDeleteClick}
-              className="flex items-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border border-red-200 dark:border-red-800/80 px-2.5 py-1 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
               className="flex-1 sm:flex-none flex items-center justify-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border border-red-200 dark:border-red-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
               title="Dar de baja o eliminar esta caja NAP de la red"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-3.5 h-3.5 shrink-0" />
               <span>Eliminar Caja</span>
             </button>
           )}
-
-          <div className="text-right">
-            <span className="text-xs text-slate-500 dark:text-slate-400">Saturación:</span>
-            <span
-              className={`ml-1 text-xs font-bold px-2 py-0.5 rounded ${
-                (nap.metricas?.porcentajeSaturacion ?? 0) >= 80
-                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
-                  : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-              }`}
-            >
-              {nap.metricas?.porcentajeSaturacion ?? 0}% ({nap.metricas?.ocupados ?? 0}/
-              {nap.total_puertos})
-            </span>
-          </div>
         </div>
       </div>
 
