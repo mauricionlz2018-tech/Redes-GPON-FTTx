@@ -451,7 +451,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   )
                 }
                 disabled={isProcessing}
-                className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 disabled:opacity-50 active:scale-95"
                 className="flex-1 sm:flex-none bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 disabled:opacity-50 active:scale-95 cursor-pointer"
                 title="Cambiar a Libre o Dañado"
               >
