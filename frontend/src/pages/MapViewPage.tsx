@@ -308,6 +308,7 @@ export const MapViewPage: React.FC = () => {
   });
 
   return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-4">
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 pb-28 sm:pb-8 space-y-4">
       {/* Notificación de feedback (éxito o error) */}
       {feedbackNotice && (
@@ -357,6 +358,7 @@ export const MapViewPage: React.FC = () => {
           </div>
         </div>
 
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 w-full sm:w-auto sm:justify-end">
           {selectedNap && (
             <button
@@ -367,6 +369,7 @@ export const MapViewPage: React.FC = () => {
                   handleRequestRoute(selectedNap);
                 }
               }}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all shadow-sm active:scale-95 cursor-pointer ${
               className={`flex items-center justify-center gap-1.5 text-xs font-semibold px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border transition-all shadow-sm active:scale-95 cursor-pointer ${
                 isRouteActive
                   ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-500'
@@ -374,6 +377,8 @@ export const MapViewPage: React.FC = () => {
               }`}
               title="Calcular ruta vial de llegada desde la Empresa hacia la caja seleccionada"
             >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja (Prueba)'}</span>
               <Navigation className="w-3.5 h-3.5 shrink-0" />
               <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja'}</span>
             </button>
@@ -382,9 +387,11 @@ export const MapViewPage: React.FC = () => {
           {user?.rol !== 'Tecnico' && (
             <button
               onClick={() => setIsCreateNapOpen(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md shadow-sky-950/20 transition-all active:scale-95"
               className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg shadow-md shadow-sky-950/20 transition-all active:scale-95 cursor-pointer"
               title="Registrar e instalar nueva caja NAP en la red FTTx"
             >
+              <Plus className="w-3.5 h-3.5" />
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span>Nueva Caja NAP</span>
             </button>
@@ -392,9 +399,11 @@ export const MapViewPage: React.FC = () => {
 
           <button
             onClick={() => setIsMileageLogOpen(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm active:scale-95 cursor-pointer"
             className="flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm active:scale-95 cursor-pointer"
             title="Abrir bitácora de kilometraje y traslados de técnicos"
           >
+            <Gauge className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <Gauge className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>Bitácora Km</span>
           </button>
@@ -402,8 +411,10 @@ export const MapViewPage: React.FC = () => {
           <button
             onClick={fetchData}
             disabled={loading}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm disabled:opacity-50 active:scale-95"
             className="flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm disabled:opacity-50 active:scale-95 cursor-pointer"
           >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
             <span>Actualizar</span>
           </button>
