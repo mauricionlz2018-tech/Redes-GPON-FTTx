@@ -465,8 +465,20 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
               </button>
             </div>
           ) : selectedPort.estado === 'Reservado' ? (
+            <div className="text-xs p-3 bg-amber-50 dark:bg-amber-950/40 rounded-lg border border-amber-300 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 flex items-start gap-2.5 animate-fadeIn">
             <div className="text-xs p-3 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 dark:border-amber-500/40 rounded-xl text-amber-900 dark:text-amber-200 flex items-start gap-2.5 animate-fadeIn">
               <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <strong className="font-bold text-amber-800 dark:text-amber-300">
+                    Puerto Apartado para Orden de Instalación Programada
+                  </strong>
+                  <span className="bg-amber-200/80 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">
+                    Ámbar
+                  </span>
+                </div>
+                <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90 leading-relaxed">
+                  Este puerto óptico se encuentra apartado para una orden de trabajo pendiente. Puedes completar la asignación de la acometida cuando el técnico instale el servicio en campo, o liberar el apartado si la orden fue reprogramada.
               <div className="space-y-0.5">
                 <strong className="font-semibold text-amber-900 dark:text-amber-200 block">
                   Puerto apartado para orden de instalación programada
@@ -477,6 +489,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
               </div>
             </div>
           ) : (
+            <div className="text-xs text-slate-500 dark:text-slate-400 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
             <div className="text-xs text-slate-500 dark:text-slate-400 p-2.5 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80">
               {selectedPort.estado === 'Libre'
                 ? 'El puerto se encuentra disponible para asignación de acometida a un nuevo abonado o para apartarse para una orden programada.'
@@ -485,12 +498,14 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           )}
 
           {/* Botones de Acción sobre el Puerto */}
+          <div className="flex flex-wrap gap-2 pt-1">
           <div className="flex flex-wrap items-center gap-2 pt-1">
             {/* 1. Acciones cuando el puerto está Libre */}
             {selectedPort.estado === 'Libre' && (
               <>
                 <button
                   onClick={() => onPortSelectToAssign(selectedPort)}
+                  className="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
                   className="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs py-2 px-3.5 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                   title="Conectar acometida a nuevo abonado"
                 >
@@ -501,10 +516,13 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                 <button
                   onClick={() => handleChangeStatus(selectedPort, 'Reservado')}
                   disabled={isProcessing}
+                  className="flex-1 sm:flex-none bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700/80 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
+                  title="Apartar este puerto en Ámbar para una orden de instalación programada"
                   className="flex-1 sm:flex-none bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
                   title="Apartar este puerto para una orden de instalación programada"
                 >
                   <Clock className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <span>Apartar / Reservar</span>
                   <span>Apartar para Orden</span>
                 </button>
               </>
@@ -515,19 +533,25 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
               <>
                 <button
                   onClick={() => onPortSelectToAssign(selectedPort)}
+                  className="flex-1 bg-gradient-to-r from-amber-600 to-sky-600 hover:from-amber-500 hover:to-sky-500 text-white font-bold text-xs py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                  title="Completar instalación programada en este puerto apartado"
                   className="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs py-2 px-3.5 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                   title="Completar la instalación programada y vincular cliente en este puerto"
                 >
                   <PlusCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>Instalar / Asignar Acometida</span>
                   <span>Asignar Acometida</span>
                 </button>
 
                 <button
                   onClick={() => handleChangeStatus(selectedPort, 'Libre')}
                   disabled={isProcessing}
+                  className="flex-1 sm:flex-none bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/80 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
                   className="flex-1 sm:flex-none bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
                   title="Cancelar el apartado y regresar puerto a Libre"
                 >
+                  <RotateCcw className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <span>Liberar Reserva (Volver a Libre)</span>
                   <RotateCcw className="w-3.5 h-3.5 shrink-0 text-slate-500 dark:text-slate-400" />
                   <span>Liberar Reserva</span>
                 </button>
@@ -557,9 +581,11 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   )
                 }
                 disabled={isProcessing}
+                className="flex-1 sm:flex-none bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 disabled:opacity-50 active:scale-95 cursor-pointer"
                 className="sm:flex-none bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
                 title={selectedPort.estado === 'Dañado' ? 'Marcar como reparado y Libre' : 'Marcar como puerto Dañado'}
               >
+                <Wrench className="w-3.5 h-3.5 shrink-0" />
                 <Wrench className="w-3.5 h-3.5 shrink-0 text-slate-500 dark:text-slate-400" />
                 <span>{selectedPort.estado === 'Dañado' ? 'Marcar Libre' : 'Marcar Dañado'}</span>
               </button>
