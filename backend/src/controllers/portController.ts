@@ -57,6 +57,7 @@ export const assignPort = async (req: Request, res: Response) => {
       return;
     }
 
+    if (port.estado !== 'Libre') {
     if (port.estado !== 'Libre' && port.estado !== 'Reservado') {
       await t.rollback();
       res.status(409).json({

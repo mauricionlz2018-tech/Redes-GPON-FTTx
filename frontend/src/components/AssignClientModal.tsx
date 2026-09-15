@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NapBox, NapPort } from '../types';
 import { useNetwork } from '../context/NetworkContext';
 import api from '../api/client';
+import { UserCheck, X, WifiOff, CheckCircle2, AlertCircle } from 'lucide-react';
 import { UserCheck, X, WifiOff, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 
 interface AssignClientModalProps {
@@ -87,6 +88,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
       };
       if (nap.metricas) {
         nap.metricas.ocupados += 1;
+        nap.metricas.libres = Math.max(0, nap.metricas.libres - 1);
         if (previousState === 'Reservado' && nap.metricas.reservados) {
           nap.metricas.reservados = Math.max(0, nap.metricas.reservados - 1);
         } else {

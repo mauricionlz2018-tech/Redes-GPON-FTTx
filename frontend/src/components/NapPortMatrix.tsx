@@ -17,6 +17,7 @@ import {
   Edit3,
   X,
   ArrowUp,
+  Navigation
   Navigation,
   Clock,
   RotateCcw
@@ -91,11 +92,14 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
     }
   };
 
+  // Cambiar estado a Dañado / Libre / Mantenimiento (Admin / Soporte)
   // Cambiar estado a Dañado / Libre / Reservado (Soporte / Admin / Técnico)
   const handleChangeStatus = async (port: NapPort, nuevoEstado: string) => {
+    if (user?.rol === 'Tecnico') {
     // Si es técnico y desea marcar como Dañado, restringir por RBAC
     if (user?.rol === 'Tecnico' && nuevoEstado === 'Dañado') {
       setRbacError(
+        "Permiso denegado (HTTP 403 Forbidden): El rol 'Tecnico' no puede cambiar estados de puertos manualmente."
         "Permiso denegado (HTTP 403 Forbidden): El rol 'Técnico' solo puede apartar puertos para órdenes o liberarlos. Para marcar puertos como 'Dañado' se requiere perfil de Soporte o Administrador."
       );
       return;
@@ -105,6 +109,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
       setIsProcessing(true);
       setRbacError(null);
       await api.patch(`/puertos/${port.id_puerto}/estado`, { estado: nuevoEstado });
+      setActionSuccess(`Estado del puerto #${port.indice_puerto} cambiado a ${nuevoEstado}.`);
       setActionSuccess(
         nuevoEstado === 'Reservado'
           ? `Puerto #${port.indice_puerto} apartado exitosamente para orden de instalación programada.`
@@ -122,6 +127,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         if (nuevoEstado !== 'Ocupado') {
           port.cliente = null;
         }
+        setActionSuccess(`Estado del puerto #${port.indice_puerto} cambiado a ${nuevoEstado} (Modo Demo).`);
 
         // Sincronizar métricas locales de la caja NAP
         if (nap.metricas) {
@@ -185,6 +191,8 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         };
       case 'Reservado':
         return {
+          bg: 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/40 text-amber-700 dark:text-amber-400',
+          led: 'bg-amber-500 shadow-amber-500/50 shadow-sm',
           bg: 'bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/50 text-amber-800 dark:text-amber-300',
           led: 'bg-amber-500 shadow-amber-500/60 shadow-sm animate-pulse',
           label: 'Reservado'
@@ -290,6 +298,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           </div>
           <button
             onClick={() => setRbacError(null)}
+            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-white p-0.5 rounded"
             className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-white p-0.5 rounded cursor-pointer"
             title="Cerrar"
           >
@@ -300,13 +309,16 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
       {/* Aviso de acción exitosa */}
       {actionSuccess && (
+        <div className="mb-4 p-2.5 bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 dark:border-emerald-800/60 rounded-lg flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-200">
         <div className="mb-4 p-2.5 bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 dark:border-emerald-800/60 rounded-lg flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-200 animate-fadeIn">
           <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{actionSuccess}</span>
           </div>
           <button
             onClick={() => setActionSuccess(null)}
+            className="text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-white p-0.5 rounded"
             className="text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-white p-0.5 rounded cursor-pointer"
             title="Cerrar"
           >
@@ -319,6 +331,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
       <div className="space-y-2 mb-4">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 px-1">
           <span>Matriz de Distribución FTTx ({ports.length} Puertos)</span>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">Selecciona un puerto para operar</span>
           <span className="text-[11px] text-slate-400 dark:text-slate-500">Toca un puerto para gestionar</span>
         </div>
 
@@ -484,6 +497,8 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           ) : (
             <div className="text-xs text-slate-500 dark:text-slate-400 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
               {selectedPort.estado === 'Libre'
+                ? 'El puerto se encuentra disponible para asignación de acometida a un nuevo abonado.'
+                : `Puerto en condición '${selectedPort.estado}'. No está enrutando tráfico de cliente.`}
                 ? 'El puerto se encuentra disponible para asignación de acometida a un nuevo abonado o para apartarse para una orden programada.'
                 : `Puerto en condición '${selectedPort.estado}'. Bloqueado para nuevas conexiones por daño físico en conector o fibra.`}
             </div>
@@ -493,6 +508,13 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           <div className="flex flex-wrap gap-2 pt-1">
             {/* 1. Acciones cuando el puerto está Libre */}
             {selectedPort.estado === 'Libre' && (
+              <button
+                onClick={() => onPortSelectToAssign(selectedPort)}
+                className="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>Asignar Acometida</span>
+              </button>
               <>
                 <button
                   onClick={() => onPortSelectToAssign(selectedPort)}
@@ -544,14 +566,17 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
               <button
                 onClick={() => handleReleaseClick(selectedPort)}
                 disabled={isProcessing}
+                className="flex-1 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-800/80 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95"
                 className="flex-1 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-800/80 font-semibold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95 cursor-pointer"
                 title="Liberar puerto ocupado y desvincular abonado"
               >
+                <Trash2 className="w-3.5 h-3.5" />
                 <Trash2 className="w-3.5 h-3.5 shrink-0" />
                 <span>Liberar Puerto</span>
               </button>
             )}
 
+            {/* Mantenimiento de Puertos (Admin / Soporte) */}
             {/* 4. Mantenimiento de Puertos (Admin / Soporte): Dañado o Reparado */}
             {selectedPort.estado !== 'Ocupado' && (
               <button
@@ -563,8 +588,10 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                 }
                 disabled={isProcessing}
                 className="flex-1 sm:flex-none bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 disabled:opacity-50 active:scale-95 cursor-pointer"
+                title="Cambiar a Libre o Dañado"
                 title={selectedPort.estado === 'Dañado' ? 'Marcar como reparado y Libre' : 'Marcar como puerto Dañado'}
               >
+                <Wrench className="w-3.5 h-3.5" />
                 <Wrench className="w-3.5 h-3.5 shrink-0" />
                 <span>{selectedPort.estado === 'Dañado' ? 'Marcar Libre' : 'Marcar Dañado'}</span>
               </button>
