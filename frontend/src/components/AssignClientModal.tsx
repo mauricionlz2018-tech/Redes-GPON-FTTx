@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NapBox, NapPort } from '../types';
 import { useNetwork } from '../context/NetworkContext';
 import api from '../api/client';
-import { UserCheck, X, WifiOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import { UserCheck, X, WifiOff, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 
 interface AssignClientModalProps {
   nap: NapBox;
@@ -73,6 +73,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
     } catch (err: any) {
       console.warn('Backend no respondió, asignando abonado localmente en Modo Demostración...', err);
       // Aplicar cambio visual inmediato en el puerto para demostración
+      const previousState = port.estado;
       port.estado = 'Ocupado';
       port.cliente = {
         id_cliente: `cli-${Date.now()}`,
@@ -86,7 +87,11 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
       };
       if (nap.metricas) {
         nap.metricas.ocupados += 1;
-        nap.metricas.libres = Math.max(0, nap.metricas.libres - 1);
+        if (previousState === 'Reservado' && nap.metricas.reservados) {
+          nap.metricas.reservados = Math.max(0, nap.metricas.reservados - 1);
+        } else {
+          nap.metricas.libres = Math.max(0, nap.metricas.libres - 1);
+        }
         nap.metricas.porcentajeSaturacion = Math.round((nap.metricas.ocupados / nap.total_puertos) * 100);
       }
       onAssignedSuccess();
@@ -120,6 +125,16 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
             </p>
           </div>
         </div>
+
+        {/* Indicador si el puerto estaba apartado/reservado */}
+        {port.estado === 'Reservado' && (
+          <div className="mb-4 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 animate-fadeIn">
+            <Clock className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>
+              Este puerto estaba <strong>Reservado (Apartado)</strong> para orden de instalación programada. Al completar los datos, se activará enlazado al cliente.
+            </span>
+          </div>
+        )}
 
         {/* Indicador de modo Offline si aplica */}
         {!isOnline && (
