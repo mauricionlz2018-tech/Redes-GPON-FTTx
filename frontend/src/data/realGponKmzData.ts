@@ -1599,7 +1599,6 @@ export const realFiberRoutes: FiberRoute[] = [
 ];
 
 // Función generadora de puertos para cada caja NAP real
-function createPortsForRealNap(napId: string, napIdentificador: string, occupiedCount: number, hasDamaged = false) {
 function createPortsForRealNap(napId: string, napIdentificador: string, occupiedCount: number, hasDamaged = false, reservedPortNumber?: number) {
   const ports = [];
   const nombresAbonados = ["María Elena González Flores", "Roberto Hernández Sánchez", "Abarrotes La Providencia", "Ferretería El Tornillo San José", "Dr. Alejandro Villa Morales", "Farmacia San José Sucursal Centro", "Lic. Patricia Ruiz Domínguez", "Ciber San Pedro FTTx", "Guadalupe Martínez Romero", "Taller Mecánico Hermanos López", "Panadería La Esperanza", "Hotel & Restaurant Campestre", "Escuela Primaria Miguel Hidalgo", "Super Carnes San José", "Dra. Laura Morales Solís", "Ing. Fernando Castillo Peña", "Papelería y Ciber El Estudiante", "Mtro. Juan Carlos Benítez", "Clínica Dental San Francisco", "Tortillería La Fe", "Carnicería San José del Rincón", "Colegio de Bachilleres Plantel SJR", "Sra. Carmen Mendoza Valdez", "Refaccionaria El Águila", "Veterinaria Los Encinos"];
@@ -1607,7 +1606,6 @@ function createPortsForRealNap(napId: string, napIdentificador: string, occupied
   for (let i = 1; i <= 16; i++) {
     let estado: any = 'Libre';
     let cliente: Client | null = null;
-    if (i <= occupiedCount) {
     if (reservedPortNumber && i === reservedPortNumber) {
       estado = 'Reservado';
     } else if (i <= occupiedCount) {
@@ -1649,18 +1647,13 @@ export const realNaps: NapBox[] = [
     coordenadas_gps: { lat: 19.69812321305894, lng: -100.1159390724763 },
     metricas: {
       total: 16,
-      libres: 1,
-      ocupados: 14,
       libres: 2,
       ocupados: 12,
       danados: 1,
-      porcentajeSaturacion: 88,
-      estadoSaturacion: 'alerta'
       reservados: 1,
       porcentajeSaturacion: 75,
       estadoSaturacion: 'disponible'
     },
-    puertos: createPortsForRealNap('nap-sjr-01', 'NAP-SJR-01', 14, true)
     puertos: createPortsForRealNap('nap-sjr-01', 'NAP-SJR-01', 12, true, 14)
   },
   {
@@ -1728,15 +1721,12 @@ export const realNaps: NapBox[] = [
     metricas: {
       total: 16,
       libres: 8,
-      ocupados: 8,
       ocupados: 7,
       danados: 0,
-      porcentajeSaturacion: 50,
       reservados: 1,
       porcentajeSaturacion: 44,
       estadoSaturacion: 'disponible'
     },
-    puertos: createPortsForRealNap('nap-sjr-05', 'NAP-SJR-05', 8, false)
     puertos: createPortsForRealNap('nap-sjr-05', 'NAP-SJR-05', 7, false, 10)
   },
   {
