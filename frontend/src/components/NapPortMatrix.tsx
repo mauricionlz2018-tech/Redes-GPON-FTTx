@@ -180,16 +180,52 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             <h3 className="font-bold text-base text-slate-900 dark:text-white">{nap.identificador}</h3>
             <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-medium">
               {nap.zona}
+      <div className="border-b border-slate-200 dark:border-slate-800 pb-3 mb-4 space-y-2.5">
+        {/* Fila 1: Título de la NAP, Zona y Badge de Saturación */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Server className="w-5 h-5 text-sky-600 dark:text-sky-400 shrink-0" />
+              <h3 className="font-bold text-base text-slate-900 dark:text-white truncate">
+                {nap.identificador}
+              </h3>
+              <span className="text-[11px] text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-medium shrink-0">
+                {nap.zona}
+              </span>
+            </div>
+            {nap.direccion_texto && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2" title={nap.direccion_texto}>
+                {nap.direccion_texto}
+              </p>
+            )}
+          </div>
+
+          {/* Badge de Saturación en esquina superior derecha */}
+          <div className="text-right shrink-0">
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 block leading-tight">
+              Saturación
+            </span>
+            <span
+              className={`inline-block text-xs font-bold px-2 py-0.5 rounded mt-0.5 ${
+                (nap.metricas?.porcentajeSaturacion ?? 0) >= 80
+                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                  : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+              }`}
+            >
+              {nap.metricas?.porcentajeSaturacion ?? 0}% ({nap.metricas?.ocupados ?? 0}/{nap.total_puertos})
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{nap.direccion_texto}</p>
         </div>
 
         <div className="flex items-center gap-2">
+        {/* Fila 2: Botones de Acción de la Caja (Ruta, Volver a Mapa, Eliminar) */}
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {onRequestRoute && (
             <button
               onClick={() => onRequestRoute(nap)}
               className="flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800/80 px-2.5 py-1 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
               title="Trazar ruta vial desde la Empresa hacia esta caja"
             >
               <Navigation className="w-3.5 h-3.5" />
@@ -201,10 +237,12 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             <button
               onClick={onScrollToMap}
               className="lg:hidden flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
+              className="lg:hidden flex-1 sm:flex-none flex items-center justify-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
               title="Volver arriba al mapa"
             >
               <ArrowUp className="w-3.5 h-3.5" />
               <span>Mapa</span>
+              <span>Subir a Mapa</span>
             </button>
           )}
 
@@ -212,6 +250,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             <button
               onClick={handleDeleteClick}
               className="flex items-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border border-red-200 dark:border-red-800/80 px-2.5 py-1 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border border-red-200 dark:border-red-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
               title="Dar de baja o eliminar esta caja NAP de la red"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -440,6 +479,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                 }
                 disabled={isProcessing}
                 className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 disabled:opacity-50 active:scale-95"
+                className="flex-1 sm:flex-none bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 disabled:opacity-50 active:scale-95 cursor-pointer"
                 title="Cambiar a Libre o Dañado"
               >
                 <Wrench className="w-3.5 h-3.5" />

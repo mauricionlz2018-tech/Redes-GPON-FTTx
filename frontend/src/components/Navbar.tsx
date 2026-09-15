@@ -83,18 +83,24 @@ export const Navbar: React.FC = () => {
       <header className="bg-white/95 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 backdrop-blur sticky top-0 z-30 w-full overflow-hidden transition-colors">
         <div className="max-w-7xl mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between h-14 gap-2">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6">
+          <div className="flex items-center justify-between h-14 gap-1.5 sm:gap-2">
             {/* Logo y Nombre de la Empresa */}
             <Link to="/mapa" className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink group">
               <div className="bg-white p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center h-9 sm:h-10 flex-shrink-0">
+            <Link to="/mapa" className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink group">
+              <div className="bg-white p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center h-8 sm:h-10 flex-shrink-0">
                 <img
                   src="/logo-gpon.png"
                   alt="Gpon Telecom"
                   className="h-7 sm:h-8 w-auto object-contain"
+                  className="h-6 sm:h-8 w-auto object-contain"
                 />
               </div>
               <div className="min-w-0">
                 <span className="font-bold text-xs sm:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 truncate">
                   GPON TELECOM
+                  GPON <span className="hidden sm:inline">TELECOM</span>
                   <span className="text-[8px] sm:text-[10px] uppercase font-semibold px-1 sm:px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 flex-shrink-0">
                     FTTx
                   </span>
