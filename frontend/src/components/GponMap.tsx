@@ -441,6 +441,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
+                <span className="flex-1">Postes Propuestos ({postesPropuestos.length})</span>
                 <span className="flex-1">
                   Postes Propuestos ({allPostesPropuestos.length})
                   {showPostesPropuestos && (
@@ -462,6 +463,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-500 shrink-0 text-[6px] text-white flex items-center justify-center font-bold">
                   +
                 </span>
+                <span className="flex-1">Postes CFE ({postesCfe.length})</span>
                 <span className="flex-1">
                   Postes CFE ({allPostesCfe.length})
                   {showPostesCfe && (
@@ -612,8 +614,31 @@ export const GponMap: React.FC<GponMapProps> = ({
 
             return (
               <React.Fragment key={`route-group-${route.id_ruta}`}>
+                {/* Resplandor y halo de iluminación cuando la ruta está seleccionada */}
                 {/* Resplandor y halo de iluminación cuando la ruta está seleccionada (intenso, sin tono lechoso) */}
                 {isSelected && (
+                  <>
+                    <Polyline
+                      positions={route.coordenadas}
+                      pathOptions={{
+                        color: '#ffffff',
+                        weight: lineWeight + 8,
+                        opacity: 0.95,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                      }}
+                    />
+                    <Polyline
+                      positions={route.coordenadas}
+                      pathOptions={{
+                        color: lineColor,
+                        weight: lineWeight + 14,
+                        opacity: 0.5,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                      }}
+                    />
+                  </>
                   <Polyline
                     positions={route.coordenadas}
                     pathOptions={{
@@ -638,9 +663,12 @@ export const GponMap: React.FC<GponMapProps> = ({
                   }}
                   pathOptions={{
                     color: lineColor,
+                    weight: isSelected ? lineWeight + 4 : hasSelection ? Math.max(2, lineWeight - 1) : lineWeight,
+                    opacity: isSelected ? 1.0 : hasSelection ? 0.35 : 0.9,
                     weight: isSelected ? lineWeight + 3 : hasSelection ? Math.max(2, lineWeight - 1) : lineWeight,
                     opacity: isSelected ? 1.0 : hasSelection ? 0.45 : 0.9,
                     lineCap: 'round',
+                    lineJoin: 'round'
                     lineJoin: 'round',
                     className: 'outline-none focus:outline-none'
                   }}
@@ -726,8 +754,10 @@ export const GponMap: React.FC<GponMapProps> = ({
             );
           })}
 
+        {/* 7. Marcadores de Postes Propuestos (Círculos Rojos Normalizados) */}
         {/* 7. Marcadores de Postes Propuestos Normalizados (Virtualizados a 60 FPS) */}
         {showPostesPropuestos &&
+          postesPropuestos.map((poste) => {
           visiblePostesPropuestos.map((poste) => {
             const codigo = poste.codigo || poste.nombre;
             const icon = createPostePropuestoIcon(codigo);
@@ -755,8 +785,10 @@ export const GponMap: React.FC<GponMapProps> = ({
             );
           })}
 
+        {/* 8. Marcadores de Postes CFE (Opcional por rendimiento de 800+ puntos) */}
         {/* 8. Marcadores de Postes CFE Existentes (Virtualizados con LOD a 60 FPS) */}
         {showPostesCfe &&
+          postesCfe.map((poste) => {
           visiblePostesCfe.map((poste) => {
             const codigo = poste.codigo || poste.nombre;
             const icon = createPosteCfeIcon(codigo);

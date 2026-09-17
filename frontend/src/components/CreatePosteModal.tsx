@@ -267,3 +267,4 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
     </div>
   );
 };
+
