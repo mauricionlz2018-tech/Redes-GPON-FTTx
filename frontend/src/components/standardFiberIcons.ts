@@ -110,44 +110,37 @@ export const createSplitterNapIcon = (label?: string) => {
 export const createNapStandardIcon = (nap: NapBox, isSelected: boolean, isRouteDestination: boolean) => {
   const metricas = nap.metricas;
   const pct = metricas ? metricas.porcentajeSaturacion : 0;
-  const ocupados = metricas ? metricas.ocupados : 0;
-  const total = nap.total_puertos || 16;
 
-  let headerColor = '#10b981'; // Verde (<80%)
-  let statusBadge = 'bg-emerald-500';
-
+  // Color del triángulo según el semáforo de saturación
+  let triColor = '#10b981'; // Verde (<80%)
   if (pct >= 100) {
-    headerColor = '#ef4444'; // Rojo (100%)
-    statusBadge = 'bg-red-600';
+    triColor = '#ef4444'; // Rojo (100%)
   } else if (pct >= 80) {
-    headerColor = '#f59e0b'; // Ámbar (>=80%)
-    statusBadge = 'bg-amber-500';
+    triColor = '#f59e0b'; // Ámbar (>=80%)
   }
 
   const ringStyle = isRouteDestination
-    ? 'ring-4 ring-indigo-500 scale-125 shadow-xl animate-bounce'
+    ? 'scale-150 filter drop-shadow-[0_0_8px_rgba(99,102,241,0.9)] animate-bounce'
     : isSelected
-    ? 'ring-4 ring-sky-400 scale-110 shadow-lg'
-    : 'shadow-md hover:scale-105';
+    ? 'scale-135 filter drop-shadow-[0_0_8px_rgba(14,165,233,0.9)]'
+    : 'filter drop-shadow-md hover:scale-125';
 
   return L.divIcon({
     className: 'custom-standard-nap-marker',
     html: `
-      <div class="relative flex flex-col items-center group cursor-pointer transition-all duration-200 ${ringStyle}">
-        <!-- Caja NAP rectangular con estilo de planta externa -->
-        <div class="flex items-center gap-1 bg-slate-900 border-2 border-white rounded-lg px-2 py-1 shadow-md text-white font-mono text-[11px] leading-tight">
-          <!-- Mini conector / status -->
-          <div class="w-2.5 h-2.5 rounded-sm ${statusBadge}"></div>
-          <span class="font-bold text-white tracking-tight">${nap.identificador}</span>
-          <span class="bg-slate-800 text-slate-300 text-[9px] px-1 rounded ml-0.5">${ocupados}/${total}</span>
-        </div>
-        <!-- Puntero inferior -->
-        <div class="w-2 h-2 bg-slate-900 rotate-45 -mt-1 border-r border-b border-white"></div>
+      <div class="relative flex items-center justify-center cursor-pointer transition-all duration-200 ${ringStyle}" title="${nap.identificador} (${pct}% saturación - Clic para ver detalles)">
+        <!-- Triángulo estándar de ingeniería FTTx -->
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Triángulo orientado con borde blanco -->
+          <polygon points="13,2 24,22 2,22" fill="${triColor}" stroke="#ffffff" stroke-width="2" stroke-linejoin="round" />
+          <!-- Cuadro interior representativo del puerto de acceso -->
+          <rect x="10" y="12" width="6" height="6" rx="1" fill="#ffffff" />
+        </svg>
       </div>
     `,
-    iconSize: [60, 36],
-    iconAnchor: [30, 26],
-    popupAnchor: [0, -28]
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+    popupAnchor: [0, -14]
   });
 };
 

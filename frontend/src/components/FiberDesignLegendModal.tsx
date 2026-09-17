@@ -87,29 +87,29 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
   }, [activeRoutes, activeEmpalmes, baseMetrics]);
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-sm overflow-y-auto animate-fadeIn">
-      <div className="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+      <div className="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden my-auto text-slate-900 dark:text-white transition-colors">
         {/* Cabecera del Modal */}
-        <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-indigo-950 px-6 py-4 text-white flex items-center justify-between border-b border-sky-800/40">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-sky-500/20 border border-sky-400/30 rounded-xl text-sky-400">
-              <Layers className="w-6 h-6" />
+        <div className="bg-slate-100 dark:bg-slate-800 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-xl">
+              <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-                Norma de Diseño de Planta Externa FTTx
-                <span className="text-[11px] font-mono bg-sky-500/20 border border-sky-400/40 text-sky-300 px-2 py-0.5 rounded-full">
-                  KMZ IXT-JOC
+              <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                Simbología
+                <span className="text-[11px] font-mono bg-sky-100 dark:bg-sky-900/60 border border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 px-2 py-0.5 rounded-full">
+                  Planta Externa FTTx
                 </span>
               </h2>
-              <p className="text-xs text-sky-200/80">
-                Simbología estandarizada de ingeniería, tipos de fusiones ópticas y desglose de metrajes
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Simbología de diseño, tipos de fusiones ópticas y desglose de metrajes
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
             title="Cerrar ventana"
           >
             <X className="w-5 h-5" />

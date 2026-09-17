@@ -428,7 +428,7 @@ export const MapViewPage: React.FC = () => {
             title="Ver norma de simbología (triángulos, mufas torpedo, gasas) y cómputo de metrajes totales en ML y km"
           >
             <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-            <span>Simbología & Metrajes</span>
+            <span>Simbología</span>
           </button>
 
           {/* Botón para crear nueva línea troncal o ramal */}
