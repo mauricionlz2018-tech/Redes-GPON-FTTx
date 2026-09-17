@@ -13,7 +13,6 @@ import { CreateRouteModal } from '../components/CreateRouteModal';
 import { CreateMufaModal } from '../components/CreateMufaModal';
 import { CreatePosteModal } from '../components/CreatePosteModal';
 import { useAuth } from '../context/AuthContext';
-import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure } from '../types';
 import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure, PosteInfraestructura } from '../types';
 import { offlineDb } from '../db/offlineDb';
 import api from '../api/client';
@@ -33,7 +32,6 @@ import {
   Gauge,
   Layers,
   GitCommit,
-  Ruler
   Ruler,
   MapPin
 } from 'lucide-react';
