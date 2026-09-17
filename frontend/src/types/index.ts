@@ -82,13 +82,22 @@ export interface PendingMutation {
   intentos: number;
 }
 
+export type FiberCapacity = 12 | 24 | 48 | 96;
+
 export interface FiberRoute {
   id_ruta: string;
   nombre: string;
   vertices: number;
   color: string;
   grosor: number;
-  tipo: 'troncal' | 'ramal';
+  tipo: 'troncal' | 'ramal' | 'distribucion' | string;
+  hilos?: number;
+  distancia_metros?: number;
+  distancia_km?: number;
+  subtipo?: string;
+  origen?: string;
+  destino?: string;
+  estado?: string;
   coordenadas: [number, number][]; // [lat, lng]
 }
 
@@ -97,4 +106,23 @@ export interface EmpalmeClosure {
   nombre: string;
   coordenadas_gps: GpsCoordinates;
   tipo_cierre: string;
+  capacidad_hilos?: number;
+  estado?: string;
+}
+
+export interface GasaReserva {
+  id_gasa: string;
+  nombre: string;
+  metros_reserva?: number;
+  longitud_metros?: number;
+  tipo_cable?: string;
+  coordenadas_gps: GpsCoordinates;
+}
+
+export interface PosteInfraestructura {
+  id_poste: string;
+  nombre: string;
+  codigo?: string;
+  tipo: 'poste_cfe' | 'poste_propuesto' | string;
+  coordenadas_gps: GpsCoordinates;
 }

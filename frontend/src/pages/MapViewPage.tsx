@@ -8,8 +8,12 @@ import { DeleteNapModal } from '../components/DeleteNapModal';
 import { RouteNavigationCard } from '../components/RouteNavigationCard';
 import { MileageCaptureModal } from '../components/MileageCaptureModal';
 import { MileageLogModal } from '../components/MileageLogModal';
+import { FiberDesignLegendModal } from '../components/FiberDesignLegendModal';
+import { CreateRouteModal } from '../components/CreateRouteModal';
+import { CreateMufaModal } from '../components/CreateMufaModal';
 import { useAuth } from '../context/AuthContext';
 import { NapBox, NapPort, OdfPanel } from '../types';
+import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure } from '../types';
 import { offlineDb } from '../db/offlineDb';
 import api from '../api/client';
 import {
@@ -26,9 +30,20 @@ import {
   Plus,
   Navigation,
   Gauge
+  Gauge,
+  Layers,
+  GitCommit,
+  Ruler
 } from 'lucide-react';
 
 import { mockNaps, mockOdf } from '../data/mockGponData';
+import {
+  mockNaps,
+  mockOdf,
+  troncalIxtJocRoutes,
+  troncalMufas,
+  getTroncalDesignMetrics
+} from '../data/mockGponData';
 
 export const MapViewPage: React.FC = () => {
   const [naps, setNaps] = useState<NapBox[]>(mockNaps);
@@ -99,6 +114,57 @@ export const MapViewPage: React.FC = () => {
     nap?: NapBox | null;
     distanceKm?: number;
   }>({ isOpen: false });
+
+  // Estados de Planta Externa: Simbología, Metrajes y Creación de Rutas/Mufas
+  const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
+  const [isCreateRouteOpen, setIsCreateRouteOpen] = useState(false);
+  const [isCreateMufaOpen, setIsCreateMufaOpen] = useState(false);
+  const [customRoutes, setCustomRoutes] = useState<FiberRoute[]>(() => {
+    try {
+      const saved = localStorage.getItem('gpon_custom_routes');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [customEmpalmes, setCustomEmpalmes] = useState<EmpalmeClosure[]>(() => {
+    try {
+      const saved = localStorage.getItem('gpon_custom_empalmes');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleSaveRoute = (newRoute: FiberRoute) => {
+    setCustomRoutes((prev) => {
+      const updated = [newRoute, ...prev];
+      try {
+        localStorage.setItem('gpon_custom_routes', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setFeedbackNotice({
+      type: 'success',
+      message: `Ruta ${newRoute.subtipo || newRoute.tipo} "${newRoute.nombre}" integrada (${newRoute.distancia_km} km / ${newRoute.distancia_metros?.toLocaleString()} ML).`
+    });
+    setTimeout(() => setFeedbackNotice(null), 6000);
+  };
+
+  const handleSaveMufa = (newMufa: EmpalmeClosure) => {
+    setCustomEmpalmes((prev) => {
+      const updated = [newMufa, ...prev];
+      try {
+        localStorage.setItem('gpon_custom_empalmes', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setFeedbackNotice({
+      type: 'success',
+      message: `Cierre de Empalme / Mufa "${newMufa.nombre}" instalada correctamente en el mapa (${newMufa.capacidad_hilos} Hilos).`
+    });
+    setTimeout(() => setFeedbackNotice(null), 6000);
+  };
 
   // Cargar NAPs y ODF
   const fetchData = useCallback(async () => {
@@ -358,6 +424,40 @@ export const MapViewPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 w-full sm:w-auto sm:justify-end">
+          {/* Botón de Simbología Estándar y Metrajes */}
+          <button
+            onClick={() => setIsLegendModalOpen(true)}
+            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-slate-800 dark:to-indigo-950/40 text-sky-700 dark:text-sky-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-sky-300 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+            title="Ver norma de simbología (triángulos, mufas torpedo, gasas) y cómputo de metrajes totales en ML y km"
+          >
+            <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+            <span>Simbología & Metrajes</span>
+          </button>
+
+          {/* Botón para crear nueva línea troncal o ramal */}
+          {user?.rol !== 'Tecnico' && (
+            <button
+              onClick={() => setIsCreateRouteOpen(true)}
+              className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Trazar y agregar una nueva línea troncal o ramal con cálculo de distancia automático"
+            >
+              <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+              <span>+ Troncal / Ramal</span>
+            </button>
+          )}
+
+          {/* Botón para crear nueva mufa de empalme */}
+          {user?.rol !== 'Tecnico' && (
+            <button
+              onClick={() => setIsCreateMufaOpen(true)}
+              className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Instalar una nueva mufa / cierre de empalme torpedo en el mapa"
+            >
+              <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>+ Mufa</span>
+            </button>
+          )}
+
           {selectedNap && (
             <button
               onClick={() => {
@@ -432,6 +532,8 @@ export const MapViewPage: React.FC = () => {
             activeRoute={isRouteActive ? routeResult : null}
             onRequestRoute={handleRequestRoute}
             onClearRoute={handleClearRoute}
+            fiberRoutes={customRoutes}
+            empalmes={customEmpalmes}
             onDeleteNapRequest={(nap) => setDeletingNap(nap)}
             onOpenMileageCapture={(nap: NapBox, dist?: number) =>
               setMileageCaptureData({ isOpen: true, nap, distanceKm: dist })
@@ -600,6 +702,43 @@ export const MapViewPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* Modal de Simbología de Planta Externa y Metrajes Totales */}
+      <FiberDesignLegendModal
+        isOpen={isLegendModalOpen}
+        onClose={() => setIsLegendModalOpen(false)}
+        activeRoutes={[...troncalIxtJocRoutes, ...customRoutes]}
+        activeEmpalmes={[...troncalMufas, ...customEmpalmes]}
+      />
+
+      {/* Modal para Crear y Trazar Nueva Ruta Troncal o Ramal */}
+      <CreateRouteModal
+        isOpen={isCreateRouteOpen}
+        onClose={() => setIsCreateRouteOpen(false)}
+        onSaveRoute={handleSaveRoute}
+        defaultCoordinates={
+          selectedNap?.coordenadas_gps
+            ? [selectedNap.coordenadas_gps.lat, selectedNap.coordenadas_gps.lng]
+            : odf?.coordenadas_gps
+            ? [odf.coordenadas_gps.lat, odf.coordenadas_gps.lng]
+            : [19.645, -99.82]
+        }
+      />
+
+      {/* Modal para Crear e Instalar Nueva Mufa / Cierre de Empalme Torpedo */}
+      <CreateMufaModal
+        isOpen={isCreateMufaOpen}
+        onClose={() => setIsCreateMufaOpen(false)}
+        onSaveMufa={handleSaveMufa}
+        defaultCoordinates={
+          selectedNap?.coordenadas_gps
+            ? [
+                Number((selectedNap.coordenadas_gps.lat + 0.002).toFixed(6)),
+                Number((selectedNap.coordenadas_gps.lng + 0.002).toFixed(6))
+              ]
+            : [19.645, -99.82]
+        }
+      />
     </div>
   );
 };
