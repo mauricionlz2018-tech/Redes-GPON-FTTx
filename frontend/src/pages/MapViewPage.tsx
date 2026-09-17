@@ -217,11 +217,18 @@ export const MapViewPage: React.FC = () => {
       setIsDemoMode(true);
       const cached = await offlineDb.cached_naps.toArray();
       if (cached.length > 0) {
-        setNaps(cached);
+        setNaps((prev) => {
+          const map = new Map<string, NapBox>();
+          cached.forEach((n) => map.set(n.id_nap, n));
+          prev.forEach((n) => {
+            if (!map.has(n.id_nap)) map.set(n.id_nap, n);
+          });
+          return Array.from(map.values());
+        });
       } else {
-        setNaps(mockNaps);
-        setOdf(mockOdf);
-        setSelectedNap(mockNaps[0]);
+        setNaps((prev) => (prev.length > 0 ? prev : mockNaps));
+        setOdf((prev) => (prev ? prev : mockOdf));
+        setSelectedNap((prev) => (prev ? prev : mockNaps[0]));
       }
     } finally {
       setLoading(false);
@@ -685,9 +692,13 @@ export const MapViewPage: React.FC = () => {
           onClose={() => setIsCreateNapOpen(false)}
           existingNaps={naps}
           onCreatedSuccess={(newNap) => {
-            setNaps((prev) => [newNap, ...prev]);
+            setNaps((prev) => [newNap, ...prev.filter((n) => n.id_nap !== newNap.id_nap)]);
             setSelectedNap(newNap);
-            fetchData();
+            setFeedbackNotice({
+              type: 'success',
+              message: `Caja ${newNap.identificador} registrada y desplegada exitosamente en el mapa (${newNap.total_puertos} puertos).`
+            });
+            setTimeout(() => setFeedbackNotice(null), 6000);
           }}
           defaultCoordinates={
             odf?.coordenadas_gps

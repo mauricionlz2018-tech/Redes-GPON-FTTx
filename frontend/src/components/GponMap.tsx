@@ -180,6 +180,14 @@ export const GponMap: React.FC<GponMapProps> = ({
   const [targetFocus, setTargetFocus] = useState<[number, number] | null>(null);
   const [targetZoom, setTargetZoom] = useState<number>(12);
 
+  // Auto-centrado y acercamiento suave cuando se selecciona o crea una caja NAP
+  useEffect(() => {
+    if (selectedNap?.coordenadas_gps?.lat && selectedNap?.coordenadas_gps?.lng) {
+      setTargetFocus([selectedNap.coordenadas_gps.lat, selectedNap.coordenadas_gps.lng]);
+      setTargetZoom(16);
+    }
+  }, [selectedNap?.id_nap]);
+
   // Límites visibles en pantalla y zoom actual para virtualización de alto rendimiento
   const [viewportBounds, setViewportBounds] = useState<L.LatLngBounds | null>(null);
   const [currentZoom, setCurrentZoom] = useState<number>(12);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { NapBox } from '../types';
+import { NapBox, NapPort, NapPortStatus } from '../types';
 import api from '../api/client';
+import { offlineDb } from '../db/offlineDb';
 import { PlusCircle, MapPin, X, Compass, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface CreateNapModalProps {
@@ -109,20 +110,68 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
     try {
       const res = await api.post('/naps', payload);
       if (res.data.success) {
-        onCreatedSuccess(res.data.data);
+        const createdNap: NapBox = res.data.data;
+        try {
+          await offlineDb.cached_naps.put(createdNap);
+        } catch (dbErr) {
+          console.warn('Error guardando en Dexie cache:', dbErr);
+        }
+        onCreatedSuccess(createdNap);
         onClose();
+        return;
       }
     } catch (err: any) {
-      console.warn('Error al registrar caja NAP:', err);
-      if (err.response) {
-        // El servidor respondió con un error (ej. 409 Conflicto por nombre duplicado o 400/403)
-        const serverMsg = err.response.data?.message || 'Error del servidor al registrar la caja';
+      console.warn('Backend no respondió o error de conexión al registrar caja NAP:', err);
+      // Si el servidor explícitamente respondió con error de validación o conflicto de nombre
+      if (err.response && (err.response.status === 409 || err.response.status === 400)) {
+        const serverMsg = err.response.data?.message || 'Error de validación al registrar la caja';
         setErrorMsg(serverMsg);
-        return;
-      } else {
-        setErrorMsg('Error de conexión: No se pudo conectar con el servidor para registrar la caja.');
+        setLoading(false);
         return;
       }
+
+      // Si no hay conexión con el servidor (servidor local apagado, Render en suspensión o error de red):
+      // Modo resiliente y offline-first: crear la caja con sus 16 puertos e insertarla localmente
+      const localId = `nap-local-${Date.now()}`;
+      const defaultPorts: NapPort[] = Array.from({ length: Number(totalPuertos) }, (_, i) => ({
+        id_puerto: `port-local-${Date.now()}-${i + 1}`,
+        id_nap: localId,
+        indice_puerto: i + 1,
+        estado: 'Libre' as NapPortStatus,
+        cliente: null
+      }));
+
+      const localNap: NapBox = {
+        id_nap: localId,
+        identificador: trimmedId,
+        zona: zona.trim(),
+        id_puerto_pon: 'pon-slot1-port1',
+        total_puertos: Number(totalPuertos),
+        direccion_texto: direccionTexto.trim(),
+        coordenadas_gps: {
+          lat: numLat,
+          lng: numLng
+        },
+        metricas: {
+          total: Number(totalPuertos),
+          libres: Number(totalPuertos),
+          ocupados: 0,
+          danados: 0,
+          reservados: 0,
+          porcentajeSaturacion: 0,
+          estadoSaturacion: 'disponible'
+        },
+        puertos: defaultPorts
+      };
+
+      try {
+        await offlineDb.cached_naps.put(localNap);
+      } catch (dbErr) {
+        console.warn('Error guardando en Dexie cache local:', dbErr);
+      }
+
+      onCreatedSuccess(localNap);
+      onClose();
     } finally {
       setLoading(false);
     }

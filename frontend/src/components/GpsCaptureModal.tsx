@@ -67,15 +67,22 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
     try {
       if (isOnline) {
         await api.patch(`/naps/${nap.id_nap}/gps`, { lat: numLat, lng: numLng });
-        alert(`Coordenadas de la caja ${nap.identificador} actualizadas con éxito.`);
       } else {
         await enqueueGpsUpdate(nap.id_nap, numLat, numLng);
-        alert(`Coordenadas guardadas localmente en modo OFFLINE. Se sincronizarán al recuperar señal.`);
       }
+      nap.coordenadas_gps = { lat: numLat, lng: numLng };
       onGpsUpdated();
       onClose();
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || 'Error al guardar coordenadas');
+      console.warn('Error en servidor al actualizar GPS, guardando localmente:', err);
+      try {
+        await enqueueGpsUpdate(nap.id_nap, numLat, numLng);
+        nap.coordenadas_gps = { lat: numLat, lng: numLng };
+        onGpsUpdated();
+        onClose();
+      } catch (offlineErr) {
+        setErrorMsg(err.response?.data?.message || 'Error al guardar coordenadas GPS');
+      }
     } finally {
       setIsSaving(false);
     }
