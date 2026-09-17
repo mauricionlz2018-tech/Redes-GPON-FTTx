@@ -208,7 +208,7 @@ export const GponMap: React.FC<GponMapProps> = ({
   const [showEmpalmes, setShowEmpalmes] = useState(true);
   const [showGasas, setShowGasas] = useState(true);
   const [showPostesPropuestos, setShowPostesPropuestos] = useState(true);
-  const [showPostesCfe, setShowPostesCfe] = useState(false); // Apagado por defecto para 800+ pines
+  const [showPostesCfe, setShowPostesCfe] = useState(true); // Activo por defecto con virtualización a 60 FPS
   const [showNaps, setShowNaps] = useState(true);
   const [isLayersMenuOpen, setIsLayersMenuOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
@@ -289,25 +289,46 @@ export const GponMap: React.FC<GponMapProps> = ({
     return combined;
   }, [postesCfe, customPostes]);
 
-  // Virtualización por Vista (Viewport Culling): sólo renderizar en el DOM los postes dentro del viewport
+  // Virtualización por Vista (Viewport Culling): renderizar de forma óptima a 60 FPS
   const visiblePostesPropuestos = useMemo(() => {
     if (!showPostesPropuestos) return [];
-    if (!bufferedBounds) return allPostesPropuestos.slice(0, 80);
-    return allPostesPropuestos.filter((p) =>
+
+    // 1. Postes propuestos personalizados por el usuario (siempre se muestran sin perderse en móviles)
+    const customProps = (customPostes || []).filter((p) => p.tipo !== 'poste_cfe');
+    const customInView = customProps.filter((p) => {
+      if (!bufferedBounds) return true;
+      return bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng]);
+    });
+
+    // 2. Postes propuestos masivos del KMZ
+    if (!bufferedBounds) return customInView.length > 0 ? customInView : postesPropuestos.slice(0, 80);
+
+    const kmzInView = postesPropuestos.filter((p) =>
       bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng])
     );
-  }, [showPostesPropuestos, allPostesPropuestos, bufferedBounds]);
+    return [...customInView, ...kmzInView];
+  }, [showPostesPropuestos, customPostes, postesPropuestos, bufferedBounds]);
 
   const visiblePostesCfe = useMemo(() => {
     if (!showPostesCfe) return [];
-    // Nivel de detalle (LOD): a escala muy lejana (zoom < 13), los 803 postes saturan el DOM
-    // Se activan a partir de zoom 13 garantizando 60 FPS fluidos
-    if (currentZoom < 13) return [];
-    if (!bufferedBounds) return [];
-    return allPostesCfe.filter((p) =>
+
+    // 1. Postes CFE personalizados por el usuario: NUNCA se ocultan por nivel de zoom bajo en móviles
+    const customCfe = (customPostes || []).filter((p) => p.tipo === 'poste_cfe');
+    const customInView = customCfe.filter((p) => {
+      if (!bufferedBounds) return true;
+      return bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng]);
+    });
+
+    // 2. Postes CFE masivos del KMZ (803 pines): nivel de detalle a partir de zoom 13
+    if (currentZoom < 13 || !bufferedBounds) {
+      return customInView;
+    }
+
+    const kmzInView = postesCfe.filter((p) =>
       bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng])
     );
-  }, [showPostesCfe, allPostesCfe, bufferedBounds, currentZoom]);
+    return [...customInView, ...kmzInView];
+  }, [showPostesCfe, customPostes, postesCfe, bufferedBounds, currentZoom]);
 
   // Total de kilómetros y ML calculados
   const totalNetworkDistance = useMemo(() => {

@@ -8,6 +8,17 @@ import { assignPort, releasePort, updatePortStatus } from '../controllers/portCo
 import { listClients, getClientById, updateClient } from '../controllers/clientController';
 import { generateSaturationReport } from '../controllers/reportController';
 import { listMileageLogs, createMileageLog, deleteMileageLog } from '../controllers/mileageController';
+import {
+  listPostes,
+  createPoste,
+  deletePoste,
+  listMufas,
+  createMufa,
+  deleteMufa,
+  listRoutes,
+  createRoute,
+  deleteRoute
+} from '../controllers/infrastructureController';
 
 const router = Router();
 
@@ -68,6 +79,21 @@ router.get('/reportes/saturacion-pdf', authenticateToken, generateSaturationRepo
 router.get('/kilometraje', authenticateToken, listMileageLogs);
 router.post('/kilometraje', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createMileageLog);
 router.delete('/kilometraje/:id', authenticateToken, requireRoles(['Admin', 'Soporte']), deleteMileageLog);
+
+// ============================
+// Rutas de Infraestructura (Postes, Mufas y Rutas Troncales)
+// ============================
+router.get('/infra/postes', authenticateToken, listPostes);
+router.post('/infra/postes', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createPoste);
+router.delete('/infra/postes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), deletePoste);
+
+router.get('/infra/mufas', authenticateToken, listMufas);
+router.post('/infra/mufas', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createMufa);
+router.delete('/infra/mufas/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), deleteMufa);
+
+router.get('/infra/routes', authenticateToken, listRoutes);
+router.post('/infra/routes', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createRoute);
+router.delete('/infra/routes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), deleteRoute);
 
 export default router;
 

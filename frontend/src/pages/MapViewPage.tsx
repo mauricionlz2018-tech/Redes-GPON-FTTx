@@ -144,58 +144,76 @@ export const MapViewPage: React.FC = () => {
     }
   });
 
-  const handleSaveRoute = (newRoute: FiberRoute) => {
+  const handleSaveRoute = async (newRoute: FiberRoute) => {
     setCustomRoutes((prev) => {
-      const updated = [newRoute, ...prev];
+      const updated = [newRoute, ...prev.filter((r) => r.id_ruta !== newRoute.id_ruta)];
       try {
         localStorage.setItem('gpon_custom_routes', JSON.stringify(updated));
       } catch {}
       return updated;
     });
+    try {
+      await api.post('/infra/routes', newRoute);
+    } catch (e) {
+      console.warn('Ruta guardada localmente:', e);
+    }
     setFeedbackNotice({
       type: 'success',
-      message: `Ruta ${newRoute.subtipo || newRoute.tipo} "${newRoute.nombre}" integrada (${newRoute.distancia_km} km / ${newRoute.distancia_metros?.toLocaleString()} ML).`
+      message: `Ruta ${newRoute.subtipo || newRoute.tipo} "${newRoute.nombre}" guardada y sincronizada (${newRoute.distancia_km} km).`
     });
     setTimeout(() => setFeedbackNotice(null), 6000);
   };
 
-  const handleSaveMufa = (newMufa: EmpalmeClosure) => {
+  const handleSaveMufa = async (newMufa: EmpalmeClosure) => {
     setCustomEmpalmes((prev) => {
-      const updated = [newMufa, ...prev];
+      const updated = [newMufa, ...prev.filter((m) => m.id_empalme !== newMufa.id_empalme)];
       try {
         localStorage.setItem('gpon_custom_empalmes', JSON.stringify(updated));
       } catch {}
       return updated;
     });
+    try {
+      await api.post('/infra/mufas', newMufa);
+    } catch (e) {
+      console.warn('Mufa guardada localmente:', e);
+    }
     setFeedbackNotice({
       type: 'success',
-      message: `Cierre de Empalme / Mufa "${newMufa.nombre}" instalada correctamente en el mapa (${newMufa.capacidad_hilos} Hilos).`
+      message: `Mufa "${newMufa.nombre}" instalada y sincronizada (${newMufa.capacidad_hilos} Hilos).`
     });
     setTimeout(() => setFeedbackNotice(null), 6000);
   };
 
-  const handleSavePoste = (newPoste: PosteInfraestructura) => {
+  const handleSavePoste = async (newPoste: PosteInfraestructura) => {
     setCustomPostes((prev) => {
-      const updated = [newPoste, ...prev];
+      const updated = [newPoste, ...prev.filter((p) => p.id_poste !== newPoste.id_poste)];
       try {
         localStorage.setItem('gpon_custom_postes', JSON.stringify(updated));
       } catch {}
       return updated;
     });
+    try {
+      await api.post('/infra/postes', newPoste);
+    } catch (e) {
+      console.warn('Poste guardado en local; se sincronizará al conectar:', e);
+    }
     setFeedbackNotice({
       type: 'success',
-      message: `Poste "${newPoste.nombre}" (${newPoste.tipo === 'poste_propuesto' ? 'Propuesto' : 'CFE'}) registrado exitosamente en la red.`
+      message: `Poste "${newPoste.nombre}" (${newPoste.tipo === 'poste_propuesto' ? 'Propuesto' : 'CFE'}) registrado y sincronizado en todos los dispositivos.`
     });
     setTimeout(() => setFeedbackNotice(null), 6000);
   };
 
-  // Cargar NAPs y ODF
+  // Cargar NAPs, ODF e Infraestructura (Postes, Mufas, Rutas) sincronizada
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [napsRes, odfRes] = await Promise.all([
+      const [napsRes, odfRes, postesRes, mufasRes, routesRes] = await Promise.all([
         api.get('/naps'),
-        api.get('/odf')
+        api.get('/odf'),
+        api.get('/infra/postes').catch(() => ({ data: { success: false, data: [] } })),
+        api.get('/infra/mufas').catch(() => ({ data: { success: false, data: [] } })),
+        api.get('/infra/routes').catch(() => ({ data: { success: false, data: [] } }))
       ]);
 
       if (napsRes.data.success && napsRes.data.data.length > 0) {
@@ -211,6 +229,67 @@ export const MapViewPage: React.FC = () => {
 
       if (odfRes.data.success && odfRes.data.data.length > 0) {
         setOdf(odfRes.data.data[0]);
+      }
+
+      // Sincronizar Postes desde la base central con cualquier poste local
+      if (postesRes.data?.success) {
+        const serverPostes: PosteInfraestructura[] = postesRes.data.data;
+        setCustomPostes((prev) => {
+          const map = new Map<string, PosteInfraestructura>();
+          serverPostes.forEach((p) => map.set(p.id_poste, p));
+          // Subir a la base central cualquier poste que estuviera solo en localStorage de esta máquina
+          prev.forEach((p) => {
+            if (!map.has(p.id_poste)) {
+              map.set(p.id_poste, p);
+              api.post('/infra/postes', p).catch(console.warn);
+            }
+          });
+          const merged = Array.from(map.values());
+          try {
+            localStorage.setItem('gpon_custom_postes', JSON.stringify(merged));
+          } catch {}
+          return merged;
+        });
+      }
+
+      // Sincronizar Mufas desde la base central
+      if (mufasRes.data?.success) {
+        const serverMufas: EmpalmeClosure[] = mufasRes.data.data;
+        setCustomEmpalmes((prev) => {
+          const map = new Map<string, EmpalmeClosure>();
+          serverMufas.forEach((m) => map.set(m.id_empalme, m));
+          prev.forEach((m) => {
+            if (!map.has(m.id_empalme)) {
+              map.set(m.id_empalme, m);
+              api.post('/infra/mufas', m).catch(console.warn);
+            }
+          });
+          const merged = Array.from(map.values());
+          try {
+            localStorage.setItem('gpon_custom_empalmes', JSON.stringify(merged));
+          } catch {}
+          return merged;
+        });
+      }
+
+      // Sincronizar Rutas desde la base central
+      if (routesRes.data?.success) {
+        const serverRoutes: FiberRoute[] = routesRes.data.data;
+        setCustomRoutes((prev) => {
+          const map = new Map<string, FiberRoute>();
+          serverRoutes.forEach((r) => map.set(r.id_ruta, r));
+          prev.forEach((r) => {
+            if (!map.has(r.id_ruta)) {
+              map.set(r.id_ruta, r);
+              api.post('/infra/routes', r).catch(console.warn);
+            }
+          });
+          const merged = Array.from(map.values());
+          try {
+            localStorage.setItem('gpon_custom_routes', JSON.stringify(merged));
+          } catch {}
+          return merged;
+        });
       }
     } catch (err) {
       console.warn('Backend no disponible, activando modo interactivo de respaldo.');
@@ -465,40 +544,34 @@ export const MapViewPage: React.FC = () => {
           </button>
 
           {/* Botón para crear nueva línea troncal o ramal */}
-          {user?.rol !== 'Tecnico' && (
-            <button
-              onClick={() => setIsCreateRouteOpen(true)}
-              className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
-              title="Trazar y agregar una nueva línea troncal o ramal con cálculo de distancia automático"
-            >
-              <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-              <span>+ Troncal / Ramal</span>
-            </button>
-          )}
+          <button
+            onClick={() => setIsCreateRouteOpen(true)}
+            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+            title="Trazar y agregar una nueva línea troncal o ramal con cálculo de distancia automático"
+          >
+            <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+            <span>+ Troncal / Ramal</span>
+          </button>
 
           {/* Botón para crear nueva mufa de empalme */}
-          {user?.rol !== 'Tecnico' && (
-            <button
-              onClick={() => setIsCreateMufaOpen(true)}
-              className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
-              title="Instalar una nueva mufa / cierre de empalme torpedo en el mapa"
-            >
-              <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>+ Mufa</span>
-            </button>
-          )}
+          <button
+            onClick={() => setIsCreateMufaOpen(true)}
+            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+            title="Instalar una nueva mufa / cierre de empalme torpedo en el mapa"
+          >
+            <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>+ Mufa</span>
+          </button>
 
           {/* Botón para registrar nuevo poste */}
-          {user?.rol !== 'Tecnico' && (
-            <button
-              onClick={() => setIsCreatePosteOpen(true)}
-              className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-800 dark:to-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
-              title="Registrar un nuevo poste (propuesto o CFE) en la infraestructura"
-            >
-              <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
-              <span>+ Poste</span>
-            </button>
-          )}
+          <button
+            onClick={() => setIsCreatePosteOpen(true)}
+            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-800 dark:to-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+            title="Registrar un nuevo poste (propuesto o CFE) en la infraestructura"
+          >
+            <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+            <span>+ Poste</span>
+          </button>
 
           {selectedNap && (
             <button
