@@ -24,35 +24,48 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
   
   // Si hay rutas personalizadas adicionales, recalculamos dinámicamente
   const calculatedMetrics = React.useMemo(() => {
-    if (!activeRoutes || activeRoutes.length === 0) return baseMetrics;
-
     const summary = {
-      totalMetros: 0,
-      totalKm: 0,
-      rutas96H_metros: 0,
-      rutas48H_metros: 0,
-      rutas12HTroncal_metros: 0,
-      rutas12HDist_metros: 0,
-      totalMufas: activeEmpalmes?.length ?? baseMetrics.totalMufas,
-      totalGasas: baseMetrics.totalGasas,
-      totalPostesCfe: baseMetrics.totalPostesCfe,
-      totalPostesPropuestos: baseMetrics.totalPostesPropuestos,
-      totalRutasTrazadas: activeRoutes.length
+      totalMetros: (baseMetrics.fibra12hDistribucionMl + baseMetrics.fibra12hTroncalMl + baseMetrics.fibra48hTroncalMl + baseMetrics.fibra96hTroncalMl + baseMetrics.fibra24hTroncalMl),
+      totalKm: baseMetrics.totalLineasKm,
+      rutas96H_metros: baseMetrics.fibra96hTroncalMl,
+      rutas48H_metros: baseMetrics.fibra48hTroncalMl,
+      rutas12HTroncal_metros: baseMetrics.fibra12hTroncalMl,
+      rutas12HDist_metros: baseMetrics.fibra12hDistribucionMl,
+      totalMufas: activeEmpalmes ? activeEmpalmes.length : baseMetrics.totalMufasCount,
+      totalGasas: baseMetrics.totalGasasCount,
+      totalPostesCfe: baseMetrics.totalPostesCfeCount,
+      totalPostesPropuestos: baseMetrics.totalPostesPropuestosCount,
+      totalRutasTrazadas: activeRoutes ? activeRoutes.length : baseMetrics.totalRutasCount
     };
 
-    activeRoutes.forEach(r => {
-      const dist = r.distancia_metros || 0;
-      summary.totalMetros += dist;
-      const st = (r.subtipo || '').toLowerCase();
-      const cap = r.hilos || 0;
-      if (cap === 96 || st.includes('96')) summary.rutas96H_metros += dist;
-      else if (cap === 48 || st.includes('48')) summary.rutas48H_metros += dist;
-      else if (cap === 12 && (st.includes('distribuc') || r.tipo === 'ramal')) summary.rutas12HDist_metros += dist;
-      else if (cap === 12 || st.includes('12')) summary.rutas12HTroncal_metros += dist;
-      else summary.rutas12HTroncal_metros += dist;
-    });
+    if (activeRoutes && activeRoutes.length > 0) {
+      let totM = 0;
+      let r96 = 0;
+      let r48 = 0;
+      let r12T = 0;
+      let r12D = 0;
 
-    summary.totalKm = Number((summary.totalMetros / 1000).toFixed(2));
+      activeRoutes.forEach(r => {
+        const dist = r.distancia_metros || 0;
+        totM += dist;
+        const st = (r.subtipo || '').toLowerCase();
+        const cap = r.hilos || 0;
+        if (cap === 96 || st.includes('96')) r96 += dist;
+        else if (cap === 48 || st.includes('48')) r48 += dist;
+        else if (cap === 12 && (st.includes('distribuc') || r.tipo === 'ramal')) r12D += dist;
+        else if (cap === 12 || st.includes('12')) r12T += dist;
+        else r12T += dist;
+      });
+
+      summary.totalMetros = Math.round(totM);
+      summary.totalKm = Number((totM / 1000).toFixed(2));
+      summary.rutas96H_metros = Math.round(r96);
+      summary.rutas48H_metros = Math.round(r48);
+      summary.rutas12HTroncal_metros = Math.round(r12T);
+      summary.rutas12HDist_metros = Math.round(r12D);
+      summary.totalRutasTrazadas = activeRoutes.length;
+    }
+
     return summary;
   }, [activeRoutes, activeEmpalmes, baseMetrics]);
 
