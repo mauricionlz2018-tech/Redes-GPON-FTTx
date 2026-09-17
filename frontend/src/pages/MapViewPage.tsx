@@ -11,8 +11,9 @@ import { MileageLogModal } from '../components/MileageLogModal';
 import { FiberDesignLegendModal } from '../components/FiberDesignLegendModal';
 import { CreateRouteModal } from '../components/CreateRouteModal';
 import { CreateMufaModal } from '../components/CreateMufaModal';
+import { CreatePosteModal } from '../components/CreatePosteModal';
 import { useAuth } from '../context/AuthContext';
-import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure } from '../types';
+import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure, PosteInfraestructura } from '../types';
 import { offlineDb } from '../db/offlineDb';
 import api from '../api/client';
 import {
@@ -31,7 +32,8 @@ import {
   Gauge,
   Layers,
   GitCommit,
-  Ruler
+  Ruler,
+  MapPin
 } from 'lucide-react';
 
 import {
@@ -116,6 +118,7 @@ export const MapViewPage: React.FC = () => {
   const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
   const [isCreateRouteOpen, setIsCreateRouteOpen] = useState(false);
   const [isCreateMufaOpen, setIsCreateMufaOpen] = useState(false);
+  const [isCreatePosteOpen, setIsCreatePosteOpen] = useState(false);
   const [customRoutes, setCustomRoutes] = useState<FiberRoute[]>(() => {
     try {
       const saved = localStorage.getItem('gpon_custom_routes');
@@ -127,6 +130,14 @@ export const MapViewPage: React.FC = () => {
   const [customEmpalmes, setCustomEmpalmes] = useState<EmpalmeClosure[]>(() => {
     try {
       const saved = localStorage.getItem('gpon_custom_empalmes');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [customPostes, setCustomPostes] = useState<PosteInfraestructura[]>(() => {
+    try {
+      const saved = localStorage.getItem('gpon_custom_postes');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -159,6 +170,21 @@ export const MapViewPage: React.FC = () => {
     setFeedbackNotice({
       type: 'success',
       message: `Cierre de Empalme / Mufa "${newMufa.nombre}" instalada correctamente en el mapa (${newMufa.capacidad_hilos} Hilos).`
+    });
+    setTimeout(() => setFeedbackNotice(null), 6000);
+  };
+
+  const handleSavePoste = (newPoste: PosteInfraestructura) => {
+    setCustomPostes((prev) => {
+      const updated = [newPoste, ...prev];
+      try {
+        localStorage.setItem('gpon_custom_postes', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setFeedbackNotice({
+      type: 'success',
+      message: `Poste "${newPoste.nombre}" (${newPoste.tipo === 'poste_propuesto' ? 'Propuesto' : 'CFE'}) registrado exitosamente en la red.`
     });
     setTimeout(() => setFeedbackNotice(null), 6000);
   };
@@ -455,6 +481,18 @@ export const MapViewPage: React.FC = () => {
             </button>
           )}
 
+          {/* Botón para registrar nuevo poste */}
+          {user?.rol !== 'Tecnico' && (
+            <button
+              onClick={() => setIsCreatePosteOpen(true)}
+              className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-800 dark:to-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Registrar un nuevo poste (propuesto o CFE) en la infraestructura"
+            >
+              <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+              <span>+ Poste</span>
+            </button>
+          )}
+
           {selectedNap && (
             <button
               onClick={() => {
@@ -531,6 +569,7 @@ export const MapViewPage: React.FC = () => {
             onClearRoute={handleClearRoute}
             fiberRoutes={customRoutes}
             empalmes={customEmpalmes}
+            customPostes={customPostes}
             onDeleteNapRequest={(nap) => setDeletingNap(nap)}
             onOpenMileageCapture={(nap: NapBox, dist?: number) =>
               setMileageCaptureData({ isOpen: true, nap, distanceKm: dist })
@@ -735,6 +774,22 @@ export const MapViewPage: React.FC = () => {
               ]
             : [19.645, -99.82]
         }
+      />
+
+      {/* Modal para Crear y Registrar Nuevo Poste de Red (Propuesto o CFE) */}
+      <CreatePosteModal
+        isOpen={isCreatePosteOpen}
+        onClose={() => setIsCreatePosteOpen(false)}
+        onSavePoste={handleSavePoste}
+        defaultCoordinates={
+          selectedNap?.coordenadas_gps
+            ? [
+                Number((selectedNap.coordenadas_gps.lat + 0.001).toFixed(6)),
+                Number((selectedNap.coordenadas_gps.lng + 0.001).toFixed(6))
+              ]
+            : [19.645, -99.82]
+        }
+        existingPostesCount={144 + customPostes.length}
       />
     </div>
   );

@@ -53,9 +53,30 @@ interface GponMapProps {
   gasas?: GasaReserva[];
   postesPropuestos?: PosteInfraestructura[];
   postesCfe?: PosteInfraestructura[];
+  customPostes?: PosteInfraestructura[];
   onDeleteNapRequest?: (nap: NapBox) => void;
   onOpenMileageCapture?: (nap: NapBox, distanceKm?: number) => void;
 }
+
+// Controlador para escuchar cambios de límites visibles (bounds) y nivel de zoom para virtualización
+const ViewportListener: React.FC<{
+  onViewportChange: (bounds: L.LatLngBounds, zoom: number) => void;
+}> = ({ onViewportChange }) => {
+  const map = useMap();
+  useEffect(() => {
+    const update = () => {
+      onViewportChange(map.getBounds(), map.getZoom());
+    };
+    update();
+    map.on('moveend', update);
+    map.on('zoomend', update);
+    return () => {
+      map.off('moveend', update);
+      map.off('zoomend', update);
+    };
+  }, [map, onViewportChange]);
+  return null;
+};
 
 // Helper para calcular metros si una ruta no trae el valor calculado
 function getRouteDistance(route: FiberRoute): { metros: number; km: number } {
@@ -147,6 +168,7 @@ export const GponMap: React.FC<GponMapProps> = ({
   gasas = troncalGasas,
   postesPropuestos = troncalPostesPropuestos,
   postesCfe = troncalPostesCfe,
+  customPostes = [],
   onDeleteNapRequest,
   onOpenMileageCapture
 }) => {
@@ -157,6 +179,21 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   const [targetFocus, setTargetFocus] = useState<[number, number] | null>(null);
   const [targetZoom, setTargetZoom] = useState<number>(12);
+
+  // Límites visibles en pantalla y zoom actual para virtualización de alto rendimiento
+  const [viewportBounds, setViewportBounds] = useState<L.LatLngBounds | null>(null);
+  const [currentZoom, setCurrentZoom] = useState<number>(12);
+
+  const handleViewportChange = React.useCallback((bounds: L.LatLngBounds, zoom: number) => {
+    setViewportBounds(bounds);
+    setCurrentZoom(zoom);
+  }, []);
+
+  // Buffer de 30% alrededor de la pantalla para navegación fluida sin cortes
+  const bufferedBounds = useMemo(() => {
+    if (!viewportBounds) return null;
+    return viewportBounds.pad(0.3);
+  }, [viewportBounds]);
 
   // Estados de visibilidad de capas
   const [showFiberRoutes, setShowFiberRoutes] = useState(true);
@@ -217,6 +254,52 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
     return combined;
   }, [empalmes]);
+
+  // Combinar postes propuestos (KMZ + personalizados del usuario)
+  const allPostesPropuestos = useMemo(() => {
+    const combined = [...postesPropuestos];
+    if (customPostes && customPostes.length > 0) {
+      customPostes.forEach((cp) => {
+        if (cp.tipo === 'poste_propuesto' && !combined.some((p) => p.id_poste === cp.id_poste)) {
+          combined.push(cp);
+        }
+      });
+    }
+    return combined;
+  }, [postesPropuestos, customPostes]);
+
+  // Combinar postes CFE (KMZ + personalizados del usuario)
+  const allPostesCfe = useMemo(() => {
+    const combined = [...postesCfe];
+    if (customPostes && customPostes.length > 0) {
+      customPostes.forEach((cp) => {
+        if (cp.tipo === 'poste_cfe' && !combined.some((p) => p.id_poste === cp.id_poste)) {
+          combined.push(cp);
+        }
+      });
+    }
+    return combined;
+  }, [postesCfe, customPostes]);
+
+  // Virtualización por Vista (Viewport Culling): sólo renderizar en el DOM los postes dentro del viewport
+  const visiblePostesPropuestos = useMemo(() => {
+    if (!showPostesPropuestos) return [];
+    if (!bufferedBounds) return allPostesPropuestos.slice(0, 80);
+    return allPostesPropuestos.filter((p) =>
+      bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng])
+    );
+  }, [showPostesPropuestos, allPostesPropuestos, bufferedBounds]);
+
+  const visiblePostesCfe = useMemo(() => {
+    if (!showPostesCfe) return [];
+    // Nivel de detalle (LOD): a escala muy lejana (zoom < 13), los 803 postes saturan el DOM
+    // Se activan a partir de zoom 13 garantizando 60 FPS fluidos
+    if (currentZoom < 13) return [];
+    if (!bufferedBounds) return [];
+    return allPostesCfe.filter((p) =>
+      bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng])
+    );
+  }, [showPostesCfe, allPostesCfe, bufferedBounds, currentZoom]);
 
   // Total de kilómetros y ML calculados
   const totalNetworkDistance = useMemo(() => {
@@ -358,7 +441,14 @@ export const GponMap: React.FC<GponMapProps> = ({
                   className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
-                <span className="flex-1">Postes Propuestos ({postesPropuestos.length})</span>
+                <span className="flex-1">
+                  Postes Propuestos ({allPostesPropuestos.length})
+                  {showPostesPropuestos && (
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-medium">
+                      {visiblePostesPropuestos.length} en pantalla (fluido)
+                    </span>
+                  )}
+                </span>
               </label>
 
               {/* Postes CFE */}
@@ -372,7 +462,22 @@ export const GponMap: React.FC<GponMapProps> = ({
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-500 shrink-0 text-[6px] text-white flex items-center justify-center font-bold">
                   +
                 </span>
-                <span className="flex-1">Postes CFE ({postesCfe.length})</span>
+                <span className="flex-1">
+                  Postes CFE ({allPostesCfe.length})
+                  {showPostesCfe && (
+                    <span className="text-[10px] block">
+                      {currentZoom < 13 ? (
+                        <span className="text-amber-600 dark:text-amber-400 font-medium">
+                          Acércate (zoom) para activar
+                        </span>
+                      ) : (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                          {visiblePostesCfe.length} en pantalla (fluido)
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </span>
               </label>
 
               {/* Cajas NAP */}
@@ -464,6 +569,7 @@ export const GponMap: React.FC<GponMapProps> = ({
       >
         <MapBoundsAdjuster coordinates={activeRoute?.coordinates} />
         <MapCenterController targetCenter={targetFocus} zoom={targetZoom} />
+        <ViewportListener onViewportChange={handleViewportChange} />
 
         {/* 1. Capa de Calles (OpenStreetMap) */}
         {mapLayer === 'streets' && (
@@ -506,30 +612,19 @@ export const GponMap: React.FC<GponMapProps> = ({
 
             return (
               <React.Fragment key={`route-group-${route.id_ruta}`}>
-                {/* Resplandor y halo de iluminación cuando la ruta está seleccionada */}
+                {/* Resplandor y halo de iluminación cuando la ruta está seleccionada (intenso, sin tono lechoso) */}
                 {isSelected && (
-                  <>
-                    <Polyline
-                      positions={route.coordenadas}
-                      pathOptions={{
-                        color: '#ffffff',
-                        weight: lineWeight + 8,
-                        opacity: 0.95,
-                        lineCap: 'round',
-                        lineJoin: 'round'
-                      }}
-                    />
-                    <Polyline
-                      positions={route.coordenadas}
-                      pathOptions={{
-                        color: lineColor,
-                        weight: lineWeight + 14,
-                        opacity: 0.5,
-                        lineCap: 'round',
-                        lineJoin: 'round'
-                      }}
-                    />
-                  </>
+                  <Polyline
+                    positions={route.coordenadas}
+                    pathOptions={{
+                      color: lineColor,
+                      weight: lineWeight + 6,
+                      opacity: 0.65,
+                      lineCap: 'round',
+                      lineJoin: 'round',
+                      className: 'outline-none focus:outline-none'
+                    }}
+                  />
                 )}
 
                 {/* Línea principal de fibra óptica interactiva */}
@@ -543,10 +638,11 @@ export const GponMap: React.FC<GponMapProps> = ({
                   }}
                   pathOptions={{
                     color: lineColor,
-                    weight: isSelected ? lineWeight + 4 : hasSelection ? Math.max(2, lineWeight - 1) : lineWeight,
-                    opacity: isSelected ? 1.0 : hasSelection ? 0.35 : 0.9,
+                    weight: isSelected ? lineWeight + 3 : hasSelection ? Math.max(2, lineWeight - 1) : lineWeight,
+                    opacity: isSelected ? 1.0 : hasSelection ? 0.45 : 0.9,
                     lineCap: 'round',
-                    lineJoin: 'round'
+                    lineJoin: 'round',
+                    className: 'outline-none focus:outline-none'
                   }}
                 >
                   {/* Tooltip limpio con Nombre y Distancia precisa al posar el cursor */}
@@ -630,9 +726,9 @@ export const GponMap: React.FC<GponMapProps> = ({
             );
           })}
 
-        {/* 7. Marcadores de Postes Propuestos (Círculos Rojos Normalizados) */}
+        {/* 7. Marcadores de Postes Propuestos Normalizados (Virtualizados a 60 FPS) */}
         {showPostesPropuestos &&
-          postesPropuestos.map((poste) => {
+          visiblePostesPropuestos.map((poste) => {
             const codigo = poste.codigo || poste.nombre;
             const icon = createPostePropuestoIcon(codigo);
             return (
@@ -659,9 +755,9 @@ export const GponMap: React.FC<GponMapProps> = ({
             );
           })}
 
-        {/* 8. Marcadores de Postes CFE (Opcional por rendimiento de 800+ puntos) */}
+        {/* 8. Marcadores de Postes CFE Existentes (Virtualizados con LOD a 60 FPS) */}
         {showPostesCfe &&
-          postesCfe.map((poste) => {
+          visiblePostesCfe.map((poste) => {
             const codigo = poste.codigo || poste.nombre;
             const icon = createPosteCfeIcon(codigo);
             return (

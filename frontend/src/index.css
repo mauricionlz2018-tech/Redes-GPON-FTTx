@@ -102,3 +102,17 @@
     border-color: #e2e8f0 !important;
   }
 }
+
+/* Eliminar recuadro negro / outline de enfoque en elementos SVG interactivos del mapa Leaflet */
+.leaflet-container :focus,
+.leaflet-container :focus-visible,
+.leaflet-container path:focus,
+.leaflet-container path:focus-visible,
+.leaflet-container svg:focus,
+.leaflet-container svg:focus-visible,
+.leaflet-interactive:focus,
+.leaflet-interactive:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
