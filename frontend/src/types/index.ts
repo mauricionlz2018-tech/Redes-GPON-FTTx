@@ -82,7 +82,7 @@ export interface PendingMutation {
   intentos: number;
 }
 
-export type FiberCapacity = 12 | 24 | 48 | 96;
+export type FiberCapacity = 12 | 24 | 48 | 96 | 144 | number;
 
 export interface FiberRoute {
   id_ruta: string;

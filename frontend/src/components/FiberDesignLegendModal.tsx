@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Network, GitCommit, Layers, Info, MapPin } from 'lucide-react';
+import { X, Network, GitCommit, Layers, Info } from 'lucide-react';
 import { FIBER_DESIGN_COLORS } from './standardFiberIcons';
 import { getTroncalDesignMetrics } from '../data/troncalIxtJocData';
 import { FiberRoute, EmpalmeClosure } from '../types';
@@ -11,6 +11,20 @@ interface FiberDesignLegendModalProps {
   activeEmpalmes?: EmpalmeClosure[];
 }
 
+interface CalculatedMetrics {
+  totalMetros: number;
+  totalKm: number;
+  rutas96H_metros: number;
+  rutas48H_metros: number;
+  rutas12HTroncal_metros: number;
+  rutas12HDist_metros: number;
+  totalMufas: number;
+  totalGasas: number;
+  totalPostesCfe: number;
+  totalPostesPropuestos: number;
+  totalRutasTrazadas: number;
+}
+
 export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
   isOpen,
   onClose,
@@ -19,13 +33,16 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  // Obtenemos métricas del dataset KMZ base y recalculamos con las rutas activas si se han agregado
   const baseMetrics = getTroncalDesignMetrics();
   
-  // Si hay rutas personalizadas adicionales, recalculamos dinámicamente
-  const calculatedMetrics = React.useMemo(() => {
-    const summary = {
-      totalMetros: (baseMetrics.fibra12hDistribucionMl + baseMetrics.fibra12hTroncalMl + baseMetrics.fibra48hTroncalMl + baseMetrics.fibra96hTroncalMl + baseMetrics.fibra24hTroncalMl),
+  const calculatedMetrics: CalculatedMetrics = React.useMemo(() => {
+    const summary: CalculatedMetrics = {
+      totalMetros:
+        baseMetrics.fibra12hDistribucionMl +
+        baseMetrics.fibra12hTroncalMl +
+        baseMetrics.fibra48hTroncalMl +
+        baseMetrics.fibra96hTroncalMl +
+        baseMetrics.fibra24hTroncalMl,
       totalKm: baseMetrics.totalLineasKm,
       rutas96H_metros: baseMetrics.fibra96hTroncalMl,
       rutas48H_metros: baseMetrics.fibra48hTroncalMl,
@@ -45,7 +62,7 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
       let r12T = 0;
       let r12D = 0;
 
-      activeRoutes.forEach(r => {
+      activeRoutes.forEach((r) => {
         const dist = r.distancia_metros || 0;
         totM += dist;
         const st = (r.subtipo || '').toLowerCase();

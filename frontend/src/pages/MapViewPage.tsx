@@ -12,7 +12,6 @@ import { FiberDesignLegendModal } from '../components/FiberDesignLegendModal';
 import { CreateRouteModal } from '../components/CreateRouteModal';
 import { CreateMufaModal } from '../components/CreateMufaModal';
 import { useAuth } from '../context/AuthContext';
-import { NapBox, NapPort, OdfPanel } from '../types';
 import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure } from '../types';
 import { offlineDb } from '../db/offlineDb';
 import api from '../api/client';
@@ -29,14 +28,12 @@ import {
   Compass,
   Plus,
   Navigation,
-  Gauge
   Gauge,
   Layers,
   GitCommit,
   Ruler
 } from 'lucide-react';
 
-import { mockNaps, mockOdf } from '../data/mockGponData';
 import {
   mockNaps,
   mockOdf,

@@ -299,7 +299,7 @@ export const GponMap: React.FC<GponMapProps> = ({
               </span>
               <button
                 onClick={() => setIsLayersMenuOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -312,7 +312,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   type="checkbox"
                   checked={showFiberRoutes}
                   onChange={(e) => setShowFiberRoutes(e.target.checked)}
-                  className="rounded text-sky-600 focus:ring-sky-500"
+                  className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <span className="w-3 h-1 rounded bg-purple-700 shrink-0" />
                 <span className="flex-1">Líneas Troncal ({allRoutes.length})</span>
@@ -324,7 +324,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   type="checkbox"
                   checked={showEmpalmes}
                   onChange={(e) => setShowEmpalmes(e.target.checked)}
-                  className="rounded text-sky-600 focus:ring-sky-500"
+                  className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <GitCommit className="w-3.5 h-3.5 text-sky-600 shrink-0" />
                 <span className="flex-1">Mufas Torpedo ({allEmpalmes.length})</span>
@@ -336,7 +336,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   type="checkbox"
                   checked={showGasas}
                   onChange={(e) => setShowGasas(e.target.checked)}
-                  className="rounded text-sky-600 focus:ring-sky-500"
+                  className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <span className="font-bold text-blue-600 shrink-0">∞</span>
                 <span className="flex-1">Gasas de Reserva ({gasas.length})</span>
@@ -348,7 +348,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   type="checkbox"
                   checked={showPostesPropuestos}
                   onChange={(e) => setShowPostesPropuestos(e.target.checked)}
-                  className="rounded text-sky-600 focus:ring-sky-500"
+                  className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
                 <span className="flex-1">Postes Propuestos ({postesPropuestos.length})</span>
@@ -360,7 +360,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   type="checkbox"
                   checked={showPostesCfe}
                   onChange={(e) => setShowPostesCfe(e.target.checked)}
-                  className="rounded text-sky-600 focus:ring-sky-500"
+                  className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-500 shrink-0 text-[6px] text-white flex items-center justify-center font-bold">
                   +
@@ -374,7 +374,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   type="checkbox"
                   checked={showNaps}
                   onChange={(e) => setShowNaps(e.target.checked)}
-                  className="rounded text-sky-600 focus:ring-sky-500"
+                  className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <Network className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span className="flex-1">Cajas NAP ({naps.length})</span>
