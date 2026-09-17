@@ -453,3 +453,4 @@ if __name__ == '__main__':
     generate_neon_diagram()
     generate_docker_vs_vm()
     print("All 7 technical diagrams generated successfully!")
+

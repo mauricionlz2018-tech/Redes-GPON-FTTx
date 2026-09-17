@@ -14,3 +14,4 @@ for child in elements:
         tbl_count += 1
 
 print(f"Body elements: {len(elements)} total | {p_count} paragraphs, {tbl_count} tables")
+

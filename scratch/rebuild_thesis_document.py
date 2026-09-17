@@ -7,3 +7,4 @@ from docx.oxml.ns import nsdecls, qn
 import os
 
 print("Starting rebuild script preparation...")
+

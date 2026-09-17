@@ -65,3 +65,4 @@ InfrastructurePoste.init(
     timestamps: true
   }
 );
+

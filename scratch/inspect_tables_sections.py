@@ -11,3 +11,4 @@ for t_idx, tbl in enumerate(doc.tables):
     cols = len(tbl.columns)
     first_cell = tbl.cell(0, 0).text.strip().replace('\n', ' ')[:40]
     print(f"Table {t_idx}: {rows}x{cols} | first cell='{first_cell}'")
+

@@ -209,12 +209,17 @@ export const createPostePropuestoIcon = (codigo?: string) => {
   return L.divIcon({
     className: 'custom-poste-propuesto-marker',
     html: `
+      <div class="relative flex items-center justify-center group cursor-pointer hover:scale-150 transition-transform" title="Poste Propuesto ${codigo || ''}">
+        <div class="w-3.5 h-3.5 rounded-full bg-red-600 border-2 border-white shadow-sm ring-1 ring-red-500"></div>
       <div class="relative flex items-center justify-center p-1 cursor-pointer hover:scale-135 active:scale-95 transition-transform" title="Poste Propuesto ${codigo || ''}">
         <div class="w-4 h-4 rounded-full bg-red-600 border-2 border-white shadow-md ring-2 ring-red-500/80 flex items-center justify-center">
           <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
         </div>
       </div>
     `,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -8]
     iconSize: [24, 24],
     iconAnchor: [12, 12],
     popupAnchor: [0, -12]
@@ -228,12 +233,17 @@ export const createPosteCfeIcon = (codigo?: string) => {
   return L.divIcon({
     className: 'custom-poste-cfe-marker',
     html: `
+      <div class="relative flex items-center justify-center group cursor-pointer hover:scale-150 transition-transform" title="Poste CFE Existente ${codigo || ''}">
+        <div class="w-3 h-3 rounded-full bg-slate-600 border border-white shadow-xs flex items-center justify-center text-[7px] text-white font-bold">
       <div class="relative flex items-center justify-center p-1 cursor-pointer hover:scale-135 active:scale-95 transition-transform" title="Poste CFE Existente ${codigo || ''}">
         <div class="w-4 h-4 rounded-full bg-slate-700 border-2 border-white shadow-md ring-2 ring-slate-400/80 flex items-center justify-center text-[9px] text-white font-black leading-none">
           +
         </div>
       </div>
     `,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+    popupAnchor: [0, -7]
     iconSize: [24, 24],
     iconAnchor: [12, 12],
     popupAnchor: [0, -12]

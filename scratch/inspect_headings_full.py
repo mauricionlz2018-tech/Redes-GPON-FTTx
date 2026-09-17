@@ -9,3 +9,4 @@ for i, p in enumerate(doc.paragraphs):
         print(f"P[{i}] ({p.style.name}): {t}")
     elif any(k in t.upper() for k in ["CAPÍTULO", "CAPITULO", "CONCLUSIONES", "ANEXOS"]):
         print(f"P[{i}] (SPECIAL {p.style.name}): {t}")
+

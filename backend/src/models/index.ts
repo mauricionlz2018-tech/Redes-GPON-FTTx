@@ -31,6 +31,7 @@ NapPort.belongsTo(NapBox, { foreignKey: 'id_nap', as: 'caja_nap' });
 NapPort.hasOne(Client, { foreignKey: 'id_puerto_nap', as: 'cliente', onDelete: 'SET NULL' });
 Client.belongsTo(NapPort, { foreignKey: 'id_puerto_nap', as: 'puerto_nap' });
 
+// Sincronizar tabla de kilometraje de forma segura
 // Sincronizar tablas de forma segura
 MileageLog.sync({ alter: false }).catch((err) => {
   console.warn('Aviso: sincronización de tabla mileage_logs diferida:', err?.message);
@@ -54,6 +55,7 @@ export {
   NapBox,
   NapPort,
   Client,
+  MileageLog
   MileageLog,
   InfrastructurePoste,
   InfrastructureMufa,

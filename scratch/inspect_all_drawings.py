@@ -13,3 +13,4 @@ for idx, txt in drawing_paragraphs:
     prev = doc.paragraphs[idx-1].text[:40] if idx > 0 else ""
     nxt = doc.paragraphs[idx+1].text[:60] if idx+1 < len(doc.paragraphs) else ""
     print(f"[{idx}] prev='{prev}' | nxt='{nxt}'")
+
