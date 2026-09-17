@@ -189,7 +189,7 @@ export const createMufaTorpedoIcon = (empalme?: EmpalmeClosure) => {
  * Símbolo de infinito '∞' azul con los metros rotulados (e.g. 30m, 50m)
  */
 export const createGasaReservaIcon = (gasa?: GasaReserva) => {
-  const metraje = gasa?.longitud_metros ? `${gasa.longitud_metros}m` : '30m';
+  const metraje = gasa?.longitud_metros ? `${gasa.longitud_metros}m` : gasa?.metros_reserva ? `${gasa.metros_reserva}m` : '30m';
   return L.divIcon({
     className: 'custom-gasa-reserva-marker',
     html: `
