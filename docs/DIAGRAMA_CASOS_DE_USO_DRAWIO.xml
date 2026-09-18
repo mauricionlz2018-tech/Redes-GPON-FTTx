@@ -1,4 +1,4 @@
-<mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1560" pageHeight="1060" math="0" shadow="0">
+<mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1560" pageHeight="1250" math="0" shadow="0">
   <root>
     <mxCell id="0" />
     <mxCell id="1" parent="0" />
@@ -7,334 +7,599 @@
     <!-- LÍMITE DEL SISTEMA (SYSTEM BOUNDARY)                              -->
     <!-- ================================================================= -->
     <mxCell id="box_boundary" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#334155;strokeWidth=2;arcSize=2;" vertex="1" parent="1">
-      <mxGeometry x="180" y="30" width="1210" height="990" as="geometry" />
+      <mxGeometry x="190" y="30" width="1190" height="1170" as="geometry" />
     </mxCell>
 
-    <mxCell id="box_header" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;Sistema de Inventario y Mapeo L&amp;#243;gico GPON / FTTx&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 11px; color: #CBD5E1;&quot;&gt;Diagrama General de Casos de Uso del Sistema (RBAC, Concurrencia ACID y Offline-First) &amp;#8212; GPON TELECOM S.A. de C.V.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#0F172A;fontColor=#FFFFFF;align=center;verticalAlign=middle;arcSize=4;" vertex="1" parent="1">
-      <mxGeometry x="180" y="30" width="1210" height="45" as="geometry" />
+    <mxCell id="box_header" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;Sistema de Inventario y Mapeo L&amp;#243;gico GPON / FTTx&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 11px; color: #CBD5E1;&quot;&gt;Diagrama General de Casos de Uso del Sistema (RBAC, Concurrencia ACID, Offline-First, GIS e Infraestructura) &amp;#8212; GPON TELECOM S.A. de C.V.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#0F172A;fontColor=#FFFFFF;align=center;verticalAlign=middle;arcSize=4;" vertex="1" parent="1">
+      <mxGeometry x="190" y="30" width="1190" height="45" as="geometry" />
     </mxCell>
 
     <!-- ================================================================= -->
     <!-- ACTORES HUMANOS Y EXTERNOS                                        -->
     <!-- ================================================================= -->
     <!-- ACT-01: Administrador -->
-    <mxCell id="act_admin" value="Administrador&lt;br&gt;&lt;b style=&quot;color:#7C3AED;&quot;&gt;(ACT-01)&lt;/b&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#7C3AED;strokeColor=#5B21B6;fontColor=#1E1B4B;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="45" y="150" width="50" height="85" as="geometry" />
+    <mxCell id="act_admin" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#7C3AED;strokeColor=#5B21B6;fontColor=default;fontSize=11;fontStyle=1;" value="&lt;span&gt;Administrador&lt;br&gt;&lt;b style=&quot;color:#7C3AED;&quot;&gt;(ACT-01)&lt;/b&gt;&lt;/span&gt;" vertex="1">
+      <mxGeometry height="85" width="50" x="45" y="140" as="geometry" />
     </mxCell>
 
     <!-- ACT-02: Soporte Técnico -->
-    <mxCell id="act_soporte" value="Soporte T&amp;#233;cnico&lt;br&gt;&lt;b style=&quot;color:#0284C7;&quot;&gt;(ACT-02)&lt;/b&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#082F49;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="45" y="470" width="50" height="85" as="geometry" />
+    <mxCell id="act_soporte" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#082F49;fontSize=11;fontStyle=1;" value="Soporte T&amp;#233;cnico&lt;br&gt;&lt;b style=&quot;color:#0284C7;&quot;&gt;(ACT-02)&lt;/b&gt;" vertex="1">
+      <mxGeometry height="85" width="50" x="45" y="490" as="geometry" />
     </mxCell>
 
     <!-- ACT-03: Técnico de Campo -->
-    <mxCell id="act_campo" value="T&amp;#233;cnico de Campo&lt;br&gt;&lt;b style=&quot;color:#059669;&quot;&gt;(ACT-03 Móvil)&lt;/b&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#10B981;strokeColor=#047857;fontColor=#064E3B;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="45" y="780" width="50" height="85" as="geometry" />
+    <mxCell id="act_campo" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#10B981;strokeColor=#047857;fontColor=#064E3B;fontSize=11;fontStyle=1;" value="T&amp;#233;cnico de Campo&lt;br&gt;&lt;b style=&quot;color:#059669;&quot;&gt;(ACT-03 Móvil)&lt;/b&gt;" vertex="1">
+      <mxGeometry height="85" width="50" x="45" y="850" as="geometry" />
     </mxCell>
 
     <!-- Actor Externo: Sensor GPS / OpenStreetMap -->
-    <mxCell id="act_ext_gps" value="API Geoespacial&lt;br&gt;&lt;b style=&quot;color:#D97706;&quot;&gt;GPS / Leaflet&lt;/b&gt;&lt;br&gt;(OpenStreetMap)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#F59E0B;strokeColor=#D97706;fontColor=#78350F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="1440" y="300" width="50" height="85" as="geometry" />
+    <mxCell id="act_ext_gps" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#F59E0B;strokeColor=#D97706;fontColor=#78350F;fontSize=11;fontStyle=1;" value="API Geoespacial&lt;br&gt;&lt;b style=&quot;color:#D97706;&quot;&gt;GPS / Leaflet&lt;/b&gt;&lt;br&gt;(OpenStreetMap)" vertex="1">
+      <mxGeometry height="85" width="50" x="1420" y="320" as="geometry" />
     </mxCell>
 
     <!-- ================================================================= -->
     <!-- MÓDULO 1: SEGURIDAD, AUTENTICACIÓN Y ROLES                        -->
     <!-- ================================================================= -->
-    <mxCell id="pnl_sec" value="M&amp;#211;DULO 1: SEGURIDAD, AUTENTICACI&amp;#211;N Y CONTROL DE ACCESO (RBAC)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="200" y="90" width="1170" height="110" as="geometry" />
+    <mxCell id="pnl_sec" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" value="M&amp;#211;DULO 1: SEGURIDAD, AUTENTICACI&amp;#211;N Y CONTROL DE ACCESO (RBAC)" vertex="1">
+      <mxGeometry height="105" width="1140" x="210" y="90" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_01" value="CU-01: Iniciar Sesi&amp;#243;n y&lt;br&gt;Autenticaci&amp;#243;n con JWT" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;fontColor=#0F172A;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="220" y="125" width="180" height="55" as="geometry" />
+    <mxCell id="cu_01" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;fontColor=#0F172A;fontSize=10;fontStyle=1;" value="CU-01: Iniciar Sesi&amp;#243;n y&lt;br&gt;Autenticaci&amp;#243;n con JWT" vertex="1">
+      <mxGeometry height="50" width="180" x="230" y="125" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_02" value="CU-02: Conmutar Perfil&lt;br&gt;de Evaluaci&amp;#243;n (Role Switcher)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;fontColor=#0F172A;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="440" y="125" width="200" height="55" as="geometry" />
+    <mxCell id="cu_02" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;fontColor=#0F172A;fontSize=10;fontStyle=1;" value="CU-02: Conmutar Perfil&lt;br&gt;de Evaluaci&amp;#243;n (Role Switcher)" vertex="1">
+      <mxGeometry height="50" width="190" x="440" y="125" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_03" value="CU-03: Administrar Cuentas&lt;br&gt;y Directorio de Usuarios" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontColor=#4C1D95;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="690" y="125" width="200" height="55" as="geometry" />
+    <mxCell id="cu_03" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontColor=#4C1D95;fontSize=10;fontStyle=1;" value="CU-03: Administrar Cuentas&lt;br&gt;y Directorio de Usuarios" vertex="1">
+      <mxGeometry height="50" width="190" x="660" y="125" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_03_inc" value="&amp;#171;include&amp;#187;&lt;br&gt;Validar Hash Bcrypt y&lt;br&gt;Filtro requireRoles (403)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-      <mxGeometry x="940" y="125" width="180" height="55" as="geometry" />
+    <mxCell id="cu_03_inc" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" value="Validar Hash Bcrypt y&lt;br&gt;Filtro requireRoles (403)" vertex="1">
+      <mxGeometry height="50" width="180" x="880" y="125" as="geometry" />
     </mxCell>
 
     <!-- ================================================================= -->
     <!-- MÓDULO 2: CARTOGRAFÍA GIS Y CAJAS NAP                             -->
     <!-- ================================================================= -->
-    <mxCell id="pnl_gis" value="M&amp;#211;DULO 2: CARTOGRAF&amp;#205;A GIS, TRAZADO TRONCAL Y CAJAS TERMINALES NAP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="200" y="220" width="1170" height="120" as="geometry" />
+    <mxCell id="pnl_gis" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" value="M&amp;#211;DULO 2: CARTOGRAF&amp;#205;A GIS, TRAZADO TRONCAL Y CAJAS TERMINALES NAP" vertex="1">
+      <mxGeometry height="105" width="1140" x="210" y="210" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_04" value="CU-04: Consultar Mapa GIS,&lt;br&gt;Rutas y Sem&amp;#225;foro Saturaci&amp;#243;n" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="220" y="260" width="200" height="55" as="geometry" />
+    <mxCell id="cu_04" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" value="CU-04: Consultar Mapa GIS,&lt;br&gt;Rutas y Sem&amp;#225;foro Saturaci&amp;#243;n" vertex="1">
+      <mxGeometry height="50" width="200" x="230" y="245" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_05" value="CU-05: Calibrar Coordenadas&lt;br&gt;GPS de NAP en Sitio" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="460" y="260" width="200" height="55" as="geometry" />
+    <mxCell id="cu_05" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" value="CU-05: Calibrar Coordenadas&lt;br&gt;GPS de NAP en Sitio" vertex="1">
+      <mxGeometry height="50" width="190" x="460" y="245" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_06" value="CU-06: Registrar Nueva&lt;br&gt;Caja NAP en Inventario" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="700" y="260" width="200" height="55" as="geometry" />
+    <mxCell id="cu_06" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" value="CU-06: Registrar Nueva&lt;br&gt;Caja NAP en Inventario" vertex="1">
+      <mxGeometry height="50" width="190" x="680" y="245" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_06_inc" value="&amp;#171;include&amp;#187;&lt;br&gt;Aprovisionar Autom&amp;#225;tico&lt;br&gt;16 Puertos F&amp;#237;sicos SC-APC" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-      <mxGeometry x="940" y="260" width="190" height="55" as="geometry" />
-    </mxCell>
-
-    <!-- ================================================================= -->
-    <!-- MÓDULO 3: OPERACIÓN DE PUERTOS, ACID Y ABONADOS                   -->
-    <!-- ================================================================= -->
-    <mxCell id="pnl_port" value="M&amp;#211;DULO 3: OPERACI&amp;#211;N DE PUERTOS F&amp;#205;SICOS, CONCURRENCIA ACID Y ABONADOS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="200" y="360" width="1170" height="240" as="geometry" />
-    </mxCell>
-
-    <!-- Fila 1 de Puertos: Matriz y Asignación con ACID -->
-    <mxCell id="cu_07" value="CU-07: Visualizar Matriz&lt;br&gt;del Chasis de 16 Puertos" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="220" y="400" width="190" height="55" as="geometry" />
-    </mxCell>
-
-    <mxCell id="cu_08" value="CU-08: Asignar Abonado a&lt;br&gt;Puerto Libre de Fibra" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#78350F;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="450" y="400" width="200" height="55" as="geometry" />
-    </mxCell>
-
-    <mxCell id="cu_08_inc" value="&amp;#171;include&amp;#187;&lt;br&gt;Bloqueo Pesimista Fila&lt;br&gt;(SELECT FOR UPDATE)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#DC2626;strokeWidth=1;dashed=1;fontColor=#991B1B;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-      <mxGeometry x="700" y="400" width="190" height="55" as="geometry" />
-    </mxCell>
-
-    <mxCell id="cu_08_inc2" value="&amp;#171;include&amp;#187;&lt;br&gt;Registrar ONT, MAC&lt;br&gt;y Potencia RX (dBm)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-      <mxGeometry x="940" y="400" width="180" height="55" as="geometry" />
-    </mxCell>
-
-    <!-- Fila 2 de Puertos: Liberación, Mantenimiento y Clientes -->
-    <mxCell id="cu_09" value="CU-09: Liberar Puerto y&lt;br&gt;Desvincular Abonado" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="220" y="505" width="190" height="55" as="geometry" />
-    </mxCell>
-
-    <mxCell id="cu_10" value="CU-10: Cambiar Estado T&amp;#233;cnico&lt;br&gt;(Da&amp;#241;ado / Mantenimiento)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="450" y="505" width="200" height="55" as="geometry" />
-    </mxCell>
-
-    <mxCell id="cu_11" value="CU-11: Consultar y Filtrar&lt;br&gt;Padr&amp;#243;n de Clientes FTTx" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="690" y="505" width="190" height="55" as="geometry" />
-    </mxCell>
-
-    <mxCell id="cu_12" value="CU-12: Actualizar Expediente&lt;br&gt;de Abonado en Servicio" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="930" y="505" width="190" height="55" as="geometry" />
+    <mxCell id="cu_06_inc" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" value="Aprovisionar Automático&lt;br&gt;16 Puertos Físicos SC-APC" vertex="1">
+      <mxGeometry height="50" width="180" x="900" y="245" as="geometry" />
     </mxCell>
 
     <!-- ================================================================= -->
-    <!-- MÓDULO 4: OFFLINE-FIRST Y REPORTES EJECUTIVOS                     -->
+    <!-- MÓDULO 3: MATRIZ DE PUERTOS FÍSICOS, CONCURRENCIA ACID Y ABONADOS -->
     <!-- ================================================================= -->
-    <mxCell id="pnl_off" value="M&amp;#211;DULO 4: OPERACI&amp;#211;N M&amp;#211;VIL OFFLINE-FIRST Y GENERACI&amp;#211;N DE REPORTES EJECUTIVOS PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="200" y="620" width="1170" height="240" as="geometry" />
+    <mxCell id="pnl_port" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" value="M&amp;#211;DULO 3: OPERACI&amp;#211;N DE PUERTOS F&amp;#205;SICOS, CONCURRENCIA ACID Y ABONADOS" vertex="1">
+      <mxGeometry height="205" width="1140" x="210" y="330" as="geometry" />
     </mxCell>
 
-    <!-- Fila 1 Offline -->
-    <mxCell id="cu_13" value="CU-13: Operar en Modo Offline&lt;br&gt;con Cach&amp;#233; Local (IndexedDB)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="220" y="660" width="200" height="55" as="geometry" />
+    <mxCell id="cu_07" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" value="CU-07: Visualizar Matriz&lt;br&gt;del Chasis de 16 Puertos" vertex="1">
+      <mxGeometry height="50" width="180" x="230" y="365" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_14" value="CU-14: Encolar Asignaciones&lt;br&gt;en Zonas Sin Cobertura" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="470" y="660" width="200" height="55" as="geometry" />
+    <mxCell id="cu_08" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#78350F;fontSize=10;fontStyle=1;" value="CU-08: Asignar Abonado a&lt;br&gt;Puerto Libre de Fibra" vertex="1">
+      <mxGeometry height="50" width="190" x="440" y="365" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_15" value="CU-15: Sincronizar Mutaciones&lt;br&gt;(Autom&amp;#225;tica / Bot&amp;#243;n Manual)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="720" y="660" width="210" height="55" as="geometry" />
+    <mxCell id="cu_08_inc" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#DC2626;strokeWidth=1;dashed=1;fontColor=#991B1B;fontSize=9;fontStyle=2;" value="Bloqueo Pesimista Fila&lt;br&gt;(SELECT FOR UPDATE)" vertex="1">
+      <mxGeometry height="50" width="180" x="660" y="365" as="geometry" />
     </mxCell>
 
-    <!-- Fila 2 Reportes PDF -->
-    <mxCell id="cu_16" value="CU-16: Generar y Descargar&lt;br&gt;Reporte Ejecutivo PDF (Stream)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="340" y="765" width="230" height="55" as="geometry" />
+    <mxCell id="cu_08_inc2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" value="Registrar ONT, MAC&lt;br&gt;y Potencia RX (dBm)" vertex="1">
+      <mxGeometry height="50" width="180" x="870" y="365" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_17_inc" value="&amp;#171;include&amp;#187;&lt;br&gt;Calcular Diagn&amp;#243;stico Global&lt;br&gt;y Sem&amp;#225;foro de Capacidad" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-      <mxGeometry x="630" y="765" width="210" height="55" as="geometry" />
+    <mxCell id="cu_09" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" value="CU-09: Liberar Puerto y&lt;br&gt;Desvincular Abonado" vertex="1">
+      <mxGeometry height="50" width="180" x="230" y="450" as="geometry" />
     </mxCell>
 
-    <mxCell id="cu_18_inc" value="&amp;#171;include&amp;#187;&lt;br&gt;Construir Directorio Detallado&lt;br&gt;de Clientes y Potencia dBm" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-      <mxGeometry x="890" y="765" width="220" height="55" as="geometry" />
+    <mxCell id="cu_10" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" value="CU-10: Cambiar Estado T&amp;#233;cnico&lt;br&gt;(Da&amp;#241;ado / Mantenimiento)" vertex="1">
+      <mxGeometry height="50" width="190" x="440" y="450" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_11" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" value="CU-11: Consultar y Filtrar&lt;br&gt;Padr&amp;#243;n de Clientes FTTx" vertex="1">
+      <mxGeometry height="50" width="180" x="660" y="450" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_12" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" value="CU-12: Actualizar Expediente&lt;br&gt;de Abonado en Servicio" vertex="1">
+      <mxGeometry height="50" width="180" x="870" y="450" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- MÓDULO 4: OFFLINE-FIRST (INDEXEDDB)                               -->
+    <!-- ================================================================= -->
+    <mxCell id="pnl_off" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" value="M&amp;#211;DULO 4: OPERACI&amp;#211;N M&amp;#211;VIL OFFLINE-FIRST CON SINCRONIZACI&amp;#211;N DIFERIDA" vertex="1">
+      <mxGeometry height="105" width="1140" x="210" y="550" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_13" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" value="CU-13: Operar en Modo Offline&lt;br&gt;con Cach&amp;#233; Local (IndexedDB)" vertex="1">
+      <mxGeometry height="50" width="200" x="230" y="585" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_14" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" value="CU-14: Encolar Asignaciones&lt;br&gt;en Zonas Sin Cobertura" vertex="1">
+      <mxGeometry height="50" width="190" x="460" y="585" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_15" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" value="CU-15: Sincronizar Mutaciones&lt;br&gt;(Autom&amp;#225;tica / Bot&amp;#243;n Manual)" vertex="1">
+      <mxGeometry height="50" width="200" x="680" y="585" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- MÓDULO 5: INFRAESTRUCTURA DE PLANTA EXTERNA GIS (NUEVO)           -->
+    <!-- ================================================================= -->
+    <mxCell id="pnl_infra" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" value="M&amp;#211;DULO 5: INFRAESTRUCTURA F&amp;#205;SICA DE PLANTA EXTERNA GIS (POSTES, MUFAS Y RUTAS)" vertex="1">
+      <mxGeometry height="105" width="1140" x="210" y="670" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_17" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" value="CU-17: Administrar Postes&lt;br&gt;CFE y Propuestos (GIS)" vertex="1">
+      <mxGeometry height="50" width="200" x="230" y="705" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_18" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" value="CU-18: Administrar Mufas de&lt;br&gt;Empalme Torpedo (IP68)" vertex="1">
+      <mxGeometry height="50" width="200" x="460" y="705" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_19" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" value="CU-19: Trazar y Cubicar Rutas&lt;br&gt;de Fibra &amp;#211;ptica (GeoJSON/km)" vertex="1">
+      <mxGeometry height="50" width="210" x="690" y="705" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- MÓDULO 6: BITÁCORA DE CAMPO, AUDITORÍA, ASISTENCIA Y REPORTES     -->
+    <!-- ================================================================= -->
+    <mxCell id="pnl_ops" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#64748B;fontSize=10;fontStyle=1;" value="M&amp;#211;DULO 6: BIT&amp;#193;CORA DE TRASLADOS, AUDITOR&amp;#205;A, ASISTENCIA T&amp;#201;CNICA Y REPORTES PDF" vertex="1">
+      <mxGeometry height="185" width="1140" x="210" y="790" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_20" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" value="CU-20: Registrar Traslado y&lt;br&gt;Bit&amp;#225;cora de Kilometraje" vertex="1">
+      <mxGeometry height="50" width="200" x="230" y="825" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_21" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;fontColor=#4C1D95;fontSize=10;fontStyle=1;" value="CU-21: Auditar Rendimiento y&lt;br&gt;Desplazamientos Vehiculares" vertex="1">
+      <mxGeometry height="50" width="210" x="460" y="825" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_22" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=1;" value="CU-22: Consultar Asistente&lt;br&gt;Virtual T&amp;#233;cnico GPON" vertex="1">
+      <mxGeometry height="50" width="200" x="700" y="825" as="geometry" />
+    </mxCell>
+
+    <!-- Fila Reportes PDF -->
+    <mxCell id="cu_16" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;fontColor=#0C4A6E;fontSize=10;fontStyle=1;" value="CU-16: Generar y Descargar&lt;br&gt;Reporte Ejecutivo PDF (Stream)" vertex="1">
+      <mxGeometry height="50" width="220" x="250" y="900" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_17_inc" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" value="Calcular Diagnóstico Global&lt;br&gt;y Semáforo de Capacidad" vertex="1">
+      <mxGeometry height="50" width="200" x="510" y="900" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cu_18_inc" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1;dashed=1;fontColor=#475569;fontSize=9;fontStyle=2;" value="Construir Directorio Detallado&lt;br&gt;de Clientes y Potencia dBm" vertex="1">
+      <mxGeometry height="50" width="210" x="740" y="900" as="geometry" />
     </mxCell>
 
     <!-- ================================================================= -->
     <!-- LEYENDA TÉCNICA RBAC AL PIE DEL DIAGRAMA                          -->
     <!-- ================================================================= -->
-    <mxCell id="pnl_legend" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;arcSize=3;" vertex="1" parent="1">
-      <mxGeometry x="200" y="880" width="1170" height="115" as="geometry" />
+    <mxCell id="pnl_legend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1;arcSize=3;" value="" vertex="1">
+      <mxGeometry height="115" width="1140" x="210" y="990" as="geometry" />
     </mxCell>
 
-    <mxCell id="leg_title" value="&lt;b&gt;CONVENCIONES DE COLOR Y MATRIZ DE PRIVILEGIOS RBAC (CONTROL DE ACCESO):&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#0F172A;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="220" y="890" width="600" height="20" as="geometry" />
+    <mxCell id="leg_title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#0F172A;fontSize=11;fontStyle=1;" value="&lt;b&gt;CONVENCIONES DE COLOR Y MATRIZ DE PRIVILEGIOS RBAC (CONTROL DE ACCESO):&lt;/b&gt;" vertex="1">
+      <mxGeometry height="20" width="600" x="230" y="1000" as="geometry" />
     </mxCell>
 
-    <mxCell id="leg_adm" value="&amp;#9632; &lt;b style=&quot;color:#7C3AED;&quot;&gt;Administrador (ACT-01):&lt;/b&gt; Acceso total e irrestricto a todos los módulos y gestión de cuentas de usuario (RF-04)." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#334155;fontSize=10;" vertex="1" parent="1">
-      <mxGeometry x="220" y="915" width="1000" height="20" as="geometry" />
+    <mxCell id="leg_adm" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#334155;fontSize=10;" value="&amp;#9632; &lt;b style=&quot;color:#7C3AED;&quot;&gt;Administrador (ACT-01):&lt;/b&gt; Acceso total e irrestricto a todos los módulos, directorio de usuarios, cubicación GIS y auditoría de kilometraje." vertex="1">
+      <mxGeometry height="20" width="1000" x="230" y="1025" as="geometry" />
     </mxCell>
 
-    <mxCell id="leg_sop" value="&amp;#9632; &lt;b style=&quot;color:#0284C7;&quot;&gt;Soporte Técnico (ACT-02):&lt;/b&gt; Alta de NAPs, liberar puertos, cambiar estados técnicos y emitir reportes ejecutivos PDF." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#334155;fontSize=10;" vertex="1" parent="1">
-      <mxGeometry x="220" y="940" width="1000" height="20" as="geometry" />
+    <mxCell id="leg_sop" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#334155;fontSize=10;" value="&amp;#9632; &lt;b style=&quot;color:#0284C7;&quot;&gt;Soporte Técnico (ACT-02):&lt;/b&gt; Alta de NAPs/postes/mufas, liberar puertos, cambiar estados técnicos, emitir reportes PDF y conciliar traslados." vertex="1">
+      <mxGeometry height="20" width="1000" x="230" y="1050" as="geometry" />
     </mxCell>
 
-    <mxCell id="leg_cam" value="&amp;#9632; &lt;b style=&quot;color:#059669;&quot;&gt;Técnico de Campo (ACT-03):&lt;/b&gt; Consulta cartográfica GIS, calibración GPS, asignación a puertos libres y modo Offline. &lt;b style=&quot;color:#DC2626;&quot;&gt;[Prohibido liberar o alterar: HTTP 403 Forbidden]&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#334155;fontSize=10;" vertex="1" parent="1">
-      <mxGeometry x="220" y="965" width="1120" height="20" as="geometry" />
+    <mxCell id="leg_cam" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#334155;fontSize=10;" value="&amp;#9632; &lt;b style=&quot;color:#059669;&quot;&gt;Técnico de Campo (ACT-03):&lt;/b&gt; Consulta cartográfica GIS, calibración GPS, asignación a puertos libres, modo Offline, registro de kilometraje y asistente. &lt;b style=&quot;color:#DC2626;&quot;&gt;[Prohibido alterar: HTTP 403 Forbidden]&lt;/b&gt;" vertex="1">
+      <mxGeometry height="20" width="1090" x="230" y="1075" as="geometry" />
     </mxCell>
 
     <!-- ================================================================= -->
     <!-- ASOCIACIONES: ADMINISTRADOR (ACT-01) - COLOR PÚRPURA              -->
     <!-- ================================================================= -->
-    <mxCell id="e_adm_01" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#7C3AED;rounded=0;" edge="1" parent="1" source="act_admin" target="cu_01">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_adm_01" edge="1" parent="1" source="act_admin" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#7C3AED;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_01">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="150" y="183" />
+          <mxPoint x="150" y="150" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_adm_02" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#7C3AED;rounded=0;" edge="1" parent="1" source="act_admin" target="cu_02">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_adm_02" edge="1" parent="1" source="act_admin" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#7C3AED;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_02">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="150" y="183" />
+          <mxPoint x="150" y="185" />
+          <mxPoint x="535" y="185" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_adm_03" style="endArrow=none;html=1;strokeWidth=2;strokeColor=#7C3AED;rounded=0;" edge="1" parent="1" source="act_admin" target="cu_03">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_adm_03" edge="1" parent="1" source="act_admin" style="endArrow=none;html=1;strokeWidth=2;strokeColor=#7C3AED;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_03">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="150" y="183" />
+          <mxPoint x="150" y="185" />
+          <mxPoint x="755" y="185" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_adm_06" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#7C3AED;rounded=0;" edge="1" parent="1" source="act_admin" target="cu_06">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_adm_06" edge="1" parent="1" source="act_admin" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#7C3AED;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_06">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="140" y="183" />
+          <mxPoint x="140" y="230" />
+          <mxPoint x="775" y="230" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_adm_16" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#7C3AED;rounded=0;" edge="1" parent="1" source="act_admin" target="cu_16">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_adm_16" edge="1" parent="1" source="act_admin" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#7C3AED;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_16">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="140" y="183" />
+          <mxPoint x="140" y="925" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_adm_17" edge="1" parent="1" source="act_admin" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#7C3AED;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_17">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="140" y="183" />
+          <mxPoint x="140" y="730" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_adm_19" edge="1" parent="1" source="act_admin" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#7C3AED;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_19">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="130" y="183" />
+          <mxPoint x="130" y="690" />
+          <mxPoint x="795" y="690" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_adm_21" edge="1" parent="1" source="act_admin" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#7C3AED;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_21">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="130" y="183" />
+          <mxPoint x="130" y="850" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
     <!-- ================================================================= -->
     <!-- ASOCIACIONES: SOPORTE TÉCNICO (ACT-02) - COLOR AZUL CIELO         -->
     <!-- ================================================================= -->
-    <mxCell id="e_sop_01" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_01">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_01" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_01">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="160" y="533" />
+          <mxPoint x="160" y="150" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_sop_04" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_04">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_04" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_04">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="70" y="270" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_sop_06" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_06">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_06" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_06">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="70" y="320" />
+          <mxPoint x="775" y="320" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_sop_07" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_07">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_07" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_07">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="70" y="390" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_sop_08" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_08">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_08" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_08">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="160" y="533" />
+          <mxPoint x="160" y="430" />
+          <mxPoint x="535" y="430" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_sop_09" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_09">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_09" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_09">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="160" y="533" />
+          <mxPoint x="160" y="475" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_sop_10" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_10">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_10" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_10">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="160" y="533" />
+          <mxPoint x="160" y="525" />
+          <mxPoint x="535" y="525" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_sop_11" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_11">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_11" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_11">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="160" y="533" />
+          <mxPoint x="160" y="525" />
+          <mxPoint x="750" y="525" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_sop_12" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_12">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_12" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_12">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="160" y="533" />
+          <mxPoint x="160" y="525" />
+          <mxPoint x="960" y="525" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_sop_16" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;" edge="1" parent="1" source="act_soporte" target="cu_16">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_sop_16" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_16">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="70" y="660" />
+          <mxPoint x="360" y="660" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_sop_17" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_17">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="70" y="730" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_sop_18" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_18">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="70" y="730" />
+          <mxPoint x="560" y="730" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_sop_20" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_20">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="70" y="850" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_sop_22" edge="1" parent="1" source="act_soporte" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#0284C7;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_22">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="70" y="880" />
+          <mxPoint x="800" y="880" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
     <!-- ================================================================= -->
     <!-- ASOCIACIONES: TÉCNICO DE CAMPO (ACT-03) - COLOR ESMERALDA        -->
     <!-- ================================================================= -->
-    <mxCell id="e_cam_01" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;" edge="1" parent="1" source="act_campo" target="cu_01">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_cam_01" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_01">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="893" />
+          <mxPoint x="170" y="150" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_cam_04" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;" edge="1" parent="1" source="act_campo" target="cu_04">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_cam_04" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_04">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="893" />
+          <mxPoint x="170" y="270" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_cam_05" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;" edge="1" parent="1" source="act_campo" target="cu_05">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_cam_05" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_05">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="893" />
+          <mxPoint x="170" y="310" />
+          <mxPoint x="555" y="310" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_cam_07" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;" edge="1" parent="1" source="act_campo" target="cu_07">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_cam_07" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_07">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="893" />
+          <mxPoint x="170" y="390" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_cam_08" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;" edge="1" parent="1" source="act_campo" target="cu_08">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_cam_08" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_08">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="893" />
+          <mxPoint x="170" y="430" />
+          <mxPoint x="535" y="430" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_cam_11" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;" edge="1" parent="1" source="act_campo" target="cu_11">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_cam_11" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_11">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="893" />
+          <mxPoint x="170" y="525" />
+          <mxPoint x="750" y="525" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_cam_13" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;" edge="1" parent="1" source="act_campo" target="cu_13">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_cam_13" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_13">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="330" y="893" />
+          <mxPoint x="330" y="635" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_cam_15" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;" edge="1" parent="1" source="act_campo" target="cu_15">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_cam_15" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_15">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="70" y="640" />
+          <mxPoint x="780" y="640" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_cam_20" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_20">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="893" />
+          <mxPoint x="170" y="850" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_cam_22" edge="1" parent="1" source="act_campo" style="endArrow=none;html=1;strokeWidth=1.8;strokeColor=#059669;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_22">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="893" />
+          <mxPoint x="170" y="880" />
+          <mxPoint x="800" y="880" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
     <!-- ================================================================= -->
     <!-- ASOCIACIONES: ACTOR EXTERNO GPS / MAPAS                           -->
     <!-- ================================================================= -->
-    <mxCell id="e_gps_04" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#D97706;dashed=1;rounded=0;" edge="1" parent="1" source="act_ext_gps" target="cu_04">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_gps_04" edge="1" parent="1" source="act_ext_gps" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#D97706;dashed=1;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_04">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="330" y="320" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <mxCell id="e_gps_05" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#D97706;dashed=1;rounded=0;" edge="1" parent="1" source="act_ext_gps" target="cu_05">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="e_gps_05" edge="1" parent="1" source="act_ext_gps" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#D97706;dashed=1;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_05">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="555" y="320" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_gps_19" edge="1" parent="1" source="act_ext_gps" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#D97706;dashed=1;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_19">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1445" y="730" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_gps_20" edge="1" parent="1" source="act_ext_gps" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#D97706;dashed=1;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_20">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1445" y="850" />
+          <mxPoint x="330" y="850" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
     <!-- ================================================================= -->
     <!-- RELACIONES «INCLUDE» Y «EXTEND»                                   -->
     <!-- ================================================================= -->
-    <!-- CU-03 >> CU-03_inc -->
-    <mxCell id="rel_inc_03" value="&amp;#171;include&amp;#187;" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#64748B;fontColor=#475569;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" edge="1" parent="1" source="cu_03" target="cu_03_inc">
+    <mxCell id="rel_inc_03" edge="1" parent="1" source="cu_03" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#64748B;fontColor=#475569;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" target="cu_03_inc" value="">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
-    <!-- CU-06 >> CU-06_inc -->
-    <mxCell id="rel_inc_06" value="&amp;#171;include&amp;#187;" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#64748B;fontColor=#475569;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" edge="1" parent="1" source="cu_06" target="cu_06_inc">
+    <mxCell id="rel_inc_06" edge="1" parent="1" source="cu_06" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#64748B;fontColor=#475569;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" target="cu_06_inc" value="">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
-    <!-- CU-08 >> CU-08_inc (Bloqueo Pesimista) -->
-    <mxCell id="rel_inc_08_1" value="&amp;#171;include&amp;#187;" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#DC2626;fontColor=#991B1B;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" edge="1" parent="1" source="cu_08" target="cu_08_inc">
+    <mxCell id="rel_inc_08_1" edge="1" parent="1" source="cu_08" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#DC2626;fontColor=#991B1B;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" target="cu_08_inc" value="">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
-    <!-- CU-08 >> CU-08_inc2 (Datos ONT) -->
-    <mxCell id="rel_inc_08_2" value="&amp;#171;include&amp;#187;" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#64748B;fontColor=#475569;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" edge="1" parent="1" source="cu_08" target="cu_08_inc2">
+    <mxCell id="rel_inc_08_2" edge="1" parent="1" source="cu_08" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#64748B;fontColor=#475569;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_08_inc2" value="">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="535" y="350" />
+          <mxPoint x="960" y="350" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="rel_inc_13_14" edge="1" parent="1" source="cu_13" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" target="cu_14" value="">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
-    <!-- CU-13 >> CU-14 (Encolar) -->
-    <mxCell id="rel_inc_13_14" value="&amp;#171;include&amp;#187;" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#059669;fontColor=#064E3B;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" edge="1" parent="1" source="cu_13" target="cu_14">
+    <mxCell id="rel_ext_14_15" edge="1" parent="1" source="cu_15" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#D97706;fontColor=#B45309;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" target="cu_14" value="">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
-    <!-- CU-14 >> CU-15 (Sincronizar cuando hay red) -->
-    <mxCell id="rel_ext_14_15" value="&amp;#171;extend&amp;#187;" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#D97706;fontColor=#B45309;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" edge="1" parent="1" source="cu_15" target="cu_14">
+    <mxCell id="rel_inc_16_17" edge="1" parent="1" source="cu_16" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#0284C7;fontColor=#0369A1;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" target="cu_17_inc" value="">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
-    <!-- CU-16 >> CU-17_inc (Diagnóstico de saturación) -->
-    <mxCell id="rel_inc_16_17" value="&amp;#171;include&amp;#187;" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#0284C7;fontColor=#0369A1;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" edge="1" parent="1" source="cu_16" target="cu_17_inc">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
-    <!-- CU-16 >> CU-18_inc (Listado de abonados) -->
-    <mxCell id="rel_inc_16_18" value="&amp;#171;include&amp;#187;" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#0284C7;fontColor=#0369A1;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;" edge="1" parent="1" source="cu_16" target="cu_18_inc">
-      <mxGeometry relative="1" as="geometry" />
+    <mxCell id="rel_inc_16_18" edge="1" parent="1" source="cu_16" style="endArrow=open;endSize=8;dashed=1;html=1;strokeWidth=1.5;strokeColor=#0284C7;fontColor=#0369A1;fontSize=10;fontStyle=2;labelBackgroundColor=#FFFFFF;rounded=0;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" target="cu_18_inc" value="">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="360" y="890" />
+          <mxPoint x="845" y="890" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
   </root>
 </mxGraphModel>
-

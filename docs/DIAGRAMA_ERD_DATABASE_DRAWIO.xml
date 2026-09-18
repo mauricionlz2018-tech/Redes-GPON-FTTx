@@ -1,0 +1,128 @@
+<mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1650" pageHeight="1100" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- BANNER DE ENCABEZADO -->
+    <mxCell id="erd_header" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Modelo Entidad-Relación (ERD) &amp;#8212; PostgreSQL / Sequelize&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 11px; color: #CBD5E1;&quot;&gt;Sistema de Inventario y Mapeo L&amp;#243;gico GPON / FTTx &amp;#8212; GPON TELECOM S.A. de C.V.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#0F172A;fontColor=#FFFFFF;align=center;verticalAlign=middle;arcSize=3;" vertex="1" parent="1">
+      <mxGeometry x="40" y="20" width="1560" height="45" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: usuarios                                                   -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_usuarios" value="&lt;b&gt;usuarios&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_usuario : UUID [PK]&lt;br/&gt;+ nombre_completo : VARCHAR(150)&lt;br/&gt;+ credencial_acceso : VARCHAR(100) [UK]&lt;br/&gt;+ password_hash : VARCHAR(255)&lt;br/&gt;+ rol : ENUM('Admin','Soporte','Tecnico')&lt;br/&gt;+ createdAt : TIMESTAMPTZ&lt;br/&gt;+ updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#F8FAFC;strokeColor=#475569;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="50" y="90" width="240" height="150" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: odf_panels                                                 -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_odf" value="&lt;b&gt;odf_panels&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_odf : UUID [PK]&lt;br/&gt;+ nombre : VARCHAR(100)&lt;br/&gt;+ ubicacion_central : VARCHAR(255)&lt;br/&gt;+ coordenadas_gps : JSONB {lat, lng}&lt;br/&gt;+ capacidad_hilos : INTEGER (48)&lt;br/&gt;+ createdAt : TIMESTAMPTZ&lt;br/&gt;+ updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#EFF6FF;strokeColor=#1D4ED8;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="340" y="90" width="240" height="150" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: pon_ports                                                  -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_pon" value="&lt;b&gt;pon_ports&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_puerto_pon : UUID [PK]&lt;br/&gt;+ id_odf : UUID [FK]&lt;br/&gt;+ numero_slot : INTEGER (1..4)&lt;br/&gt;+ numero_puerto : INTEGER (1..16)&lt;br/&gt;+ capacidad_maxima : INTEGER (64)&lt;br/&gt;+ potencia_tx_dbm : FLOAT (4.5)&lt;br/&gt;+ createdAt : TIMESTAMPTZ&lt;br/&gt;+ updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#EFF6FF;strokeColor=#1D4ED8;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="340" y="290" width="240" height="165" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: fiber_threads                                              -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_threads" value="&lt;b&gt;fiber_threads&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_hilo : UUID [PK]&lt;br/&gt;+ id_odf_origen : UUID [FK]&lt;br/&gt;+ numero_hilo : INTEGER (1..48)&lt;br/&gt;+ estado : ENUM('Activo','Reserva','Muerto')&lt;br/&gt;+ createdAt : TIMESTAMPTZ&lt;br/&gt;+ updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#EFF6FF;strokeColor=#1D4ED8;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="50" y="290" width="240" height="135" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: nap_boxes                                                  -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_nap" value="&lt;b&gt;nap_boxes&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_nap : UUID [PK]&lt;br/&gt;+ id_puerto_pon : UUID [FK]&lt;br/&gt;+ identificador : VARCHAR(50) [UK]&lt;br/&gt;+ zona : VARCHAR(100)&lt;br/&gt;+ total_puertos : INTEGER (16)&lt;br/&gt;+ direccion_texto : VARCHAR(255)&lt;br/&gt;+ coordenadas_gps : JSONB {lat, lng}&lt;br/&gt;+ createdAt : TIMESTAMPTZ&lt;br/&gt;+ updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#F5F3FF;strokeColor=#7C3AED;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="640" y="290" width="250" height="180" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: nap_ports                                                  -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_ports" value="&lt;b&gt;nap_ports&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_puerto : UUID [PK]&lt;br/&gt;+ id_nap : UUID [FK]&lt;br/&gt;+ indice_puerto : INTEGER (1..16)&lt;br/&gt;+ estado : ENUM('Libre','Ocupado','Dañado',...)&lt;br/&gt;+ UNIQUE (id_nap, indice_puerto)&lt;br/&gt;+ createdAt : TIMESTAMPTZ&lt;br/&gt;+ updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#F5F3FF;strokeColor=#7C3AED;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="950" y="290" width="240" height="150" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: clients                                                    -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_clients" value="&lt;b&gt;clients&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_cliente : UUID [PK]&lt;br/&gt;+ id_puerto_nap : UUID [FK, UK 1:1]&lt;br/&gt;+ numero_cliente : VARCHAR(50) [UK]&lt;br/&gt;+ nombre_completo : VARCHAR(150)&lt;br/&gt;+ marca_ont : ENUM('ZTE','V-SOL',...)&lt;br/&gt;+ direccion : VARCHAR(255)&lt;br/&gt;+ ont_mac : VARCHAR(17)&lt;br/&gt;+ potencia_rx_estimada : FLOAT (-19.5)&lt;br/&gt;+ createdAt : TIMESTAMPTZ&lt;br/&gt;+ updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="1250" y="290" width="250" height="195" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: mileage_logs                                               -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_mileage" value="&lt;b&gt;mileage_logs&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id : UUID [PK]&lt;br/&gt;+ tecnico_nombre : VARCHAR(150)&lt;br/&gt;+ id_nap : UUID [FK opcional]&lt;br/&gt;+ nap_identificador : VARCHAR(50)&lt;br/&gt;+ vehiculo_unidad : VARCHAR(100)&lt;br/&gt;+ motivo_traslado : VARCHAR(50)&lt;br/&gt;+ tipo_calculo : VARCHAR(30)&lt;br/&gt;+ km_inicial : FLOAT&lt;br/&gt;+ km_final : FLOAT&lt;br/&gt;+ km_recorridos : FLOAT&lt;br/&gt;+ distancia_estimada_ruta_km : FLOAT&lt;br/&gt;+ destino_nombre : VARCHAR(150)&lt;br/&gt;+ fecha_hora : TIMESTAMPTZ&lt;br/&gt;+ createdAt / updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="640" y="550" width="250" height="260" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: infrastructure_postes                                      -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_postes" value="&lt;b&gt;infrastructure_postes&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_poste : VARCHAR(100) [PK]&lt;br/&gt;+ nombre : VARCHAR(100)&lt;br/&gt;+ codigo : VARCHAR(50)&lt;br/&gt;+ tipo : VARCHAR(50) [propuesto/cfe]&lt;br/&gt;+ coordenadas_gps : JSONB {lat, lng}&lt;br/&gt;+ material : VARCHAR(100) (Concreto 12m)&lt;br/&gt;+ createdAt : TIMESTAMPTZ&lt;br/&gt;+ updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#FFFBEB;strokeColor=#B45309;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="50" y="550" width="240" height="165" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: infrastructure_mufas                                       -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_mufas" value="&lt;b&gt;infrastructure_mufas&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_empalme : VARCHAR(100) [PK]&lt;br/&gt;+ nombre : VARCHAR(150)&lt;br/&gt;+ tipo_cierre : VARCHAR(150) (Domo IP68)&lt;br/&gt;+ capacidad_hilos : INTEGER (48)&lt;br/&gt;+ estado : VARCHAR(50) (operativa)&lt;br/&gt;+ coordenadas_gps : JSONB {lat, lng}&lt;br/&gt;+ createdAt : TIMESTAMPTZ&lt;br/&gt;+ updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#FFFBEB;strokeColor=#B45309;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="340" y="550" width="250" height="165" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- TABLA: infrastructure_routes                                      -->
+    <!-- ================================================================= -->
+    <mxCell id="tbl_routes" value="&lt;b&gt;infrastructure_routes&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;+ id_ruta : VARCHAR(100) [PK]&lt;br/&gt;+ nombre : VARCHAR(150)&lt;br/&gt;+ tipo : VARCHAR(50) [troncal/distribucion]&lt;br/&gt;+ hilos : INTEGER (48)&lt;br/&gt;+ color : VARCHAR(20) (#8d5b4c)&lt;br/&gt;+ grosor : FLOAT (4)&lt;br/&gt;+ distancia_metros : FLOAT&lt;br/&gt;+ distancia_km : FLOAT&lt;br/&gt;+ vertices : INTEGER&lt;br/&gt;+ coordenadas : JSONB [[lat,lng],...]&lt;br/&gt;+ estado : VARCHAR(50)&lt;br/&gt;+ createdAt / updatedAt : TIMESTAMPTZ" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#FFFBEB;strokeColor=#B45309;fontColor=#0F172A;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="950" y="550" width="250" height="240" as="geometry" />
+    </mxCell>
+
+    <!-- ================================================================= -->
+    <!-- RELACIONES RELACIONALES (EDGES DE INTEGRIDAD REFERENCIAL)          -->
+    <!-- ================================================================= -->
+    <!-- odf_panels -> pon_ports (1:N) -->
+    <mxCell id="rel_odf_pon" edge="1" parent="1" source="tbl_odf" target="tbl_pon" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startSize=10;endArrow=ERmany;endSize=10;strokeColor=#1D4ED8;strokeWidth=2;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- odf_panels -> fiber_threads (1:N) -->
+    <mxCell id="rel_odf_threads" edge="1" parent="1" source="tbl_odf" target="tbl_threads" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startSize=10;endArrow=ERmany;endSize=10;strokeColor=#1D4ED8;strokeWidth=1.8;">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="460" y="260" />
+          <mxPoint x="170" y="260" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- pon_ports -> nap_boxes (1:N) -->
+    <mxCell id="rel_pon_nap" edge="1" parent="1" source="tbl_pon" target="tbl_nap" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startSize=10;endArrow=ERmany;endSize=10;strokeColor=#7C3AED;strokeWidth=2;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- nap_boxes -> nap_ports (1:16) -->
+    <mxCell id="rel_nap_ports" edge="1" parent="1" source="tbl_nap" target="tbl_ports" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startSize=10;endArrow=ERmany;endSize=10;strokeColor=#7C3AED;strokeWidth=2;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- nap_ports -> clients (1:1 Estricta) -->
+    <mxCell id="rel_port_client" edge="1" parent="1" source="tbl_ports" target="tbl_clients" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERone;startSize=10;endArrow=ERone;endSize=10;strokeColor=#059669;strokeWidth=2.2;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- nap_boxes -> mileage_logs (0:N Opcional) -->
+    <mxCell id="rel_nap_mileage" edge="1" parent="1" source="tbl_nap" target="tbl_mileage" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERzeroToOne;startSize=10;endArrow=ERmany;endSize=10;strokeColor=#D97706;strokeWidth=1.8;dashed=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>
+
