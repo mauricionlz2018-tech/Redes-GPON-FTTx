@@ -143,11 +143,16 @@ const MapBoundsAdjuster: React.FC<{ coordinates?: [number, number][] }> = ({ coo
 };
 
 // Controlador para centrar en una ubicación específica
+// Controlador para centrar en una ubicación específica con animación fluida
 const MapCenterController: React.FC<{ targetCenter?: [number, number] | null; zoom?: number }> = ({ targetCenter, zoom }) => {
   const map = useMap();
   useEffect(() => {
     if (targetCenter) {
       map.flyTo(targetCenter, zoom || 13, { duration: 1.2 });
+      map.flyTo(targetCenter, zoom || 13, {
+        duration: 0.8,
+        easeLinearity: 0.25
+      });
     }
   }, [targetCenter, zoom, map]);
   return null;
@@ -181,9 +186,23 @@ export const GponMap: React.FC<GponMapProps> = ({
   const [targetZoom, setTargetZoom] = useState<number>(12);
 
   // Auto-centrado y acercamiento suave cuando se selecciona o crea una caja NAP
+  // Referencia para distinguir clics directos en marcadores del mapa vs selecciones externas (búsqueda, lista, etc.)
+  const isMapMarkerClickRef = React.useRef(false);
+
+  // Auto-centrado y acercamiento suave cuando se selecciona externamente una caja NAP
   useEffect(() => {
+    if (isMapMarkerClickRef.current) {
+      // Si el usuario hizo clic directamente sobre el marcador en el mapa, no usamos flyTo
+      // para evitar que la animación compita con la apertura del Popup y provoque saltos/tirones.
+      isMapMarkerClickRef.current = false;
+      return;
+    }
+
     if (selectedNap?.coordenadas_gps?.lat && selectedNap?.coordenadas_gps?.lng) {
       setTargetFocus([selectedNap.coordenadas_gps.lat, selectedNap.coordenadas_gps.lng]);
+      // Offset de latitud ligero (+0.0015) para que el popup (que mide ~300px hacia arriba) quede perfectamente
+      // centrado y visible en pantalla sin cortarse con la barra superior ni provocar autoPan brusco.
+      setTargetFocus([selectedNap.coordenadas_gps.lat + 0.0015, selectedNap.coordenadas_gps.lng]);
       setTargetZoom(16);
     }
   }, [selectedNap?.id_nap]);
@@ -881,10 +900,20 @@ export const GponMap: React.FC<GponMapProps> = ({
                 position={[nap.coordenadas_gps.lat, nap.coordenadas_gps.lng]}
                 icon={icon}
                 eventHandlers={{
-                  click: () => onSelectNap(nap)
+                  click: () => {
+                    isMapMarkerClickRef.current = true;
+                    onSelectNap(nap);
+                    setTimeout(() => {
+                      isMapMarkerClickRef.current = false;
+                    }, 100);
+                  }
                 }}
               >
-                <Popup>
+                <Popup
+                  autoPanPaddingTopLeft={L.point(20, 90)}
+                  autoPanPaddingBottomRight={L.point(20, 20)}
+                  autoPan={true}
+                >
                   <div className="p-1 min-w-[220px] text-slate-800 dark:text-slate-100">
                     <div className="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 mb-2">
                       <span className="font-bold text-sm text-sky-600 dark:text-sky-400 flex items-center gap-1">
