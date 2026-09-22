@@ -5,6 +5,22 @@ export interface User {
   nombre_completo: string;
   credencial_acceso: string;
   rol: UserRole;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateUserData {
+  nombre_completo: string;
+  credencial_acceso: string;
+  password: string;
+  rol: UserRole;
+}
+
+export interface UpdateUserData {
+  nombre_completo?: string;
+  credencial_acceso?: string;
+  password?: string;
+  rol?: UserRole;
 }
 
 export interface GpsCoordinates {

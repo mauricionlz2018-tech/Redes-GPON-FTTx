@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middlewares/auth';
 import { requireRoles } from '../middlewares/role';
-import { login, getProfile, listUsers, updateProfile } from '../controllers/authController';
+import { login, getProfile, listUsers, updateProfile, createUser, updateUser, deleteUser } from '../controllers/authController';
 import { listOdfs, getOdfById } from '../controllers/odfController';
 import { listNaps, getNapById, updateGpsCoordinates, createNap, deleteNap } from '../controllers/napController';
 import { assignPort, releasePort, updatePortStatus } from '../controllers/portController';
@@ -23,12 +23,17 @@ import {
 const router = Router();
 
 // ============================
-// Rutas de Autenticación
+// Rutas de Autenticación y Gestión de Personal (RBAC)
 // ============================
 router.post('/auth/login', login);
 router.get('/auth/me', authenticateToken, getProfile);
 router.put('/auth/perfil', authenticateToken, updateProfile);
+
+// Gestión exclusiva para rol Administrador
 router.get('/auth/usuarios', authenticateToken, requireRoles(['Admin']), listUsers);
+router.post('/auth/usuarios', authenticateToken, requireRoles(['Admin']), createUser);
+router.put('/auth/usuarios/:id', authenticateToken, requireRoles(['Admin']), updateUser);
+router.delete('/auth/usuarios/:id', authenticateToken, requireRoles(['Admin']), deleteUser);
 
 // ============================
 // Rutas de ODF Central

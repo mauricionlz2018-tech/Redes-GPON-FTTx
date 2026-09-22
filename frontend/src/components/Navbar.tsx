@@ -64,17 +64,20 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { to: '/mapa', label: 'Mapa de Red', icon: MapPin },
     { to: '/clientes', label: 'Abonados', icon: Users },
-    { to: '/reportes', label: 'Reportes PDF', icon: FileText }
+    { to: '/reportes', label: 'Reportes PDF', icon: FileText },
+    ...(user.rol === 'Admin'
+      ? [{ to: '/usuarios', label: 'Personal', icon: UserCog }]
+      : [])
   ];
 
   const getRoleBadge = (rol: string) => {
     switch (rol) {
       case 'Admin':
-        return 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30';
+        return 'bg-indigo-100 text-indigo-950 dark:bg-indigo-950 dark:text-indigo-200 border-indigo-400 dark:border-indigo-600 font-bold';
       case 'Soporte':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+        return 'bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-200 border-emerald-400 dark:border-emerald-600 font-bold';
       default:
-        return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+        return 'bg-amber-100 text-amber-950 dark:bg-amber-950 dark:text-amber-200 border-amber-400 dark:border-amber-600 font-bold';
     }
   };
 

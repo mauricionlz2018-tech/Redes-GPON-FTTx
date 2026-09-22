@@ -9,6 +9,7 @@ import { LoginPage } from './pages/LoginPage';
 import { MapViewPage } from './pages/MapViewPage';
 import { ClientsPage } from './pages/ClientsPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { UsersManagementPage } from './pages/UsersManagementPage';
 import { AssistantChatbot } from './components/AssistantChatbot';
 import { DataDisclaimerModal } from './components/DataDisclaimerModal';
 
@@ -92,6 +93,15 @@ export const App: React.FC = () => {
               element={
                 <ProtectedLayout>
                   <ReportsPage />
+                </ProtectedLayout>
+              }
+            />
+
+            <Route
+              path="/usuarios"
+              element={
+                <ProtectedLayout>
+                  <UsersManagementPage />
                 </ProtectedLayout>
               }
             />
