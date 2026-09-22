@@ -18,7 +18,8 @@ import {
   UserCog,
   Sun,
   Moon,
-  Bot
+  Bot,
+  Smartphone
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -161,14 +162,14 @@ export const Navbar: React.FC = () => {
                 <span className="hidden lg:inline text-[11px]">Asistente</span>
               </button>
 
-              {/* Botón de Instalar Aplicación / APK */}
+              {/* Botón de Instalar Aplicación PWA */}
               <button
                 onClick={handleInstallClick}
-                className="flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md shadow-emerald-950/20 transition-all active:scale-95"
-                title="Centro de Descarga e Instalación APK"
+                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 font-bold text-[11px] sm:text-xs transition-all shadow-xs active:scale-95 cursor-pointer"
+                title="Instalar como Aplicación PWA en Celular o PC"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>APK</span>
+                <Smartphone className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                <span className="font-extrabold">PWA</span>
               </button>
 
               {/* Indicador de Red */}
@@ -205,12 +206,12 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
 
-              {/* Perfil de Usuario con opción para Editar */}
-              <div className="flex items-center gap-1 border-l border-slate-200 dark:border-slate-800 pl-1.5 sm:pl-2">
+              {/* Perfil de Usuario (Abre modal de perfil y opción para cerrar sesión) */}
+              <div className="flex items-center border-l border-slate-200 dark:border-slate-800 pl-1.5 sm:pl-2">
                 <button
                   onClick={() => setIsEditUserOpen(true)}
-                  className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-left group"
-                  title="Editar perfil de usuario"
+                  className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-left group cursor-pointer"
+                  title="Ver perfil de usuario y opciones de cuenta"
                 >
                   <div className="text-right hidden sm:block">
                     <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors truncate max-w-[120px]">
@@ -227,14 +228,6 @@ export const Navbar: React.FC = () => {
                   <div className="p-1.5 bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-500/20 dark:group-hover:bg-indigo-600/30 text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
                     <UserCog className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
-                </button>
-
-                <button
-                  onClick={logout}
-                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                  title="Cerrar sesión"
-                >
-                  <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>

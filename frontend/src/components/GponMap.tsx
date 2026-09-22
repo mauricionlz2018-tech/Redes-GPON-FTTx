@@ -413,10 +413,10 @@ export const GponMap: React.FC<GponMapProps> = ({
       className="relative isolate w-full h-full min-h-[520px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors scroll-mt-24"
     >
       {/* Selector flotante de Capas Cartográficas: Calles vs Google Satélite HD vs Esri Satélite + Street View */}
-      <div className="absolute top-3 right-3 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl p-1 shadow-lg flex items-center gap-1">
+      <div className="absolute top-3 right-2.5 sm:right-3 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl p-1 shadow-lg flex items-center gap-1">
         <button
           onClick={() => handleSelectMapLayer('streets')}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             mapLayer === 'streets'
               ? 'bg-sky-600 text-white shadow-xs'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -429,7 +429,7 @@ export const GponMap: React.FC<GponMapProps> = ({
 
         <button
           onClick={() => handleSelectMapLayer('google_hybrid')}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             mapLayer === 'google_hybrid'
               ? 'bg-indigo-700 text-white shadow-xs ring-1 ring-indigo-400'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -437,12 +437,12 @@ export const GponMap: React.FC<GponMapProps> = ({
           title="Satélite Google Ultra HD con fotorrealismo extremo, calles y techos visibles"
         >
           <Satellite className="w-3.5 h-3.5 text-amber-300" />
-          <span>Google Satélite HD</span>
+          <span className="hidden sm:inline">Google </span><span>Satélite HD</span>
         </button>
 
         <button
           onClick={() => handleSelectMapLayer('esri_satellite')}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             mapLayer === 'esri_satellite'
               ? 'bg-sky-600 text-white shadow-xs'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -450,7 +450,7 @@ export const GponMap: React.FC<GponMapProps> = ({
           title="Satélite puro mundial de archivo (Esri World Imagery)"
         >
           <Layers className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Esri Satélite</span>
+          <span className="hidden md:inline">Esri Satélite</span>
         </button>
 
         <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-0.5" />
@@ -459,7 +459,7 @@ export const GponMap: React.FC<GponMapProps> = ({
         <button
           type="button"
           onClick={() => setIsStreetViewActive(!isStreetViewActive)}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
             isStreetViewActive
               ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-400 shadow-md animate-pulse'
               : 'bg-amber-100 hover:bg-amber-200 text-amber-950 dark:bg-amber-950/80 dark:hover:bg-amber-900 dark:text-amber-200 border border-amber-400 dark:border-amber-600'
@@ -467,42 +467,43 @@ export const GponMap: React.FC<GponMapProps> = ({
           title="Modo explorador Street View 360°: Toca cualquier calle o elemento para inspección a nivel de calle"
         >
           <Camera className="w-3.5 h-3.5 text-slate-950 dark:text-amber-300" />
-          <span className="hidden md:inline">Street View 360°</span>
+          <span className="hidden md:inline">Street View </span><span>360°</span>
         </button>
       </div>
 
-      {/* Banner flotante informativo cuando el modo Street View está encendido */}
+      {/* Banner flotante informativo cuando el modo Street View está encendido (Píldora estilizada inferior) */}
       {isStreetViewActive && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-[450] bg-amber-500 text-slate-950 px-4 py-2 rounded-xl shadow-xl border-2 border-amber-600 flex items-center gap-2.5 text-xs font-bold animate-fadeIn max-w-[90%] sm:max-w-md">
-          <Camera className="w-4 h-4 text-slate-950 shrink-0" />
-          <span className="flex-1">
-            Modo Street View activo: Haz clic en cualquier calle, esquina o poste para abrir vista 360°
-          </span>
+        <div className="absolute bottom-12 sm:bottom-4 left-1/2 -translate-x-1/2 z-[450] bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-full shadow-xl border border-amber-600 flex items-center justify-between gap-2 text-xs font-bold w-[92%] sm:w-auto max-w-sm whitespace-nowrap animate-fadeIn">
+          <div className="flex items-center gap-1.5 truncate">
+            <Camera className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+            <span className="truncate text-[11px] sm:text-xs">Modo 360°: Toca una calle o poste</span>
+          </div>
           <button
             onClick={() => setIsStreetViewActive(false)}
-            className="bg-slate-950 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold hover:bg-slate-800 cursor-pointer shrink-0"
+            className="bg-slate-950 text-white px-2 py-0.5 rounded-full text-[10px] font-bold hover:bg-slate-800 cursor-pointer shrink-0 ml-1"
           >
-            Cerrar
+            ✕ Salir
           </button>
         </div>
       )}
 
-      {/* Control Flotante de Filtros de Elementos de Red (Troncal, Mufas, Gasas, Postes) */}
-      <div className="absolute top-3 left-3 z-[400]">
+      {/* Control Flotante de Filtros de Elementos de Red (Troncal, Mufas, Gasas, Postes) - Ubicado limpiamente debajo de los botones de zoom +/- */}
+      <div className="absolute top-[82px] left-2.5 sm:left-3 z-[400]">
         {!isLayersMenuOpen ? (
           <button
             onClick={() => setIsLayersMenuOpen(true)}
-            className="bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 shadow-md flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
+            className="bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-md flex items-center gap-1.5 sm:gap-2 text-xs font-bold text-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
             title="Abrir selector de capas de red de fibra"
           >
             <Eye className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-            <span>Capas de Red</span>
+            <span>Capas</span>
+            <span className="hidden sm:inline">de Red</span>
             <span className="text-[10px] bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 px-1.5 py-0.2 rounded-full font-mono">
               {totalNetworkDistance.km} km
             </span>
           </button>
         ) : (
-          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xl text-xs space-y-2 max-w-[260px] animate-fadeIn">
+          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl p-3 shadow-xl text-xs space-y-2 w-[260px] max-w-[85vw] animate-fadeIn max-h-[70vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-1.5">
               <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5 text-sky-600" />

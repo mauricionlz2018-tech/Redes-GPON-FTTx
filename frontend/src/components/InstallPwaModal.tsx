@@ -52,8 +52,8 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
               />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">Centro de Descarga e Instalación Móvil</h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">App nativa GPON TELECOM para teléfonos y cuadrillas</p>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">Instalar Aplicación GPON (PWA)</h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">App nativa GPON TELECOM para cuadrillas y teléfonos de campo</p>
             </div>
           </div>
           <button
@@ -75,18 +75,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
-            <span>1. Instalar en Celular</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('apk')}
-            className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-              activeTab === 'apk'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800/60'
-            }`}
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>2. Descargar APK</span>
+            <span>1. Instalar PWA</span>
           </button>
           <button
             onClick={() => setActiveTab('ios')}
@@ -97,7 +86,18 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
             }`}
           >
             <Apple className="w-3.5 h-3.5" />
-            <span>3. iPhone / iOS</span>
+            <span>2. iPhone / iOS</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('apk')}
+            className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              activeTab === 'apk'
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>3. Paquete APK</span>
           </button>
         </div>
 
