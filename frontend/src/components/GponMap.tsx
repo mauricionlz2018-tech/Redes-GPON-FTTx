@@ -250,17 +250,17 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
-  // Estado para alternar entre vista estándar de calles, Google Satélite Ultra HD y Esri Satélite
-  const [mapLayer, setMapLayer] = useState<'streets' | 'google_hybrid' | 'esri_satellite'>(() => {
+  // Estado para alternar entre vista estándar de calles y Satélite HD oficial (Esri World Imagery / Maxar - 100% Legal)
+  const [mapLayer, setMapLayer] = useState<'streets' | 'satellite'>(() => {
     try {
       const saved = localStorage.getItem('gpon_map_layer');
-      if (saved === 'google_hybrid' || saved === 'esri_satellite' || saved === 'streets') return saved;
-      if (saved === 'satellite' || saved === 'hybrid') return 'google_hybrid';
+      if (saved === 'satellite' || saved === 'streets') return saved;
+      if (saved === 'google_hybrid' || saved === 'esri_satellite' || saved === 'hybrid') return 'satellite';
     } catch {}
-    return 'google_hybrid'; // Por defecto la alternativa satelital más nítida y hermosa
+    return 'satellite'; // Por defecto Satélite HD de alta resolución 100% legal
   });
 
-  const handleSelectMapLayer = (layer: 'streets' | 'google_hybrid' | 'esri_satellite') => {
+  const handleSelectMapLayer = (layer: 'streets' | 'satellite') => {
     setMapLayer(layer);
     try {
       localStorage.setItem('gpon_map_layer', layer);
@@ -412,45 +412,32 @@ export const GponMap: React.FC<GponMapProps> = ({
       id="seccion-mapa-gpon"
       className="relative isolate w-full h-full min-h-[520px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors scroll-mt-24"
     >
-      {/* Selector flotante de Capas Cartográficas: Calles vs Google Satélite HD vs Esri Satélite + Street View */}
+      {/* Selector flotante de Capas Cartográficas: Calles vs Satélite HD (100% Legal Esri / Maxar) + Street View 360° */}
       <div className="absolute top-3 right-2.5 sm:right-3 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl p-1 shadow-lg flex items-center gap-1">
         <button
           onClick={() => handleSelectMapLayer('streets')}
-          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             mapLayer === 'streets'
               ? 'bg-sky-600 text-white shadow-xs'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
-          title="Vista cartográfica base con nombres de calles y colonias (OpenStreetMap)"
+          title="Vista cartográfica base con nombres de calles y colonias (OpenStreetMap - 100% Legal)"
         >
           <Map className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Calles</span>
+          <span>Calles</span>
         </button>
 
         <button
-          onClick={() => handleSelectMapLayer('google_hybrid')}
-          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            mapLayer === 'google_hybrid'
+          onClick={() => handleSelectMapLayer('satellite')}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            mapLayer === 'satellite'
               ? 'bg-indigo-700 text-white shadow-xs ring-1 ring-indigo-400'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
-          title="Satélite Google Ultra HD con fotorrealismo extremo, calles y techos visibles"
+          title="Satélite HD de alta resolución fotorrealista con nombres de calles (Esri World Imagery / Maxar - 100% Legal)"
         >
           <Satellite className="w-3.5 h-3.5 text-amber-300" />
-          <span className="hidden sm:inline">Google </span><span>Satélite HD</span>
-        </button>
-
-        <button
-          onClick={() => handleSelectMapLayer('esri_satellite')}
-          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            mapLayer === 'esri_satellite'
-              ? 'bg-sky-600 text-white shadow-xs'
-              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-          title="Satélite puro mundial de archivo (Esri World Imagery)"
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Esri Satélite</span>
+          <span>Satélite HD</span>
         </button>
 
         <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-0.5" />
@@ -697,7 +684,7 @@ export const GponMap: React.FC<GponMapProps> = ({
           onLocationSelect={handleMapLocationSelect}
         />
 
-        {/* 1. Capa de Calles (OpenStreetMap) */}
+        {/* 1. Capa de Calles (OpenStreetMap - 100% Libre y Legal) */}
         {mapLayer === 'streets' && (
           <TileLayer
             key="osm-streets"
@@ -706,25 +693,24 @@ export const GponMap: React.FC<GponMapProps> = ({
           />
         )}
 
-        {/* 2. Capa Google Satélite Ultra HD / Híbrido (Máxima fidelidad fotorrealista y nitidez) */}
-        {mapLayer === 'google_hybrid' && (
-          <TileLayer
-            key="google-hybrid"
-            attribution='&copy; Google Maps Satélite HD'
-            url="https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-            subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
-            maxZoom={21}
-          />
-        )}
-
-        {/* 3. Capa Esri World Imagery (Satélite Puro de Archivo) */}
-        {mapLayer === 'esri_satellite' && (
-          <TileLayer
-            key="esri-satellite"
-            attribution='Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics'
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            maxZoom={19}
-          />
+        {/* 2. Capa Satélite HD Fotorrealista (Esri World Imagery + Maxar / Earthstar - 100% Legal) */}
+        {mapLayer === 'satellite' && (
+          <>
+            {/* Ortofotografía Satelital de Alta Resolución Maxar / Earthstar */}
+            <TileLayer
+              key="esri-satellite-base"
+              attribution='Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              maxZoom={19}
+            />
+            {/* Capa Híbrida Oficial de Nombres de Calles, Poblados y Carreteras de Esri */}
+            <TileLayer
+              key="esri-satellite-labels"
+              url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+              maxZoom={19}
+              opacity={0.85}
+            />
+          </>
         )}
 
         {/* 4. Trazado de Rutas Reales de Fibra Óptica (KMZ IXT-JOC + Complementos) */}

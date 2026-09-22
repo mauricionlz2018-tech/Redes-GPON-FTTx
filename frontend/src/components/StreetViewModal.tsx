@@ -215,7 +215,7 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
         <div className="bg-slate-100 dark:bg-slate-800/90 px-3.5 sm:px-6 py-2.5 sm:py-3 border-t border-slate-300 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
           <div className="text-[10px] sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium text-center sm:text-left hidden xs:block">
             <span>Esquema oficial 100% legal: </span>
-            <strong className="text-slate-900 dark:text-white">Google Maps URLs API</strong>
+            <strong className="text-slate-900 dark:text-white">Google Maps URLs API & Esri Satélite HD</strong>
           </div>
 
           <div className="flex items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
