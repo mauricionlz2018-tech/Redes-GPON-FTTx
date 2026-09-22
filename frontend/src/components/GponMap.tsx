@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, useMap } from 'react-leaflet';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
@@ -17,7 +16,6 @@ import {
   Map,
   Satellite,
   Car,
-  Eye
   Eye,
   Camera,
   Globe
@@ -147,13 +145,11 @@ const MapBoundsAdjuster: React.FC<{ coordinates?: [number, number][] }> = ({ coo
   return null;
 };
 
-// Controlador para centrar en una ubicación específica
 // Controlador para centrar en una ubicación específica con animación fluida
 const MapCenterController: React.FC<{ targetCenter?: [number, number] | null; zoom?: number }> = ({ targetCenter, zoom }) => {
   const map = useMap();
   useEffect(() => {
     if (targetCenter) {
-      map.flyTo(targetCenter, zoom || 13, { duration: 1.2 });
       map.flyTo(targetCenter, zoom || 13, {
         duration: 0.8,
         easeLinearity: 0.25
@@ -254,21 +250,16 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
-  // Estado para alternar entre vista estándar de calles, satélite real e híbrido
-  const [mapLayer, setMapLayer] = useState<'streets' | 'satellite' | 'hybrid'>(() => {
   // Estado para alternar entre vista estándar de calles, Google Satélite Ultra HD y Esri Satélite
   const [mapLayer, setMapLayer] = useState<'streets' | 'google_hybrid' | 'esri_satellite'>(() => {
     try {
       const saved = localStorage.getItem('gpon_map_layer');
-      if (saved === 'satellite' || saved === 'hybrid' || saved === 'streets') return saved;
       if (saved === 'google_hybrid' || saved === 'esri_satellite' || saved === 'streets') return saved;
       if (saved === 'satellite' || saved === 'hybrid') return 'google_hybrid';
     } catch {}
-    return 'streets';
     return 'google_hybrid'; // Por defecto la alternativa satelital más nítida y hermosa
   });
 
-  const handleSelectMapLayer = (layer: 'streets' | 'satellite' | 'hybrid') => {
   const handleSelectMapLayer = (layer: 'streets' | 'google_hybrid' | 'esri_satellite') => {
     setMapLayer(layer);
     try {
@@ -421,21 +412,15 @@ export const GponMap: React.FC<GponMapProps> = ({
       id="seccion-mapa-gpon"
       className="relative isolate w-full h-full min-h-[520px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors scroll-mt-24"
     >
-      {/* Selector flotante de Capas Cartográficas: Calles vs Satélite vs Híbrido */}
-      <div className="absolute top-3 right-3 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-lg flex items-center gap-1">
       {/* Selector flotante de Capas Cartográficas: Calles vs Google Satélite HD vs Esri Satélite + Street View */}
       <div className="absolute top-3 right-3 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl p-1 shadow-lg flex items-center gap-1">
         <button
           onClick={() => handleSelectMapLayer('streets')}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             mapLayer === 'streets'
-              ? 'bg-sky-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
               ? 'bg-sky-600 text-white shadow-xs'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
-          title="Vista de calles y cartografía base (OpenStreetMap)"
           title="Vista cartográfica base con nombres de calles y colonias (OpenStreetMap)"
         >
           <Map className="w-3.5 h-3.5" />
@@ -443,43 +428,28 @@ export const GponMap: React.FC<GponMapProps> = ({
         </button>
 
         <button
-          onClick={() => handleSelectMapLayer('satellite')}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-            mapLayer === 'satellite'
-              ? 'bg-sky-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           onClick={() => handleSelectMapLayer('google_hybrid')}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             mapLayer === 'google_hybrid'
               ? 'bg-indigo-700 text-white shadow-xs ring-1 ring-indigo-400'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
-          title="Vista satelital real de alta resolución (Esri World Imagery)"
           title="Satélite Google Ultra HD con fotorrealismo extremo, calles y techos visibles"
         >
-          <Satellite className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Satélite</span>
           <Satellite className="w-3.5 h-3.5 text-amber-300" />
           <span>Google Satélite HD</span>
         </button>
 
         <button
-          onClick={() => handleSelectMapLayer('hybrid')}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-            mapLayer === 'hybrid'
-              ? 'bg-sky-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           onClick={() => handleSelectMapLayer('esri_satellite')}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             mapLayer === 'esri_satellite'
               ? 'bg-sky-600 text-white shadow-xs'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
-          title="Vista satelital con nombres de calles y referencias poblacionales"
           title="Satélite puro mundial de archivo (Esri World Imagery)"
         >
           <Layers className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Híbrido</span>
           <span className="hidden sm:inline">Esri Satélite</span>
         </button>
 
@@ -735,15 +705,9 @@ export const GponMap: React.FC<GponMapProps> = ({
           />
         )}
 
-        {/* 2. Capa Satélite Real de Alta Definición (Esri World Imagery) */}
-        {(mapLayer === 'satellite' || mapLayer === 'hybrid') && (
         {/* 2. Capa Google Satélite Ultra HD / Híbrido (Máxima fidelidad fotorrealista y nitidez) */}
         {mapLayer === 'google_hybrid' && (
           <TileLayer
-            key="esri-satellite"
-            attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            maxZoom={19}
             key="google-hybrid"
             attribution='&copy; Google Maps Satélite HD'
             url="https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
@@ -752,19 +716,13 @@ export const GponMap: React.FC<GponMapProps> = ({
           />
         )}
 
-        {/* 3. Capa de Referencias y Nombres de Calles sobre Satélite (Modo Híbrido) */}
-        {mapLayer === 'hybrid' && (
         {/* 3. Capa Esri World Imagery (Satélite Puro de Archivo) */}
         {mapLayer === 'esri_satellite' && (
           <TileLayer
-            key="esri-hybrid-labels"
-            attribution='&copy; Esri References'
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
             key="esri-satellite"
             attribution='Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics'
             url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
             maxZoom={19}
-            opacity={0.9}
           />
         )}
 
