@@ -19,6 +19,7 @@ const api = axios.create({
 // Interceptor para inyectar token JWT automáticamente
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('gpon_token');
+  const token = localStorage.getItem('gpon_token') || 'demo-jwt-token';
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }

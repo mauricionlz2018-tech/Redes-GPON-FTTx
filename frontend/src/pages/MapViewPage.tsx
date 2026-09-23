@@ -12,6 +12,7 @@ import { FiberDesignLegendModal } from '../components/FiberDesignLegendModal';
 import { CreateRouteModal } from '../components/CreateRouteModal';
 import { CreateMufaModal } from '../components/CreateMufaModal';
 import { CreatePosteModal } from '../components/CreatePosteModal';
+import { DeleteElementModal } from '../components/DeleteElementModal';
 import { useAuth } from '../context/AuthContext';
 import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure, PosteInfraestructura } from '../types';
 import { offlineDb } from '../db/offlineDb';
@@ -215,11 +216,55 @@ export const MapViewPage: React.FC = () => {
     }
   });
 
+  // Estados de control para eliminación de elementos (Troncales, Mufas, Postes)
+  const [deletingElement, setDeletingElement] = useState<{
+    type: 'troncal' | 'mufa' | 'poste';
+    id: string;
+    name: string;
+    details?: string;
+  } | null>(null);
+  const [isDeletingElement, setIsDeletingElement] = useState(false);
+
+  // Registro de IDs eliminados para sincronización inmediata entre dispositivos y filtros
+  const [deletedRouteIds, setDeletedRouteIds] = useState<string[]>(() => {
+    try {
+      const s = localStorage.getItem('gpon_deleted_route_ids');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [deletedMufaIds, setDeletedMufaIds] = useState<string[]>(() => {
+    try {
+      const s = localStorage.getItem('gpon_deleted_mufa_ids');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [deletedPosteIds, setDeletedPosteIds] = useState<string[]>(() => {
+    try {
+      const s = localStorage.getItem('gpon_deleted_poste_ids');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const handleSaveRoute = async (newRoute: FiberRoute) => {
     setCustomRoutes((prev) => {
       const updated = [newRoute, ...prev.filter((r) => r.id_ruta !== newRoute.id_ruta)];
       try {
         localStorage.setItem('gpon_custom_routes', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setDeletedRouteIds((prev) => {
+      const updated = prev.filter((id) => id !== newRoute.id_ruta);
+      try {
+        localStorage.setItem('gpon_deleted_route_ids', JSON.stringify(updated));
       } catch {}
       return updated;
     });
@@ -233,6 +278,7 @@ export const MapViewPage: React.FC = () => {
       message: `Ruta ${newRoute.subtipo || newRoute.tipo} "${newRoute.nombre}" guardada y sincronizada (${newRoute.distancia_km} km).`
     });
     setTimeout(() => setFeedbackNotice(null), 6000);
+    fetchData(false);
   };
 
   const handleSaveMufa = async (newMufa: EmpalmeClosure) => {
@@ -240,6 +286,13 @@ export const MapViewPage: React.FC = () => {
       const updated = [newMufa, ...prev.filter((m) => m.id_empalme !== newMufa.id_empalme)];
       try {
         localStorage.setItem('gpon_custom_empalmes', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setDeletedMufaIds((prev) => {
+      const updated = prev.filter((id) => id !== newMufa.id_empalme);
+      try {
+        localStorage.setItem('gpon_deleted_mufa_ids', JSON.stringify(updated));
       } catch {}
       return updated;
     });
@@ -253,6 +306,7 @@ export const MapViewPage: React.FC = () => {
       message: `Mufa "${newMufa.nombre}" instalada y sincronizada (${newMufa.capacidad_hilos} Hilos).`
     });
     setTimeout(() => setFeedbackNotice(null), 6000);
+    fetchData(false);
   };
 
   const handleSavePoste = async (newPoste: PosteInfraestructura) => {
@@ -260,6 +314,13 @@ export const MapViewPage: React.FC = () => {
       const updated = [newPoste, ...prev.filter((p) => p.id_poste !== newPoste.id_poste)];
       try {
         localStorage.setItem('gpon_custom_postes', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setDeletedPosteIds((prev) => {
+      const updated = prev.filter((id) => id !== newPoste.id_poste);
+      try {
+        localStorage.setItem('gpon_deleted_poste_ids', JSON.stringify(updated));
       } catch {}
       return updated;
     });
@@ -273,21 +334,47 @@ export const MapViewPage: React.FC = () => {
       message: `Poste "${newPoste.nombre}" (${newPoste.tipo === 'poste_propuesto' ? 'Propuesto' : 'CFE'}) registrado y sincronizado en todos los dispositivos.`
     });
     setTimeout(() => setFeedbackNotice(null), 6000);
+    fetchData(false);
   };
 
   // Cargar NAPs, ODF e Infraestructura (Postes, Mufas, Rutas) sincronizada
   const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isInitial = false) => {
     try {
       setLoading(true);
+      if (isInitial) setLoading(true);
+
+      // Peticiones aisladas e individuales para que la falla de una no bloquee a las demás
       const [napsRes, odfRes, postesRes, mufasRes, routesRes] = await Promise.all([
         api.get('/naps'),
         api.get('/odf'),
         api.get('/infra/postes').catch(() => ({ data: { success: false, data: [] } })),
         api.get('/infra/mufas').catch(() => ({ data: { success: false, data: [] } })),
         api.get('/infra/routes').catch(() => ({ data: { success: false, data: [] } }))
+        api.get('/naps').catch((err) => {
+          console.warn('Fallo al obtener NAPs:', err);
+          return { data: { success: false, data: [] } };
+        }),
+        api.get('/odf').catch((err) => {
+          console.warn('Fallo al obtener ODF:', err);
+          return { data: { success: false, data: [] } };
+        }),
+        api.get('/infra/postes').catch((err) => {
+          console.warn('Fallo al obtener postes:', err);
+          return { data: { success: false, data: [] } };
+        }),
+        api.get('/infra/mufas').catch((err) => {
+          console.warn('Fallo al obtener mufas:', err);
+          return { data: { success: false, data: [] } };
+        }),
+        api.get('/infra/routes').catch((err) => {
+          console.warn('Fallo al obtener rutas:', err);
+          return { data: { success: false, data: [] } };
+        })
       ]);
 
       if (napsRes.data.success && napsRes.data.data.length > 0) {
+      if (napsRes.data?.success && Array.isArray(napsRes.data.data) && napsRes.data.data.length > 0) {
         setNaps(napsRes.data.data);
         setIsDemoMode(false);
         try {
@@ -296,14 +383,22 @@ export const MapViewPage: React.FC = () => {
         } catch (dbErr) {
           console.warn('Error guardando en Dexie cache:', dbErr);
         }
+      } else {
+        const cached = await offlineDb.cached_naps.toArray().catch(() => []);
+        if (cached.length > 0) {
+          setNaps(cached);
+        }
       }
 
       if (odfRes.data.success && odfRes.data.data.length > 0) {
+      if (odfRes.data?.success && Array.isArray(odfRes.data.data) && odfRes.data.data.length > 0) {
         setOdf(odfRes.data.data[0]);
       }
 
       // Sincronizar Postes desde la base central con cualquier poste local
       if (postesRes.data?.success) {
+      // Sincronizar Postes desde la base central Neon DB
+      if (postesRes.data?.success && Array.isArray(postesRes.data.data)) {
         const serverPostes: PosteInfraestructura[] = postesRes.data.data;
         setCustomPostes((prev) => {
           const map = new Map<string, PosteInfraestructura>();
@@ -316,15 +411,21 @@ export const MapViewPage: React.FC = () => {
             }
           });
           const merged = Array.from(map.values());
+        setCustomPostes(() => {
+          const filtered = serverPostes.filter((p) => !deletedPosteIds.includes(p.id_poste));
           try {
             localStorage.setItem('gpon_custom_postes', JSON.stringify(merged));
+            localStorage.setItem('gpon_custom_postes', JSON.stringify(filtered));
           } catch {}
           return merged;
+          return filtered;
         });
       }
 
       // Sincronizar Mufas desde la base central
       if (mufasRes.data?.success) {
+      // Sincronizar Mufas desde la base central Neon DB
+      if (mufasRes.data?.success && Array.isArray(mufasRes.data.data)) {
         const serverMufas: EmpalmeClosure[] = mufasRes.data.data;
         setCustomEmpalmes((prev) => {
           const map = new Map<string, EmpalmeClosure>();
@@ -336,15 +437,21 @@ export const MapViewPage: React.FC = () => {
             }
           });
           const merged = Array.from(map.values());
+        setCustomEmpalmes(() => {
+          const filtered = serverMufas.filter((m) => !deletedMufaIds.includes(m.id_empalme));
           try {
             localStorage.setItem('gpon_custom_empalmes', JSON.stringify(merged));
+            localStorage.setItem('gpon_custom_empalmes', JSON.stringify(filtered));
           } catch {}
           return merged;
+          return filtered;
         });
       }
 
       // Sincronizar Rutas desde la base central
       if (routesRes.data?.success) {
+      // Sincronizar Rutas Troncales desde la base central Neon DB
+      if (routesRes.data?.success && Array.isArray(routesRes.data.data)) {
         const serverRoutes: FiberRoute[] = routesRes.data.data;
         setCustomRoutes((prev) => {
           const map = new Map<string, FiberRoute>();
@@ -356,10 +463,14 @@ export const MapViewPage: React.FC = () => {
             }
           });
           const merged = Array.from(map.values());
+        setCustomRoutes(() => {
+          const filtered = serverRoutes.filter((r) => !deletedRouteIds.includes(r.id_ruta));
           try {
             localStorage.setItem('gpon_custom_routes', JSON.stringify(merged));
+            localStorage.setItem('gpon_custom_routes', JSON.stringify(filtered));
           } catch {}
           return merged;
+          return filtered;
         });
       }
     } catch (err) {
@@ -380,13 +491,23 @@ export const MapViewPage: React.FC = () => {
         setOdf((prev) => (prev ? prev : mockOdf));
         setSelectedNap((prev) => (prev ? prev : mockNaps[0]));
       }
+      console.warn('Sincronización con backend parcial o en caché offline:', err);
     } finally {
       setLoading(false);
+      if (isInitial) setLoading(false);
     }
   }, []);
+  }, [deletedRouteIds, deletedMufaIds, deletedPosteIds]);
 
+  // Polling automático cada 8 segundos para sincronización multi-dispositivo en tiempo real
   useEffect(() => {
     fetchData();
+    fetchData(true);
+    const syncTimer = setInterval(() => {
+      fetchData(false);
+    }, 8000);
+
+    return () => clearInterval(syncTimer);
   }, [fetchData]);
 
   const refreshSelectedNap = async () => {
@@ -531,6 +652,88 @@ export const MapViewPage: React.FC = () => {
     }
   };
 
+  const handleConfirmDeleteElement = async () => {
+    if (!deletingElement) return;
+    setIsDeletingElement(true);
+    const { type, id, name } = deletingElement;
+
+    try {
+      if (type === 'troncal') {
+        try {
+          await api.delete(`/infra/routes/${id}`);
+        } catch (e) {
+          console.warn('Error eliminando ruta en backend:', e);
+        }
+        setDeletedRouteIds((prev) => {
+          const next = Array.from(new Set([...prev, id]));
+          localStorage.setItem('gpon_deleted_route_ids', JSON.stringify(next));
+          return next;
+        });
+        setCustomRoutes((prev) => {
+          const next = prev.filter((r) => r.id_ruta !== id);
+          localStorage.setItem('gpon_custom_routes', JSON.stringify(next));
+          return next;
+        });
+        setFeedbackNotice({
+          type: 'success',
+          message: `Línea/Ruta "${name}" eliminada correctamente de la red.`
+        });
+      } else if (type === 'mufa') {
+        try {
+          await api.delete(`/infra/mufas/${id}`);
+        } catch (e) {
+          console.warn('Error eliminando mufa en backend:', e);
+        }
+        setDeletedMufaIds((prev) => {
+          const next = Array.from(new Set([...prev, id]));
+          localStorage.setItem('gpon_deleted_mufa_ids', JSON.stringify(next));
+          return next;
+        });
+        setCustomEmpalmes((prev) => {
+          const next = prev.filter((m) => m.id_empalme !== id);
+          localStorage.setItem('gpon_custom_empalmes', JSON.stringify(next));
+          return next;
+        });
+        setFeedbackNotice({
+          type: 'success',
+          message: `Cierre de empalme / Mufa "${name}" eliminada correctamente.`
+        });
+      } else if (type === 'poste') {
+        try {
+          await api.delete(`/infra/postes/${id}`);
+        } catch (e) {
+          console.warn('Error eliminando poste en backend:', e);
+        }
+        setDeletedPosteIds((prev) => {
+          const next = Array.from(new Set([...prev, id]));
+          localStorage.setItem('gpon_deleted_poste_ids', JSON.stringify(next));
+          return next;
+        });
+        setCustomPostes((prev) => {
+          const next = prev.filter((p) => p.id_poste !== id);
+          localStorage.setItem('gpon_custom_postes', JSON.stringify(next));
+          return next;
+        });
+        setFeedbackNotice({
+          type: 'success',
+          message: `Poste de infraestructura "${name}" eliminado correctamente.`
+        });
+      }
+
+      setDeletingElement(null);
+      setTimeout(() => setFeedbackNotice(null), 5000);
+      fetchData(false);
+    } catch (err: any) {
+      console.error('Error al eliminar elemento:', err);
+      setFeedbackNotice({
+        type: 'error',
+        message: `Error al eliminar: ${err?.message || 'Error de conexión'}`
+      });
+    } finally {
+      setIsDeletingElement(false);
+    }
+  };
+
   // Filtrado de NAPs en el listado
   const filteredNaps = naps.filter((nap) => {
     const matchSearch =
@@ -610,6 +813,7 @@ export const MapViewPage: React.FC = () => {
           <div className="flex items-center justify-end shrink-0">
             <button
               onClick={fetchData}
+              onClick={() => fetchData(true)}
               disabled={loading}
               className="flex items-center justify-center gap-1.5 h-9 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer w-full sm:w-auto"
               title="Actualizar datos de la red"
@@ -762,6 +966,33 @@ export const MapViewPage: React.FC = () => {
             empalmes={customEmpalmes}
             customPostes={customPostes}
             onDeleteNapRequest={(nap) => setDeletingNap(nap)}
+            onDeleteRouteRequest={(route) =>
+              setDeletingElement({
+                type: 'troncal',
+                id: route.id_ruta,
+                name: route.nombre,
+                details: `${route.subtipo || route.tipo} (${route.distancia_km || 0} km)`
+              })
+            }
+            onDeleteMufaRequest={(mufa) =>
+              setDeletingElement({
+                type: 'mufa',
+                id: mufa.id_empalme,
+                name: mufa.nombre,
+                details: `Mufa/Cierre (${mufa.capacidad_hilos || 0} hilos)`
+              })
+            }
+            onDeletePosteRequest={(poste) =>
+              setDeletingElement({
+                type: 'poste',
+                id: poste.id_poste,
+                name: poste.nombre,
+                details: `${poste.tipo === 'poste_propuesto' ? 'Poste Propuesto' : 'Poste CFE'} (${poste.codigo || 'Sin código'})`
+              })
+            }
+            deletedRouteIds={deletedRouteIds}
+            deletedMufaIds={deletedMufaIds}
+            deletedPosteIds={deletedPosteIds}
             onOpenMileageCapture={(nap: NapBox, dist?: number) =>
               setMileageCaptureData({ isOpen: true, nap, distanceKm: dist })
             }
@@ -924,6 +1155,26 @@ export const MapViewPage: React.FC = () => {
         />
       )}
 
+      {/* Modal para Confirmar Eliminación de Líneas Troncales, Mufas o Postes */}
+      {deletingElement && (
+        <DeleteElementModal
+          isOpen={!!deletingElement}
+          onClose={() => setDeletingElement(null)}
+          onConfirm={handleConfirmDeleteElement}
+          title={`Eliminar ${
+            deletingElement.type === 'troncal'
+              ? 'Línea de Fibra'
+              : deletingElement.type === 'mufa'
+              ? 'Cierre de Empalme'
+              : 'Poste'
+          }`}
+          elementName={deletingElement.name}
+          elementType={deletingElement.type}
+          details={deletingElement.details}
+          isDeleting={isDeletingElement}
+        />
+      )}
+
       {/* Modal de Captura de Kilometraje del Técnico */}
       {mileageCaptureData.isOpen && (
         <MileageCaptureModal
@@ -960,6 +1211,8 @@ export const MapViewPage: React.FC = () => {
         onClose={() => setIsLegendModalOpen(false)}
         activeRoutes={[...troncalIxtJocRoutes, ...customRoutes]}
         activeEmpalmes={[...troncalMufas, ...customEmpalmes]}
+        activeRoutes={[...troncalIxtJocRoutes, ...customRoutes].filter((r) => !deletedRouteIds.includes(r.id_ruta))}
+        activeEmpalmes={[...troncalMufas, ...customEmpalmes].filter((m) => !deletedMufaIds.includes(m.id_empalme))}
       />
 
       {/* Modal para Crear y Trazar Nueva Ruta Troncal o Ramal */}

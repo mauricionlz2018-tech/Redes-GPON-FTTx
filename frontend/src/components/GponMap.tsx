@@ -67,6 +67,12 @@ interface GponMapProps {
   postesCfe?: PosteInfraestructura[];
   customPostes?: PosteInfraestructura[];
   onDeleteNapRequest?: (nap: NapBox) => void;
+  onDeleteRouteRequest?: (route: FiberRoute) => void;
+  onDeleteMufaRequest?: (mufa: EmpalmeClosure) => void;
+  onDeletePosteRequest?: (poste: PosteInfraestructura) => void;
+  deletedRouteIds?: string[];
+  deletedMufaIds?: string[];
+  deletedPosteIds?: string[];
   onOpenMileageCapture?: (nap: NapBox, distanceKm?: number) => void;
   placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | null;
   onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal', latlng: { lat: number; lng: number }) => void;
@@ -384,6 +390,12 @@ export const GponMap: React.FC<GponMapProps> = ({
   postesCfe = troncalPostesCfe,
   customPostes = [],
   onDeleteNapRequest,
+  onDeleteRouteRequest,
+  onDeleteMufaRequest,
+  onDeletePosteRequest,
+  deletedRouteIds = [],
+  deletedMufaIds = [],
+  deletedPosteIds = [],
   onOpenMileageCapture,
   placementMode,
   onPlaceElement,
@@ -549,11 +561,19 @@ export const GponMap: React.FC<GponMapProps> = ({
   };
 
   // Combinar rutas KMZ completas con cualquier ruta adicional
+  // Combinar rutas KMZ completas con rutas de la base central y personalizadas (Filtrando eliminadas)
   const allRoutes = useMemo(() => {
     const combined = [...troncalIxtJocRoutes];
     fiberRoutes.forEach((fr) => {
+    const combined: FiberRoute[] = [];
+    (fiberRoutes || []).forEach((fr) => {
       if (!combined.some((c) => c.id_ruta === fr.id_ruta)) {
         combined.push(fr);
+      }
+    });
+    troncalIxtJocRoutes.forEach((tr) => {
+      if (!combined.some((c) => c.id_ruta === tr.id_ruta)) {
+        combined.push(tr);
       }
     });
     mockFiberRoutes.forEach((sr) => {
@@ -563,13 +583,29 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
     return combined;
   }, [fiberRoutes]);
+    return combined.filter((r) => {
+      if (deletedRouteIds.includes(r.id_ruta)) return false;
+      if (!r.coordenadas || !Array.isArray(r.coordenadas) || r.coordenadas.length < 2) return false;
+      return r.coordenadas.every(
+        (pt) => Array.isArray(pt) && pt.length >= 2 && typeof pt[0] === 'number' && !isNaN(pt[0]) && typeof pt[1] === 'number' && !isNaN(pt[1])
+      );
+    });
+  }, [fiberRoutes, deletedRouteIds]);
 
   // Combinar empalmes KMZ con empalmes adicionales
+  // Combinar empalmes KMZ con empalmes de la base central (Filtrando eliminadas)
   const allEmpalmes = useMemo(() => {
     const combined = [...troncalMufas];
     empalmes.forEach((em) => {
+    const combined: EmpalmeClosure[] = [];
+    (empalmes || []).forEach((em) => {
       if (!combined.some((c) => c.id_empalme === em.id_empalme)) {
         combined.push(em);
+      }
+    });
+    troncalMufas.forEach((tm) => {
+      if (!combined.some((c) => c.id_empalme === tm.id_empalme)) {
+        combined.push(tm);
       }
     });
     mockEmpalmes.forEach((me) => {
@@ -579,8 +615,15 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
     return combined;
   }, [empalmes]);
+    return combined.filter((m) => {
+      if (deletedMufaIds.includes(m.id_empalme)) return false;
+      if (!m.coordenadas_gps || typeof m.coordenadas_gps.lat !== 'number' || typeof m.coordenadas_gps.lng !== 'number') return false;
+      return !isNaN(m.coordenadas_gps.lat) && !isNaN(m.coordenadas_gps.lng);
+    });
+  }, [empalmes, deletedMufaIds]);
 
   // Combinar postes propuestos (KMZ + personalizados del usuario)
+  // Combinar postes propuestos (KMZ + personalizados de la base central)
   const allPostesPropuestos = useMemo(() => {
     const combined = [...postesPropuestos];
     if (customPostes && customPostes.length > 0) {
@@ -592,8 +635,15 @@ export const GponMap: React.FC<GponMapProps> = ({
     }
     return combined;
   }, [postesPropuestos, customPostes]);
+    return combined.filter((p) => {
+      if (deletedPosteIds.includes(p.id_poste)) return false;
+      if (!p.coordenadas_gps || typeof p.coordenadas_gps.lat !== 'number' || typeof p.coordenadas_gps.lng !== 'number') return false;
+      return !isNaN(p.coordenadas_gps.lat) && !isNaN(p.coordenadas_gps.lng);
+    });
+  }, [postesPropuestos, customPostes, deletedPosteIds]);
 
   // Combinar postes CFE (KMZ + personalizados del usuario)
+  // Combinar postes CFE (KMZ + personalizados de la base central)
   const allPostesCfe = useMemo(() => {
     const combined = [...postesCfe];
     if (customPostes && customPostes.length > 0) {
@@ -605,6 +655,12 @@ export const GponMap: React.FC<GponMapProps> = ({
     }
     return combined;
   }, [postesCfe, customPostes]);
+    return combined.filter((p) => {
+      if (deletedPosteIds.includes(p.id_poste)) return false;
+      if (!p.coordenadas_gps || typeof p.coordenadas_gps.lat !== 'number' || typeof p.coordenadas_gps.lng !== 'number') return false;
+      return !isNaN(p.coordenadas_gps.lat) && !isNaN(p.coordenadas_gps.lng);
+    });
+  }, [postesCfe, customPostes, deletedPosteIds]);
 
   // Virtualización por Vista (Viewport Culling): renderizar de forma óptima a 60 FPS
   const visiblePostesPropuestos = useMemo(() => {
@@ -1073,6 +1129,16 @@ export const GponMap: React.FC<GponMapProps> = ({
           <span className="text-indigo-600 dark:text-indigo-400 font-bold shrink-0">
             {getRouteDistance(selectedRoute).km} km ({getRouteDistance(selectedRoute).metros.toLocaleString()} ML)
           </span>
+          {onDeleteRouteRequest && (
+            <button
+              onClick={() => onDeleteRouteRequest(selectedRoute)}
+              className="flex items-center gap-1 bg-red-600 hover:bg-red-500 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-xs transition-all active:scale-95 cursor-pointer ml-1"
+              title="Eliminar esta línea troncal de la red"
+            >
+              <Trash2 className="w-3 h-3" />
+              <span>Eliminar</span>
+            </button>
+          )}
           <button
             onClick={() => setSelectedRouteId(null)}
             className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-1 cursor-pointer"
@@ -1241,6 +1307,17 @@ export const GponMap: React.FC<GponMapProps> = ({
                       <Camera className="w-3 h-3 text-amber-800 dark:text-amber-400" />
                       <span>Ver Mufa en Street View</span>
                     </button>
+                    {onDeleteMufaRequest && (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteMufaRequest(emp)}
+                        className="mt-1.5 w-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-red-200 dark:border-red-800 font-semibold cursor-pointer"
+                        title="Eliminar este cierre de empalme / mufa de la red"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Eliminar Mufa</span>
+                      </button>
+                    )}
                   </div>
                 </Popup>
               </Marker>
@@ -1315,6 +1392,17 @@ export const GponMap: React.FC<GponMapProps> = ({
                       <Camera className="w-3 h-3 text-amber-800 dark:text-amber-400" />
                       <span>Ver Poste en Street View</span>
                     </button>
+                    {onDeletePosteRequest && (
+                      <button
+                        type="button"
+                        onClick={() => onDeletePosteRequest(poste)}
+                        className="mt-1.5 w-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-red-200 dark:border-red-800 font-semibold cursor-pointer"
+                        title="Eliminar este poste propuesto de la red"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Eliminar Poste</span>
+                      </button>
+                    )}
                   </div>
                 </Popup>
               </Marker>
@@ -1361,6 +1449,17 @@ export const GponMap: React.FC<GponMapProps> = ({
                       <Camera className="w-3 h-3 text-amber-800 dark:text-amber-400" />
                       <span>Ver Poste en Street View</span>
                     </button>
+                    {onDeletePosteRequest && (
+                      <button
+                        type="button"
+                        onClick={() => onDeletePosteRequest(poste)}
+                        className="mt-1.5 w-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-red-200 dark:border-red-800 font-semibold cursor-pointer"
+                        title="Eliminar este poste de la red"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Eliminar Poste</span>
+                      </button>
+                    )}
                   </div>
                 </Popup>
               </Marker>
