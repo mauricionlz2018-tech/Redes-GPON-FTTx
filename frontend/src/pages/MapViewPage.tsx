@@ -575,40 +575,66 @@ export const MapViewPage: React.FC = () => {
         </div>
       )}
 
-      {/* Barra de Filtros y Búsqueda Responsiva */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 sm:p-3 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shadow-sm dark:shadow-md w-full transition-colors">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1 w-full">
-          <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              placeholder="Buscar por NAP o zona (ej. NAP-SJR-01)..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
-            />
+      {/* Barra de Filtros, Búsqueda y Herramientas Responsiva */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 sm:p-3 rounded-xl shadow-sm dark:shadow-md space-y-2.5 w-full transition-colors">
+        {/* Fila 1: Búsqueda y Filtros de Estado + Herramientas de Utilidad (Bitácora Km y Actualizar) */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1 max-w-xl">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Buscar por NAP o zona (ej. NAP-SJR-01)..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Filter className="w-4 h-4 text-slate-400 dark:text-slate-500 hidden sm:block" />
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="h-9 w-full sm:w-auto bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+              >
+                <option value="todos">Todos los Estados</option>
+                <option value="disponible">Disponibles (&lt;80%)</option>
+                <option value="alerta">En Alerta (&ge;80%)</option>
+                <option value="saturada">Saturadas (100%)</option>
+              </select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-slate-400 dark:text-slate-500 hidden md:block" />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full sm:w-auto bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+          {/* Botones de Utilidad a la Derecha */}
+          <div className="flex items-center gap-2 justify-end shrink-0">
+            <button
+              onClick={() => setIsMileageLogOpen(true)}
+              className="flex items-center justify-center gap-1.5 h-9 bg-emerald-50/60 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-3 rounded-lg border border-emerald-300 dark:border-emerald-800 transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Abrir bitácora de kilometraje y traslados de técnicos"
             >
-              <option value="todos">Todos los Estados</option>
-              <option value="disponible">Disponibles (&lt;80%)</option>
-              <option value="alerta">En Alerta (&ge;80%)</option>
-              <option value="saturada">Saturadas (100%)</option>
-            </select>
+              <Gauge className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>Bitácora Km</span>
+            </button>
+
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="flex items-center justify-center gap-1.5 h-9 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer"
+              title="Actualizar datos de la red"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
+              <span>Actualizar</span>
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 w-full sm:w-auto sm:justify-end">
+        {/* Fila 2: Elementos de Despliegue de Red y Trazado con sus Colores Originales */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 pt-2 border-t border-slate-100 dark:border-slate-800/80 scrollbar-thin">
           {/* Botón de Simbología Estándar y Metrajes */}
           <button
             onClick={() => setIsLegendModalOpen(true)}
-            className="flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-sky-50 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+            className="flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-slate-800 dark:to-indigo-950/40 text-sky-700 dark:text-sky-300 font-bold text-xs px-3 rounded-lg border border-sky-300 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer shrink-0"
             title="Ver norma de simbología (triángulos, mufas torpedo, gasas) y cómputo de metrajes totales en ML y km"
           >
             <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
@@ -629,15 +655,13 @@ export const MapViewPage: React.FC = () => {
                 setIsDrawingRoute(true);
               }
             }}
-            className={`flex items-center justify-center gap-1.5 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
-              isDrawingRoute
-                ? 'bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-200 border-sky-400 dark:border-sky-600 ring-2 ring-sky-500 shadow-sm'
-                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+            className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs px-3 rounded-lg border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
+              isDrawingRoute ? 'ring-2 ring-purple-500 shadow-md ring-offset-1 animate-pulse bg-purple-100 dark:bg-purple-900/50' : ''
             }`}
             title="Haz clic para trazar puntos y curvas en el mapa o arrastra para ubicar el punto inicial de la línea troncal"
           >
-            <GripVertical className="w-3 h-3 text-slate-400 shrink-0 hidden sm:inline" />
-            <Ruler className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+            <GripVertical className="w-3 h-3 text-purple-500/70 shrink-0" />
+            <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
             <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal / Ramal'}</span>
           </button>
 
@@ -649,14 +673,12 @@ export const MapViewPage: React.FC = () => {
               e.dataTransfer.setData('application/gpon-element', 'mufa');
             }}
             onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
-            className={`flex items-center justify-center gap-1.5 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
-              placementMode === 'mufa'
-                ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border-amber-400 dark:border-amber-600 ring-2 ring-amber-500 shadow-sm'
-                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+            className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-3 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
+              placementMode === 'mufa' ? 'ring-2 ring-amber-500 shadow-md ring-offset-1 animate-pulse' : ''
             }`}
             title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva mufa torpedo"
           >
-            <GripVertical className="w-3 h-3 text-slate-400 shrink-0 hidden sm:inline" />
+            <GripVertical className="w-3 h-3 text-amber-500/70 shrink-0" />
             <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>+ Mufa</span>
           </button>
@@ -669,18 +691,37 @@ export const MapViewPage: React.FC = () => {
               e.dataTransfer.setData('application/gpon-element', 'poste');
             }}
             onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
-            className={`flex items-center justify-center gap-1.5 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
-              placementMode === 'poste'
-                ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-900 dark:text-rose-200 border-rose-400 dark:border-rose-600 ring-2 ring-rose-500 shadow-sm'
-                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+            className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-800 dark:to-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-3 rounded-lg border border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
+              placementMode === 'poste' ? 'ring-2 ring-rose-500 shadow-md ring-offset-1 animate-pulse' : ''
             }`}
             title="Arrastra hacia el mapa satelital o haz clic para ubicar un nuevo poste"
           >
-            <GripVertical className="w-3 h-3 text-slate-400 shrink-0 hidden sm:inline" />
+            <GripVertical className="w-3 h-3 text-rose-500/70 shrink-0" />
             <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
             <span>+ Poste</span>
           </button>
 
+          {/* Botón para registrar nueva caja NAP */}
+          {user?.rol !== 'Tecnico' && (
+            <button
+              draggable={true}
+              onDragStart={(e) => {
+                e.dataTransfer.setData('text/plain', 'nap');
+                e.dataTransfer.setData('application/gpon-element', 'nap');
+              }}
+              onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
+              className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-3.5 rounded-lg shadow-md shadow-sky-950/20 transition-all active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
+                placementMode === 'nap' ? 'ring-2 ring-sky-300 ring-offset-1 animate-pulse' : ''
+              }`}
+              title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva caja NAP"
+            >
+              <GripVertical className="w-3 h-3 text-white/70 shrink-0" />
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              <span>Nueva Caja NAP</span>
+            </button>
+          )}
+
+          {/* Botón Ruta a Caja (si hay caja seleccionada) */}
           {selectedNap && (
             <button
               onClick={() => {
@@ -690,7 +731,7 @@ export const MapViewPage: React.FC = () => {
                   handleRequestRoute(selectedNap);
                 }
               }}
-              className={`flex items-center justify-center gap-1.5 text-xs font-semibold px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border transition-all shadow-sm active:scale-95 cursor-pointer ${
+              className={`flex items-center justify-center gap-1.5 h-9 text-xs font-semibold px-3 rounded-lg border transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 ${
                 isRouteActive
                   ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-500'
                   : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50'
@@ -701,43 +742,6 @@ export const MapViewPage: React.FC = () => {
               <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja'}</span>
             </button>
           )}
-
-          {user?.rol !== 'Tecnico' && (
-            <button
-              draggable={true}
-              onDragStart={(e) => {
-                e.dataTransfer.setData('text/plain', 'nap');
-                e.dataTransfer.setData('application/gpon-element', 'nap');
-              }}
-              onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
-              className={`flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg shadow-md shadow-sky-950/20 transition-all active:scale-95 cursor-grab active:cursor-grabbing ${
-                placementMode === 'nap' ? 'ring-2 ring-sky-300 ring-offset-1 animate-pulse' : ''
-              }`}
-              title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva caja NAP"
-            >
-              <GripVertical className="w-3 h-3 text-white/70 shrink-0 hidden sm:inline" />
-              <Plus className="w-3.5 h-3.5 shrink-0" />
-              <span>Nueva Caja NAP</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => setIsMileageLogOpen(true)}
-            className="flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm active:scale-95 cursor-pointer"
-            title="Abrir bitácora de kilometraje y traslados de técnicos"
-          >
-            <Gauge className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>Bitácora Km</span>
-          </button>
-
-          <button
-            onClick={fetchData}
-            disabled={loading}
-            className="flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors shadow-sm disabled:opacity-50 active:scale-95 cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
-            <span>Actualizar</span>
-          </button>
         </div>
       </div>
 
