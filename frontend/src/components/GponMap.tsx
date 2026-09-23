@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, Circle, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
@@ -19,7 +18,6 @@ import {
   Car,
   Eye,
   Camera,
-  Globe
   Globe,
   Crosshair,
   MapPin,
@@ -308,7 +306,6 @@ export const GponMap: React.FC<GponMapProps> = ({
   postesCfe = troncalPostesCfe,
   customPostes = [],
   onDeleteNapRequest,
-  onOpenMileageCapture
   onOpenMileageCapture,
   placementMode,
   onPlaceElement,

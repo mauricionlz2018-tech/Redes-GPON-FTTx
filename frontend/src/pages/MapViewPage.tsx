@@ -34,7 +34,6 @@ import {
   GitCommit,
   Ruler,
   MapPin,
-  X
   X,
   GripVertical
 } from 'lucide-react';
@@ -590,12 +589,8 @@ export const MapViewPage: React.FC = () => {
             <span>+ Troncal / Ramal</span>
           </button>
 
-          {/* Botón para crear nueva mufa de empalme */}
           {/* Botón para crear nueva mufa de empalme (Arrastrable hacia el mapa) */}
           <button
-            onClick={() => setIsCreateMufaOpen(true)}
-            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
-            title="Instalar una nueva mufa / cierre de empalme torpedo en el mapa"
             draggable={true}
             onDragStart={(e) => {
               e.dataTransfer.setData('text/plain', 'mufa');
@@ -612,12 +607,8 @@ export const MapViewPage: React.FC = () => {
             <span>+ Mufa</span>
           </button>
 
-          {/* Botón para registrar nuevo poste */}
           {/* Botón para registrar nuevo poste (Arrastrable hacia el mapa) */}
           <button
-            onClick={() => setIsCreatePosteOpen(true)}
-            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-800 dark:to-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
-            title="Registrar un nuevo poste (propuesto o CFE) en la infraestructura"
             draggable={true}
             onDragStart={(e) => {
               e.dataTransfer.setData('text/plain', 'poste');
@@ -657,9 +648,6 @@ export const MapViewPage: React.FC = () => {
 
           {user?.rol !== 'Tecnico' && (
             <button
-              onClick={() => setIsCreateNapOpen(true)}
-              className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg shadow-md shadow-sky-950/20 transition-all active:scale-95 cursor-pointer"
-              title="Registrar e instalar nueva caja NAP en la red FTTx"
               draggable={true}
               onDragStart={(e) => {
                 e.dataTransfer.setData('text/plain', 'nap');
@@ -839,7 +827,6 @@ export const MapViewPage: React.FC = () => {
 
       {isCreateNapOpen && (
         <CreateNapModal
-          onClose={() => setIsCreateNapOpen(false)}
           onClose={() => {
             setIsCreateNapOpen(false);
             setTempPlacementPin(null);
@@ -858,14 +845,12 @@ export const MapViewPage: React.FC = () => {
             setTimeout(() => setFeedbackNotice(null), 6000);
           }}
           defaultCoordinates={
-            odf?.coordenadas_gps
             droppedCoordinates ||
             (odf?.coordenadas_gps
               ? {
                   lat: Number((odf.coordenadas_gps.lat + 0.003).toFixed(6)),
                   lng: Number((odf.coordenadas_gps.lng + 0.003).toFixed(6))
                 }
-              : undefined
               : undefined)
           }
         />
@@ -935,8 +920,6 @@ export const MapViewPage: React.FC = () => {
       {/* Modal para Crear e Instalar Nueva Mufa / Cierre de Empalme Torpedo */}
       <CreateMufaModal
         isOpen={isCreateMufaOpen}
-        onClose={() => setIsCreateMufaOpen(false)}
-        onSaveMufa={handleSaveMufa}
         onClose={() => {
           setIsCreateMufaOpen(false);
           setTempPlacementPin(null);
@@ -948,7 +931,6 @@ export const MapViewPage: React.FC = () => {
           setDroppedCoordinates(null);
         }}
         defaultCoordinates={
-          selectedNap?.coordenadas_gps
           droppedCoordinates
             ? [droppedCoordinates.lat, droppedCoordinates.lng]
             : selectedNap?.coordenadas_gps
@@ -963,8 +945,6 @@ export const MapViewPage: React.FC = () => {
       {/* Modal para Crear y Registrar Nuevo Poste de Red (Propuesto o CFE) */}
       <CreatePosteModal
         isOpen={isCreatePosteOpen}
-        onClose={() => setIsCreatePosteOpen(false)}
-        onSavePoste={handleSavePoste}
         onClose={() => {
           setIsCreatePosteOpen(false);
           setTempPlacementPin(null);
@@ -976,7 +956,6 @@ export const MapViewPage: React.FC = () => {
           setDroppedCoordinates(null);
         }}
         defaultCoordinates={
-          selectedNap?.coordenadas_gps
           droppedCoordinates
             ? [droppedCoordinates.lat, droppedCoordinates.lng]
             : selectedNap?.coordenadas_gps

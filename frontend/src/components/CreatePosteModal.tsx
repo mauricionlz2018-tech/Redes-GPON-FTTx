@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import React, { useState, useEffect } from 'react';
 import { PosteInfraestructura } from '../types';
 import { MapPin, X, Compass, CheckCircle, AlertCircle } from 'lucide-react';
