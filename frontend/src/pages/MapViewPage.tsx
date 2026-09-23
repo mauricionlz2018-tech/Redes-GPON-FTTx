@@ -123,15 +123,15 @@ export const MapViewPage: React.FC = () => {
   const [isCreatePosteOpen, setIsCreatePosteOpen] = useState(false);
 
   // Estados para Drag & Drop y Colocación Interactiva de Elementos
-  const [placementMode, setPlacementMode] = useState<'poste' | 'mufa' | 'nap' | null>(null);
+  const [placementMode, setPlacementMode] = useState<'poste' | 'mufa' | 'nap' | 'troncal' | null>(null);
   const [droppedCoordinates, setDroppedCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [tempPlacementPin, setTempPlacementPin] = useState<{
-    type: 'poste' | 'mufa' | 'nap';
+    type: 'poste' | 'mufa' | 'nap' | 'troncal';
     lat: number;
     lng: number;
   } | null>(null);
 
-  const handlePlaceElement = (type: 'poste' | 'mufa' | 'nap', latlng: { lat: number; lng: number }) => {
+  const handlePlaceElement = (type: 'poste' | 'mufa' | 'nap' | 'troncal', latlng: { lat: number; lng: number }) => {
     setDroppedCoordinates(latlng);
     setTempPlacementPin({ type, ...latlng });
     setPlacementMode(null);
@@ -141,6 +141,8 @@ export const MapViewPage: React.FC = () => {
       setIsCreateMufaOpen(true);
     } else if (type === 'nap') {
       setIsCreateNapOpen(true);
+    } else if (type === 'troncal') {
+      setIsCreateRouteOpen(true);
     }
   };
 
@@ -579,12 +581,20 @@ export const MapViewPage: React.FC = () => {
             <span>Simbología</span>
           </button>
 
-          {/* Botón para crear nueva línea troncal o ramal */}
+          {/* Botón para crear nueva línea troncal o ramal (Arrastrable hacia el mapa) */}
           <button
-            onClick={() => setIsCreateRouteOpen(true)}
-            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
-            title="Trazar y agregar una nueva línea troncal o ramal con cálculo de distancia automático"
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData('text/plain', 'troncal');
+              e.dataTransfer.setData('application/gpon-element', 'troncal');
+            }}
+            onClick={() => setPlacementMode(placementMode === 'troncal' ? null : 'troncal')}
+            className={`flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
+              placementMode === 'troncal' ? 'ring-2 ring-purple-500 shadow-md ring-offset-1 animate-pulse' : ''
+            }`}
+            title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva línea troncal o ramal"
           >
+            <GripVertical className="w-3 h-3 text-purple-500/70 shrink-0 hidden sm:inline" />
             <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
             <span>+ Troncal / Ramal</span>
           </button>
@@ -906,10 +916,20 @@ export const MapViewPage: React.FC = () => {
       {/* Modal para Crear y Trazar Nueva Ruta Troncal o Ramal */}
       <CreateRouteModal
         isOpen={isCreateRouteOpen}
-        onClose={() => setIsCreateRouteOpen(false)}
-        onSaveRoute={handleSaveRoute}
+        onClose={() => {
+          setIsCreateRouteOpen(false);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
+        onSaveRoute={(route) => {
+          handleSaveRoute(route);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
         defaultCoordinates={
-          selectedNap?.coordenadas_gps
+          droppedCoordinates
+            ? [droppedCoordinates.lat, droppedCoordinates.lng]
+            : selectedNap?.coordenadas_gps
             ? [selectedNap.coordenadas_gps.lat, selectedNap.coordenadas_gps.lng]
             : odf?.coordenadas_gps
             ? [odf.coordenadas_gps.lat, odf.coordenadas_gps.lng]

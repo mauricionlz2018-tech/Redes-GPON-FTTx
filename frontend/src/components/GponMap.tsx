@@ -62,10 +62,10 @@ interface GponMapProps {
   customPostes?: PosteInfraestructura[];
   onDeleteNapRequest?: (nap: NapBox) => void;
   onOpenMileageCapture?: (nap: NapBox, distanceKm?: number) => void;
-  placementMode?: 'poste' | 'mufa' | 'nap' | null;
-  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap', latlng: { lat: number; lng: number }) => void;
+  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | null;
+  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal', latlng: { lat: number; lng: number }) => void;
   onCancelPlacement?: () => void;
-  tempPlacementPin?: { type: 'poste' | 'mufa' | 'nap'; lat: number; lng: number } | null;
+  tempPlacementPin?: { type: 'poste' | 'mufa' | 'nap' | 'troncal'; lat: number; lng: number } | null;
   onUpdateTempPin?: (latlng: { lat: number; lng: number }) => void;
 }
 
@@ -198,9 +198,23 @@ const createGpsUserBeaconIcon = () => {
 };
 
 // Icono animado del Pin Temporal para ajuste fino arrastrable de elementos nuevos
-const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap') => {
-  const bg = type === 'poste' ? '#e11d48' : type === 'mufa' ? '#d97706' : '#0284c7';
-  const label = type === 'poste' ? 'POSTE' : type === 'mufa' ? 'MUFA' : 'NAP';
+const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal') => {
+  const bg =
+    type === 'poste'
+      ? '#e11d48'
+      : type === 'mufa'
+      ? '#d97706'
+      : type === 'troncal'
+      ? '#9333ea'
+      : '#0284c7';
+  const label =
+    type === 'poste'
+      ? 'POSTE'
+      : type === 'mufa'
+      ? 'MUFA'
+      : type === 'troncal'
+      ? 'TRONCAL'
+      : 'NAP';
   return L.divIcon({
     className: 'temp-placement-pin-wrapper',
     html: `
@@ -219,8 +233,8 @@ const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap') => {
 
 // Controlador de Eventos de Clic y Soltado (Drag & Drop) sobre el Lienzo de Leaflet
 const MapEventsAndDropListener: React.FC<{
-  placementMode?: 'poste' | 'mufa' | 'nap' | null;
-  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap', latlng: { lat: number; lng: number }) => void;
+  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | null;
+  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal', latlng: { lat: number; lng: number }) => void;
 }> = ({ placementMode, onPlaceElement }) => {
   const map = useMap();
 
@@ -248,12 +262,12 @@ const MapEventsAndDropListener: React.FC<{
     const handleDrop = (e: DragEvent) => {
       e.preventDefault();
       const rawType = e.dataTransfer?.getData('application/gpon-element') || e.dataTransfer?.getData('text/plain');
-      if (rawType === 'poste' || rawType === 'mufa' || rawType === 'nap') {
+      if (rawType === 'poste' || rawType === 'mufa' || rawType === 'nap' || rawType === 'troncal') {
         const rect = container.getBoundingClientRect();
         const clientPoint = L.point(e.clientX - rect.left, e.clientY - rect.top);
         const latlng = map.containerPointToLatLng(clientPoint);
         if (onPlaceElement) {
-          onPlaceElement(rawType as 'poste' | 'mufa' | 'nap', {
+          onPlaceElement(rawType as 'poste' | 'mufa' | 'nap' | 'troncal', {
             lat: Number(latlng.lat.toFixed(6)),
             lng: Number(latlng.lng.toFixed(6))
           });
@@ -669,7 +683,13 @@ export const GponMap: React.FC<GponMapProps> = ({
             <span className="truncate text-[11px] sm:text-xs">
               Modo Colocación: Toca o arrastra al mapa para ubicar{' '}
               <span className="text-amber-300 uppercase font-black">
-                {placementMode === 'poste' ? 'Poste' : placementMode === 'mufa' ? 'Mufa' : 'Caja NAP'}
+                {placementMode === 'poste'
+                  ? 'Poste'
+                  : placementMode === 'mufa'
+                  ? 'Mufa'
+                  : placementMode === 'troncal'
+                  ? 'Línea Troncal'
+                  : 'Caja NAP'}
               </span>
             </span>
           </div>
@@ -1403,7 +1423,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                     Precisión satelital: &plusmn;{userGpsPosition.accuracy} m
                   </p>
                   {onPlaceElement && (
-                    <div className="pt-1.5 flex gap-1.5 border-t border-slate-200 dark:border-slate-700">
+                    <div className="pt-1.5 grid grid-cols-2 gap-1.5 border-t border-slate-200 dark:border-slate-700">
                       <button
                         type="button"
                         onClick={() =>
@@ -1412,10 +1432,36 @@ export const GponMap: React.FC<GponMapProps> = ({
                             lng: userGpsPosition.lng
                           })
                         }
-                        className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-1 px-1.5 rounded text-[10px] text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                        className="bg-rose-600 hover:bg-rose-500 text-white font-bold py-1 px-1 rounded text-[10px] text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
                       >
                         <Plus className="w-3 h-3" />
                         <span>Poste Aquí</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onPlaceElement('mufa', {
+                            lat: userGpsPosition.lat,
+                            lng: userGpsPosition.lng
+                          })
+                        }
+                        className="bg-amber-600 hover:bg-amber-500 text-white font-bold py-1 px-1 rounded text-[10px] text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Mufa Aquí</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onPlaceElement('troncal', {
+                            lat: userGpsPosition.lat,
+                            lng: userGpsPosition.lng
+                          })
+                        }
+                        className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-1 px-1 rounded text-[10px] text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Troncal Aquí</span>
                       </button>
                       <button
                         type="button"
@@ -1425,7 +1471,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                             lng: userGpsPosition.lng
                           })
                         }
-                        className="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-bold py-1 px-1.5 rounded text-[10px] text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                        className="bg-sky-600 hover:bg-sky-500 text-white font-bold py-1 px-1 rounded text-[10px] text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
                       >
                         <Plus className="w-3 h-3" />
                         <span>NAP Aquí</span>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, Network, MapPin, Plus, Trash2, CheckCircle2, Ruler } from 'lucide-react';
 import { FiberRoute } from '../types';
 import { FIBER_DESIGN_COLORS } from './standardFiberIcons';
@@ -54,6 +54,19 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
     [defaultCoordinates[0], defaultCoordinates[1]],
     [defaultCoordinates[0] + 0.008, defaultCoordinates[1] + 0.006]
   ]);
+
+  // Sincronizar coordenadas iniciales si el usuario arrastró o hizo clic en una posición del mapa
+  useEffect(() => {
+    if (isOpen && defaultCoordinates && defaultCoordinates.length >= 2) {
+      setPoints([
+        [Number(defaultCoordinates[0].toFixed(6)), Number(defaultCoordinates[1].toFixed(6))],
+        [
+          Number((defaultCoordinates[0] + 0.005).toFixed(6)),
+          Number((defaultCoordinates[1] + 0.005).toFixed(6))
+        ]
+      ]);
+    }
+  }, [defaultCoordinates[0], defaultCoordinates[1], isOpen]);
 
   // Manejar cambio de tipo de cable para autoajustar color y grosor según la norma
   const handleSubtipoPresetChange = (preset: string) => {
@@ -138,6 +151,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
     };
 
     onSaveRoute(newRoute);
+    setNombre('');
     onClose();
   };
 
