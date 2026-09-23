@@ -620,8 +620,8 @@ export const MapViewPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Fila 2: Elementos de Despliegue de Red y Trazado con sus Colores Originales */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 pt-2 border-t border-slate-100 dark:border-slate-800/80 scrollbar-thin">
+        {/* Fila 2: Elementos de Despliegue de Red y Trazado Centrados y con sus Colores Originales */}
+        <div className="flex items-center justify-center gap-2 sm:gap-2.5 flex-wrap pb-0.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
           {/* Botón de Simbología Estándar y Metrajes */}
           <button
             onClick={() => setIsLegendModalOpen(true)}
