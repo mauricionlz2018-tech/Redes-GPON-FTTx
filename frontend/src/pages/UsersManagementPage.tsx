@@ -22,6 +22,8 @@ import {
   Lock,
   Mail,
   UserCheck
+  UserCheck,
+  X
 } from 'lucide-react';
 
 const defaultFallbackUsers: User[] = [
@@ -172,6 +174,7 @@ export const UsersManagementPage: React.FC = () => {
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">
             Acceso Restringido por Política RBAC
+            Acceso Restringido
           </h2>
           <p className="text-sm text-slate-700 dark:text-slate-300 max-w-md mx-auto font-medium">
             El panel de <strong className="text-slate-900 dark:text-white">Gestión de Personal</strong> está reservado exclusivamente para cuentas con rol de <strong className="text-indigo-700 dark:text-indigo-300">Administrador</strong>.
@@ -179,6 +182,7 @@ export const UsersManagementPage: React.FC = () => {
           <div className="pt-3">
             <p className="text-xs text-slate-600 dark:text-slate-400">
               💡 Para propósitos de evaluación del sistema, puedes cambiar tu rol a <strong>Admin</strong> usando la barra superior de prueba de roles.
+              Puedes cambiar de rol desde la barra superior para acceder a este módulo.
             </p>
           </div>
         </div>
@@ -246,8 +250,11 @@ export const UsersManagementPage: React.FC = () => {
           <button
             onClick={() => setNotice(null)}
             className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1"
+            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Cerrar notificación"
           >
             ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}

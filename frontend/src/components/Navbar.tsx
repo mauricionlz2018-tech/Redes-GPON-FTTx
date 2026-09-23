@@ -163,13 +163,17 @@ export const Navbar: React.FC = () => {
               </button>
 
               {/* Botón de Instalar Aplicación PWA */}
+              {/* Botón de Descarga APK Móvil */}
               <button
                 onClick={handleInstallClick}
                 className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 font-bold text-[11px] sm:text-xs transition-all shadow-xs active:scale-95 cursor-pointer"
                 title="Instalar como Aplicación PWA en Celular o PC"
+                title="Centro de Descarga e Instalación Móvil (APK / PWA)"
               >
                 <Smartphone className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                 <span className="font-extrabold">PWA</span>
+                <Download className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                <span className="font-extrabold">APK</span>
               </button>
 
               {/* Indicador de Red */}

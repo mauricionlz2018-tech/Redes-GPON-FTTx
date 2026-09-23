@@ -34,6 +34,8 @@ import {
   GitCommit,
   Ruler,
   MapPin
+  MapPin,
+  X
 } from 'lucide-react';
 
 import {
@@ -497,8 +499,11 @@ export const MapViewPage: React.FC = () => {
           <button
             onClick={() => setFeedbackNotice(null)}
             className="text-xs font-bold px-2 py-0.5 rounded hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+            className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-slate-700 dark:text-slate-300 transition-colors"
+            aria-label="Cerrar notificación"
           >
             ✕
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}

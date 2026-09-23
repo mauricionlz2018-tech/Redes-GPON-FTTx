@@ -100,6 +100,10 @@ export const DeleteUserConfirmModal: React.FC<DeleteUserConfirmModalProps> = ({
           <p className="text-xs text-rose-900 dark:text-rose-300 font-semibold bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/60">
             ⚠️ Esta acción es irreversible. El usuario perderá el acceso inmediato al sistema y a las aplicaciones de campo.
           </p>
+          <div className="flex items-start gap-2 text-xs text-rose-900 dark:text-rose-300 font-semibold bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/60">
+            <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+            <span>Esta acción es irreversible. El usuario perderá el acceso inmediato al sistema y a las aplicaciones de campo.</span>
+          </div>
 
           {errorMsg && (
             <div className="p-2.5 bg-rose-100 dark:bg-rose-950 text-rose-950 dark:text-rose-100 text-xs font-semibold rounded-lg border border-rose-300 dark:border-rose-800">

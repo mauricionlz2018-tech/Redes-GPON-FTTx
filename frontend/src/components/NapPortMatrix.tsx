@@ -286,6 +286,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           <ShieldAlert className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <strong className="block font-semibold text-red-700 dark:text-red-300">Restricción de Perfil RBAC</strong>
+            <strong className="block font-semibold text-red-700 dark:text-red-300">Acceso Restringido por Perfil</strong>
             <span>{rbacError}</span>
           </div>
           <button
