@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Client } from '../types';
 import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
 import { Search, Users, Wifi, Filter, RefreshCw, Server, Edit3, ShieldCheck } from 'lucide-react';
+import { Search, Users, Wifi, Filter, RefreshCw, Server, Edit3, ShieldCheck, X } from 'lucide-react';
 import { EditClientModal } from '../components/EditClientModal';
+import { TablePagination } from '../components/TablePagination';
 
 export const ClientsPage: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -12,12 +15,20 @@ export const ClientsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [clientToEdit, setClientToEdit] = useState<Client | null>(null);
 
+  // Estados de paginación (20 registros por página por defecto)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
   const fetchClients = async () => {
     try {
       setLoading(true);
       const res = await api.get(`/clientes${search ? `?q=${encodeURIComponent(search)}` : ''}`);
       if (res.data.success) {
+      const res = await api.get('/clientes');
+      if (res.data?.success && Array.isArray(res.data.data)) {
         setClients(res.data.data);
+      } else {
+        throw new Error('Respuesta inválida');
       }
     } catch (e) {
       console.warn('Backend no disponible, cargando abonados desde mockNaps...');
@@ -47,11 +58,47 @@ export const ClientsPage: React.FC = () => {
     }, 300);
     return () => clearTimeout(timer);
   }, [search]);
+    fetchClients();
+  }, []);
 
   const filteredClients = clients.filter((c) => {
     if (brandFilter === 'todas') return true;
     return c.marca_ont === brandFilter;
   });
+  // Búsqueda automática e instantánea (0ms de latencia, insensible a mayúsculas y acentos)
+  const filteredClients = useMemo(() => {
+    const term = search
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+
+    return clients.filter((c) => {
+      if (brandFilter !== 'todas' && c.marca_ont !== brandFilter) return false;
+      if (!term) return true;
+
+      const norm = (str?: string) =>
+        (str || '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+
+      return (
+        norm(c.nombre_completo).includes(term) ||
+        norm(c.numero_cliente).includes(term) ||
+        norm(c.ont_mac).includes(term) ||
+        norm(c.direccion).includes(term) ||
+        norm(c.puerto_nap?.caja_nap?.identificador).includes(term) ||
+        norm(c.puerto_nap?.caja_nap?.zona).includes(term)
+      );
+    });
+  }, [clients, search, brandFilter]);
+
+  // Cálculo de paginación
+  const totalPages = Math.max(1, Math.ceil(filteredClients.length / itemsPerPage));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
+  const paginatedClients = filteredClients.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -106,13 +153,32 @@ export const ClientsPage: React.FC = () => {
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-sm dark:shadow-md transition-colors">
         <div className="relative flex-1 min-w-[260px] max-w-md">
           <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3 pointer-events-none" />
           <input
             type="text"
             placeholder="Buscar por abonado, código, MAC o dirección..."
+            placeholder="Buscar por abonado, código, MAC, dirección o caja..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
           />
+          {search && (
+            <button
+              onClick={() => {
+                setSearch('');
+                setCurrentPage(1);
+              }}
+              className="absolute right-2.5 top-2.5 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              title="Borrar búsqueda"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -122,6 +188,11 @@ export const ClientsPage: React.FC = () => {
             value={brandFilter}
             onChange={(e) => setBrandFilter(e.target.value)}
             className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+            onChange={(e) => {
+              setBrandFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 cursor-pointer"
           >
             <option value="todas">Todas las marcas</option>
             <option value="ZTE">ZTE</option>
@@ -150,6 +221,7 @@ export const ClientsPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {filteredClients.map((client) => {
+              {paginatedClients.map((client) => {
                 const nap = client.puerto_nap?.caja_nap;
                 const portIndex = client.puerto_nap?.indice_puerto;
                 const rx = client.potencia_rx_estimada;
@@ -197,6 +269,7 @@ export const ClientsPage: React.FC = () => {
                       <button
                         onClick={() => setClientToEdit(client)}
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-300 dark:border-sky-800/80 text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-white text-xs transition-colors font-medium"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-300 dark:border-sky-800/80 text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-white text-xs transition-colors font-medium cursor-pointer"
                         title="Editar datos del abonado"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -216,6 +289,20 @@ export const ClientsPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pestañas de Navegación / Paginación (20 registros por página) */}
+        <TablePagination
+          currentPage={safeCurrentPage}
+          totalItems={filteredClients.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onItemsPerPageChange={(newSize) => {
+            setItemsPerPage(newSize);
+            setCurrentPage(1);
+          }}
+          itemName="abonados"
+          pageSizeOptions={[10, 20, 50, 100]}
+        />
       </div>
 
       {/* Modal para editar datos del abonado */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { NapBox } from '../types';
 import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
@@ -15,12 +16,21 @@ import {
   Sun,
   Moon,
   Printer
+  Printer,
+  Search,
+  X
 } from 'lucide-react';
+import { TablePagination } from '../components/TablePagination';
 
 export const ReportsPage: React.FC = () => {
   const [naps, setNaps] = useState<NapBox[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingTheme, setDownloadingTheme] = useState<'light' | 'dark' | null>(null);
+
+  // Estados de paginación y búsqueda para la Matriz de Estado (20 registros por página)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const loadNaps = async () => {
@@ -74,6 +84,35 @@ export const ReportsPage: React.FC = () => {
   const totalOcupados = naps.reduce((acc, n) => acc + (n.metricas?.ocupados || 0), 0);
   const totalLibres = totalPuertos - totalOcupados;
   const saturacionGlobal = totalPuertos > 0 ? Math.round((totalOcupados / totalPuertos) * 100) : 0;
+
+  // Filtrado y Paginación de NAPs en la Matriz de Estado (20 registros por página)
+  const filteredNaps = useMemo(() => {
+    const term = searchTerm
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+
+    if (!term) return naps;
+
+    const norm = (str?: string) =>
+      (str || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    return naps.filter(
+      (nap) =>
+        norm(nap.identificador).includes(term) ||
+        norm(nap.zona).includes(term) ||
+        norm(nap.direccion_texto).includes(term)
+    );
+  }, [naps, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredNaps.length / itemsPerPage));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
+  const paginatedNaps = filteredNaps.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -183,6 +222,43 @@ export const ReportsPage: React.FC = () => {
             Matriz de Estado y Saturación por Caja de Distribución (NAP)
           </span>
           <span className="text-[11px] text-slate-500 dark:text-slate-400">Criterio de Alerta &ge; 80%</span>
+        <div className="px-4 py-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 transition-colors">
+          <div>
+            <span className="font-semibold text-xs text-slate-800 dark:text-white uppercase tracking-wider block">
+              Matriz de Estado y Saturación por Caja de Distribución (NAP)
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              Criterio de Alerta &ge; 80% • Mostrando 20 cajas por página
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="relative min-w-[200px] max-w-xs">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Buscar caja o zona..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-8 pr-7 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setCurrentPage(1);
+                  }}
+                  className="absolute right-2 top-2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  title="Borrar búsqueda"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -200,6 +276,7 @@ export const ReportsPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {naps.map((nap) => {
+              {paginatedNaps.map((nap) => {
                 const m = nap.metricas;
                 const pct = m?.porcentajeSaturacion ?? 0;
 
@@ -247,9 +324,30 @@ export const ReportsPage: React.FC = () => {
                   </tr>
                 );
               })}
+              {filteredNaps.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                    No se encontraron cajas NAP con los criterios de búsqueda especificados.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Pestañas de Navegación / Paginación (20 registros por página) */}
+        <TablePagination
+          currentPage={safeCurrentPage}
+          totalItems={filteredNaps.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onItemsPerPageChange={(newSize) => {
+            setItemsPerPage(newSize);
+            setCurrentPage(1);
+          }}
+          itemName="cajas NAP"
+          pageSizeOptions={[10, 20, 50, 100]}
+        />
       </div>
     </div>
   );
