@@ -1,7 +1,6 @@
-const CACHE_NAME = 'gpon-fttx-v2';
+const CACHE_NAME = 'gpon-fttx-v5';
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/manifest.json',
   '/logo-gpon.png',
   '/icon-192.png',
@@ -19,7 +18,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activación y limpieza de cachés antiguos
+// Escuchar mensaje para forzar activación inmediata
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Activación y limpieza de todos los cachés antiguos
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -31,19 +37,34 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Estrategia de red con respaldo en caché (Network First con fallback a Cache)
+// Estrategia de red: Network First con fallback a Cache para assets estáticos
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Omitir peticiones de API (la API se maneja con Dexie y Axios en el cliente)
-  if (url.pathname.startsWith('/api') || url.hostname.includes('onrender.com')) {
+  // Omitir peticiones de API (la API se maneja con Axios y Dexie en el cliente)
+  if (url.pathname.startsWith('/api') || url.hostname.includes('onrender.com') || url.pathname.includes('/infra/')) {
+    return;
+  }
+
+  // Las navegaciones de página siempre van primero a la red para recibir el HTML y JS más reciente
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match('/index.html').then((cached) => {
+            return cached || new Response('Sin conexión a red', { status: 503, statusText: 'Offline' });
+          });
+        })
+    );
     return;
   }
 
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Guardar copia fresca en caché para assets estáticos
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -57,12 +78,8 @@ self.addEventListener('fetch', (event) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
           return new Response('Sin conexión a red', { status: 503, statusText: 'Offline' });
         });
       })
   );
 });
-

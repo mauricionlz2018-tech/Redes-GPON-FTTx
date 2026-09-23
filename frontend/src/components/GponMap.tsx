@@ -109,7 +109,37 @@ const ViewportListener: React.FC<{
   return null;
 };
 
+// Controlador para forzar el redibujado de Leaflet en dispositivos móviles y cambios de tamaño
+const MapResizeController: React.FC = () => {
+  const map = useMap();
+  useEffect(() => {
+    // Invalidate size immediately and after DOM/layout stabilization
+    const timers = [
+      setTimeout(() => map.invalidateSize(), 50),
+      setTimeout(() => map.invalidateSize(), 250),
+      setTimeout(() => map.invalidateSize(), 600),
+      setTimeout(() => map.invalidateSize(), 1200)
+    ];
+
+    const handleResize = () => {
+      map.invalidateSize();
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [map]);
+
+  return null;
+};
+
 // Helper para calcular metros si una ruta no trae el valor calculado
+
 function getRouteDistance(route: FiberRoute): { metros: number; km: number } {
   if (route.distancia_metros && route.distancia_km) {
     return { metros: route.distancia_metros, km: route.distancia_km };
@@ -1140,6 +1170,7 @@ export const GponMap: React.FC<GponMapProps> = ({
         scrollWheelZoom={true}
         className="w-full h-full"
       >
+        <MapResizeController />
         <MapBoundsAdjuster coordinates={activeRoute?.coordinates} />
         <MapCenterController targetCenter={targetFocus} zoom={targetZoom} />
         <ViewportListener onViewportChange={handleViewportChange} />

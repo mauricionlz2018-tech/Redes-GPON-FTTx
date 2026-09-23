@@ -13,7 +13,8 @@ const api = axios.create({
   baseURL: baseUrl,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  timeout: 15000
 });
 
 // Interceptor para inyectar token JWT automáticamente
@@ -25,17 +26,24 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor de respuesta para capturar expiración de sesión
+// Interceptor de respuesta para capturar expiración de sesión y auto-recuperar con token maestro
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      // Token inválido o expirado
-      console.warn('Sesión expirada o token no válido');
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response && error.response.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      console.warn('Sesión expirada o token no válido. Recuperando sesión maestra...');
+      localStorage.removeItem('gpon_token');
+      if (originalRequest.headers) {
+        originalRequest.headers.Authorization = 'Bearer demo-jwt-token';
+      }
+      return api(originalRequest);
     }
     return Promise.reject(error);
   }
 );
 
 export default api;
+
 

@@ -253,6 +253,22 @@ export const MapViewPage: React.FC = () => {
     }
   });
 
+// Helpers para seguimiento de IDs confirmados en la base de datos central (evita re-subir eliminados)
+const getKnownServerIds = (key: string): Set<string> => {
+  try {
+    const s = localStorage.getItem(key);
+    return new Set(s ? JSON.parse(s) : []);
+  } catch {
+    return new Set();
+  }
+};
+
+const saveKnownServerIds = (key: string, ids: Set<string>) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(Array.from(ids)));
+  } catch {}
+};
+
   const handleSaveRoute = async (newRoute: FiberRoute) => {
     setCustomRoutes((prev) => {
       const updated = [newRoute, ...prev.filter((r) => r.id_ruta !== newRoute.id_ruta)];
@@ -270,8 +286,11 @@ export const MapViewPage: React.FC = () => {
     });
     try {
       await api.post('/infra/routes', newRoute);
+      const known = getKnownServerIds('gpon_known_server_route_ids');
+      known.add(newRoute.id_ruta);
+      saveKnownServerIds('gpon_known_server_route_ids', known);
     } catch (e) {
-      console.warn('Ruta guardada localmente:', e);
+      console.warn('Ruta guardada localmente; se sincronizará automáticamente:', e);
     }
     setFeedbackNotice({
       type: 'success',
@@ -298,8 +317,11 @@ export const MapViewPage: React.FC = () => {
     });
     try {
       await api.post('/infra/mufas', newMufa);
+      const known = getKnownServerIds('gpon_known_server_mufa_ids');
+      known.add(newMufa.id_empalme);
+      saveKnownServerIds('gpon_known_server_mufa_ids', known);
     } catch (e) {
-      console.warn('Mufa guardada localmente:', e);
+      console.warn('Mufa guardada localmente; se sincronizará automáticamente:', e);
     }
     setFeedbackNotice({
       type: 'success',
@@ -326,8 +348,11 @@ export const MapViewPage: React.FC = () => {
     });
     try {
       await api.post('/infra/postes', newPoste);
+      const known = getKnownServerIds('gpon_known_server_poste_ids');
+      known.add(newPoste.id_poste);
+      saveKnownServerIds('gpon_known_server_poste_ids', known);
     } catch (e) {
-      console.warn('Poste guardado en local; se sincronizará al conectar:', e);
+      console.warn('Poste guardado localmente; se sincronizará automáticamente:', e);
     }
     setFeedbackNotice({
       type: 'success',
@@ -386,40 +411,138 @@ export const MapViewPage: React.FC = () => {
         setOdf(odfRes.data.data[0]);
       }
 
-      // Sincronizar Postes desde la base central Neon DB
+      // 1. Sincronización Bidireccional de Postes con Neon DB
+      const localPostes: PosteInfraestructura[] = (() => {
+        try {
+          const s = localStorage.getItem('gpon_custom_postes');
+          return s ? JSON.parse(s) : [];
+        } catch {
+          return [];
+        }
+      })();
+
       if (postesRes.data?.success && Array.isArray(postesRes.data.data)) {
         const serverPostes: PosteInfraestructura[] = postesRes.data.data;
-        setCustomPostes(() => {
-          const filtered = serverPostes.filter((p) => !deletedPosteIds.includes(p.id_poste));
-          try {
-            localStorage.setItem('gpon_custom_postes', JSON.stringify(filtered));
-          } catch {}
-          return filtered;
-        });
+        const serverIds = new Set(serverPostes.map((p) => p.id_poste));
+        const knownPosteIds = getKnownServerIds('gpon_known_server_poste_ids');
+
+        // Postes locales nuevos que nunca se subieron al servidor
+        const unsyncedPostes = localPostes.filter(
+          (loc) => !serverIds.has(loc.id_poste) && !knownPosteIds.has(loc.id_poste) && !deletedPosteIds.includes(loc.id_poste)
+        );
+
+        if (unsyncedPostes.length > 0) {
+          for (const unsynced of unsyncedPostes) {
+            api.post('/infra/postes', unsynced)
+              .then(() => {
+                knownPosteIds.add(unsynced.id_poste);
+                saveKnownServerIds('gpon_known_server_poste_ids', knownPosteIds);
+              })
+              .catch((e) => console.warn('Error subiendo poste local:', e));
+          }
+        }
+
+        // Registrar todos los postes del servidor como conocidos
+        serverPostes.forEach((p) => knownPosteIds.add(p.id_poste));
+        saveKnownServerIds('gpon_known_server_poste_ids', knownPosteIds);
+
+        const mergedPostes = [
+          ...serverPostes.filter((p) => !deletedPosteIds.includes(p.id_poste)),
+          ...unsyncedPostes
+        ];
+
+        setCustomPostes(mergedPostes);
+        try {
+          localStorage.setItem('gpon_custom_postes', JSON.stringify(mergedPostes));
+        } catch {}
       }
 
-      // Sincronizar Mufas desde la base central Neon DB
+      // 2. Sincronización Bidireccional de Mufas con Neon DB
+      const localMufas: EmpalmeClosure[] = (() => {
+        try {
+          const s = localStorage.getItem('gpon_custom_empalmes');
+          return s ? JSON.parse(s) : [];
+        } catch {
+          return [];
+        }
+      })();
+
       if (mufasRes.data?.success && Array.isArray(mufasRes.data.data)) {
         const serverMufas: EmpalmeClosure[] = mufasRes.data.data;
-        setCustomEmpalmes(() => {
-          const filtered = serverMufas.filter((m) => !deletedMufaIds.includes(m.id_empalme));
-          try {
-            localStorage.setItem('gpon_custom_empalmes', JSON.stringify(filtered));
-          } catch {}
-          return filtered;
-        });
+        const serverIds = new Set(serverMufas.map((m) => m.id_empalme));
+        const knownMufaIds = getKnownServerIds('gpon_known_server_mufa_ids');
+
+        const unsyncedMufas = localMufas.filter(
+          (loc) => !serverIds.has(loc.id_empalme) && !knownMufaIds.has(loc.id_empalme) && !deletedMufaIds.includes(loc.id_empalme)
+        );
+
+        if (unsyncedMufas.length > 0) {
+          for (const unsynced of unsyncedMufas) {
+            api.post('/infra/mufas', unsynced)
+              .then(() => {
+                knownMufaIds.add(unsynced.id_empalme);
+                saveKnownServerIds('gpon_known_server_mufa_ids', knownMufaIds);
+              })
+              .catch((e) => console.warn('Error subiendo mufa local:', e));
+          }
+        }
+
+        serverMufas.forEach((m) => knownMufaIds.add(m.id_empalme));
+        saveKnownServerIds('gpon_known_server_mufa_ids', knownMufaIds);
+
+        const mergedMufas = [
+          ...serverMufas.filter((m) => !deletedMufaIds.includes(m.id_empalme)),
+          ...unsyncedMufas
+        ];
+
+        setCustomEmpalmes(mergedMufas);
+        try {
+          localStorage.setItem('gpon_custom_empalmes', JSON.stringify(mergedMufas));
+        } catch {}
       }
 
-      // Sincronizar Rutas Troncales desde la base central Neon DB
+      // 3. Sincronización Bidireccional de Rutas Troncales con Neon DB
+      const localRoutes: FiberRoute[] = (() => {
+        try {
+          const s = localStorage.getItem('gpon_custom_routes');
+          return s ? JSON.parse(s) : [];
+        } catch {
+          return [];
+        }
+      })();
+
       if (routesRes.data?.success && Array.isArray(routesRes.data.data)) {
         const serverRoutes: FiberRoute[] = routesRes.data.data;
-        setCustomRoutes(() => {
-          const filtered = serverRoutes.filter((r) => !deletedRouteIds.includes(r.id_ruta));
-          try {
-            localStorage.setItem('gpon_custom_routes', JSON.stringify(filtered));
-          } catch {}
-          return filtered;
-        });
+        const serverIds = new Set(serverRoutes.map((r) => r.id_ruta));
+        const knownRouteIds = getKnownServerIds('gpon_known_server_route_ids');
+
+        const unsyncedRoutes = localRoutes.filter(
+          (loc) => !serverIds.has(loc.id_ruta) && !knownRouteIds.has(loc.id_ruta) && !deletedRouteIds.includes(loc.id_ruta)
+        );
+
+        if (unsyncedRoutes.length > 0) {
+          for (const unsynced of unsyncedRoutes) {
+            api.post('/infra/routes', unsynced)
+              .then(() => {
+                knownRouteIds.add(unsynced.id_ruta);
+                saveKnownServerIds('gpon_known_server_route_ids', knownRouteIds);
+              })
+              .catch((e) => console.warn('Error subiendo ruta local:', e));
+          }
+        }
+
+        serverRoutes.forEach((r) => knownRouteIds.add(r.id_ruta));
+        saveKnownServerIds('gpon_known_server_route_ids', knownRouteIds);
+
+        const mergedRoutes = [
+          ...serverRoutes.filter((r) => !deletedRouteIds.includes(r.id_ruta)),
+          ...unsyncedRoutes
+        ];
+
+        setCustomRoutes(mergedRoutes);
+        try {
+          localStorage.setItem('gpon_custom_routes', JSON.stringify(mergedRoutes));
+        } catch {}
       }
     } catch (err) {
       console.warn('Sincronización con backend parcial o en caché offline:', err);
@@ -740,10 +863,22 @@ export const MapViewPage: React.FC = () => {
           {/* Botón Actualizar a la derecha */}
           <div className="flex items-center justify-end shrink-0">
             <button
-              onClick={() => fetchData(true)}
+              onClick={() => {
+                fetchData(true);
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then((regs) => {
+                    regs.forEach((r) => r.update());
+                  }).catch(() => {});
+                }
+                setFeedbackNotice({
+                  type: 'success',
+                  message: 'Sincronizando elementos con la base central y verificando actualizaciones...'
+                });
+                setTimeout(() => setFeedbackNotice(null), 4000);
+              }}
               disabled={loading}
               className="flex items-center justify-center gap-1.5 h-9 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer w-full sm:w-auto"
-              title="Actualizar datos de la red"
+              title="Actualizar datos de la red y comprobar nueva versión"
             >
               <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
               <span>Actualizar</span>
