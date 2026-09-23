@@ -195,16 +195,16 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
           {/* Card de Métricas de Distancia */}
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-sky-600 dark:bg-sky-500 text-white rounded-lg shadow-sm">
+              <div className="p-2 bg-sky-600 dark:bg-sky-500 text-white rounded-lg shadow-sm shrink-0">
                 <Ruler className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
                   Longitud Estimada de Tendido
                 </span>
-                <div className="flex items-baseline gap-2">
+                <div className="flex items-baseline gap-2 flex-wrap">
                   <span className="text-lg font-bold text-slate-900 dark:text-white font-mono">
                     {distanciaKm} km
                   </span>
@@ -214,15 +214,15 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+            <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-700">
+              <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-300 shrink-0">
                 {points.length} Vértices
               </span>
               {onEditOnMap && (
                 <button
                   type="button"
                   onClick={onEditOnMap}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-100/70 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/80 border border-sky-300/80 dark:border-sky-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shadow-xs"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-100/70 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/80 border border-sky-300/80 dark:border-sky-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shadow-xs shrink-0"
                   title="Trazar curvas y postes directamente sobre el mapa"
                 >
                   <Ruler className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
@@ -267,7 +267,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
           </div>
 
           {/* Configuración de color, hilos y estado */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Color de Línea
@@ -297,7 +297,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
               />
             </div>
 
-            <div>
+            <div className="col-span-2 sm:col-span-1">
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Estado de Operación
               </label>

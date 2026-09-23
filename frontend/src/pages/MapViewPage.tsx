@@ -606,21 +606,12 @@ export const MapViewPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Botones de Utilidad a la Derecha */}
-          <div className="flex items-center gap-2 justify-end shrink-0">
-            <button
-              onClick={() => setIsMileageLogOpen(true)}
-              className="flex items-center justify-center gap-1.5 h-9 bg-emerald-50/60 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-3 rounded-lg border border-emerald-300 dark:border-emerald-800 transition-all shadow-xs active:scale-95 cursor-pointer"
-              title="Abrir bitácora de kilometraje y traslados de técnicos"
-            >
-              <Gauge className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>Bitácora Km</span>
-            </button>
-
+          {/* Botón Actualizar a la derecha */}
+          <div className="flex items-center justify-end shrink-0">
             <button
               onClick={fetchData}
               disabled={loading}
-              className="flex items-center justify-center gap-1.5 h-9 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer"
+              className="flex items-center justify-center gap-1.5 h-9 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer w-full sm:w-auto"
               title="Actualizar datos de la red"
             >
               <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />

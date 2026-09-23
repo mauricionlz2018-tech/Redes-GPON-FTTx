@@ -90,17 +90,14 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
       <div className="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden my-auto text-slate-900 dark:text-white transition-colors">
         {/* Cabecera del Modal */}
-        <div className="bg-slate-100 dark:bg-slate-800 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+        <div className="bg-slate-100 dark:bg-slate-800 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-xl">
+            <div className="p-2 bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-xl shrink-0">
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                Simbología
-                <span className="text-[11px] font-mono bg-sky-100 dark:bg-sky-900/60 border border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 px-2 py-0.5 rounded-full">
-                  Planta Externa FTTx
-                </span>
+              <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                Simbología de Red
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Simbología de diseño, tipos de fusiones ópticas y desglose de metrajes
@@ -109,22 +106,22 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer shrink-0"
             title="Cerrar ventana"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-5 sm:p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-5 max-h-[80vh] overflow-y-auto">
           {/* TABLA DE METRAJES Y DISTANCIAS TOTALES */}
-          <div className="bg-gradient-to-br from-slate-50 to-sky-50/40 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-4 border border-sky-200/80 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <Network className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                Cómputo Total de Tendido de Fibra Óptica (Metros Lineales y Km)
+          <div className="bg-gradient-to-br from-slate-50 to-sky-50/40 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-3.5 sm:p-4 border border-sky-200/80 dark:border-slate-700 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
+              <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                <Network className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                <span>Cómputo Total de Tendido de Fibra Óptica</span>
               </h3>
-              <span className="text-xs font-semibold bg-sky-600 text-white px-2.5 py-1 rounded-full shadow-sm">
+              <span className="text-xs font-semibold bg-sky-600 text-white px-3 py-1 rounded-full shadow-xs self-start sm:self-auto">
                 Total Red: {calculatedMetrics.totalKm.toLocaleString()} km ({calculatedMetrics.totalMetros.toLocaleString()} ML)
               </span>
             </div>
@@ -220,7 +217,7 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
                   Tipo Fusiones Ópticas
                 </h4>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Estándares de empalme por fusión térmica en planta externa
+                  Estándares de empalme por fusión térmica en la red de fibra
                 </p>
               </div>
 
