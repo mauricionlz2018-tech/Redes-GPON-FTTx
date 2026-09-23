@@ -467,10 +467,8 @@ export const GponMap: React.FC<GponMapProps> = ({
           </div>
           <button
             onClick={() => setIsStreetViewActive(false)}
-            className="bg-slate-950 text-white px-2 py-0.5 rounded-full text-[10px] font-bold hover:bg-slate-800 cursor-pointer shrink-0 ml-1"
             className="bg-slate-950 text-white px-2 py-0.5 rounded-full text-[10px] font-bold hover:bg-slate-800 cursor-pointer shrink-0 ml-1 flex items-center gap-1"
           >
-            ✕ Salir
             <X className="w-3 h-3" />
             <span>Salir</span>
           </button>

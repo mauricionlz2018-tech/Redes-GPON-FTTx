@@ -12,7 +12,6 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
   deferredPrompt,
   onInstallSuccess
 }) => {
-  const [activeTab, setActiveTab] = useState<'direct' | 'apk' | 'ios'>('direct');
   const [activeTab, setActiveTab] = useState<'apk' | 'direct' | 'ios'>('apk');
   const [downloading, setDownloading] = useState(false);
 
@@ -25,7 +24,6 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
         onClose();
       }
     } else {
-      alert('Para instalar directamente: Toca los tres puntos ⋮ arriba a la derecha en Chrome y pulsa "Instalar aplicación" o "Agregar a la pantalla principal".');
       alert('Para instalar directamente: Toca los tres puntos de opciones arriba a la derecha en Chrome y pulsa "Instalar aplicación" o "Agregar a la pantalla principal".');
     }
   };
@@ -44,7 +42,6 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-scaleUp transition-colors">
         {/* Cabecera */}
-        <div className="bg-emerald-50 dark:bg-gradient-to-r dark:from-slate-800 dark:to-emerald-950 px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
         <div className="bg-sky-50 dark:bg-gradient-to-r dark:from-slate-800 dark:to-sky-950 px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="bg-white p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center h-10 w-10 flex-shrink-0">
@@ -55,8 +52,6 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
               />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">Instalar Aplicación GPON (PWA)</h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">App nativa GPON TELECOM para cuadrillas y teléfonos de campo</p>
               <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">Centro de Descarga e Instalación (APK)</h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">Instalador y paquete de campo para teléfonos Android e iOS</p>
             </div>
@@ -86,38 +81,23 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
             onClick={() => setActiveTab('direct')}
             className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
               activeTab === 'direct'
-                ? 'bg-emerald-600 text-white shadow-md'
                 ? 'bg-sky-600 text-white shadow-md'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800/60'
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
-            <span>1. Instalar PWA</span>
             <span>2. Instalar PWA</span>
           </button>
           <button
             onClick={() => setActiveTab('ios')}
             className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
               activeTab === 'ios'
-                ? 'bg-emerald-600 text-white shadow-md'
                 ? 'bg-sky-600 text-white shadow-md'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800/60'
             }`}
           >
             <Apple className="w-3.5 h-3.5" />
-            <span>2. iPhone / iOS</span>
             <span>3. iPhone / iOS</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('apk')}
-            className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-              activeTab === 'apk'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800/60'
-            }`}
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>3. Paquete APK</span>
           </button>
         </div>
 
@@ -217,10 +197,8 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
 
                 <div className="bg-white dark:bg-slate-900/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-2 text-slate-700 dark:text-slate-300">
                   <p>1. Abre <strong className="text-sky-600 dark:text-sky-400">Safari</strong> en tu iPhone.</p>
-                  <p>2. Toca el botón central <strong className="text-slate-900 dark:text-white">Compartir ⎋</strong> (el cuadrado con la flecha hacia arriba).</p>
                   <p>2. Toca el botón central <strong className="text-slate-900 dark:text-white">Compartir</strong> (icono de cuadrado con flecha hacia arriba).</p>
                   <p>3. Desliza hacia abajo y pulsa <strong className="text-emerald-600 dark:text-emerald-400">"Agregar a pantalla de inicio"</strong>.</p>
-                  <p>4. Pulsa "Agregar" arriba a la derecha. ¡Listo!</p>
                   <p>4. Pulsa "Agregar" arriba a la derecha. Listo.</p>
                 </div>
               </div>

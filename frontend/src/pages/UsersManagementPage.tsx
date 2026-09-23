@@ -21,7 +21,6 @@ import {
   Calendar,
   Lock,
   Mail,
-  UserCheck
   UserCheck,
   X
 } from 'lucide-react';
@@ -173,7 +172,6 @@ export const UsersManagementPage: React.FC = () => {
             <Lock className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            Acceso Restringido por Política RBAC
             Acceso Restringido
           </h2>
           <p className="text-sm text-slate-700 dark:text-slate-300 max-w-md mx-auto font-medium">
@@ -181,7 +179,6 @@ export const UsersManagementPage: React.FC = () => {
           </p>
           <div className="pt-3">
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              💡 Para propósitos de evaluación del sistema, puedes cambiar tu rol a <strong>Admin</strong> usando la barra superior de prueba de roles.
               Puedes cambiar de rol desde la barra superior para acceder a este módulo.
             </p>
           </div>
@@ -200,9 +197,6 @@ export const UsersManagementPage: React.FC = () => {
               <Users className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
               <span>Gestión de Personal y Técnicos</span>
             </h1>
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-950 dark:bg-indigo-950 dark:text-indigo-200 border border-indigo-400 dark:border-indigo-600">
-              Admin RBAC
-            </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 mt-1 font-medium">
             Administración centralizada de cuadrillas de campo, técnicos de empalme, personal de soporte y administradores.
@@ -249,11 +243,9 @@ export const UsersManagementPage: React.FC = () => {
           </div>
           <button
             onClick={() => setNotice(null)}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1"
             className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             aria-label="Cerrar notificación"
           >
-            ✕
             <X className="w-4 h-4" />
           </button>
         </div>

@@ -8,7 +8,6 @@ import {
   Globe,
   Camera,
   MapPin,
-  Eye,
   Satellite
 } from 'lucide-react';
 
@@ -82,9 +81,6 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh] transition-colors animate-scaleUp">
-        {/* Cabecera con Alto Contraste y diseño responsivo anti-deformación */}
-        <div className="bg-slate-100 dark:bg-slate-800/90 px-3.5 sm:px-6 py-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between gap-2 shrink-0">
       <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh] my-auto transition-colors animate-scaleUp">
         {/* Cabecera limpia y responsiva */}
         <div className="bg-slate-100 dark:bg-slate-800/90 px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between gap-2 shrink-0">
@@ -93,20 +89,6 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
               <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <h2
-                  id="street-view-modal-title"
-                  className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate"
-                >
-                  {title}
-                </h2>
-                <span className="text-[9px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-950 dark:bg-amber-950 dark:text-amber-200 border border-amber-400 dark:border-amber-600 shrink-0 whitespace-nowrap">
-                  360° Oficial
-                </span>
-              </div>
-              <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 font-medium truncate">
-                {subtitle || 'Vista a nivel de calle de la infraestructura GPON / poste / fachada'}
-              </p>
               <h2
                 id="street-view-modal-title"
                 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate"
@@ -189,8 +171,6 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
           </div>
         </div>
 
-        {/* Visualizador Embebido (Street View 360° o Satélite HD con Iframe) */}
-        <div className="relative flex-1 min-h-[300px] sm:min-h-[400px] bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
         {/* Visualizador Embebido Adaptativo */}
         <div className="relative flex-1 h-[42vh] min-h-[220px] max-h-[380px] bg-slate-950 flex flex-col items-center justify-center overflow-hidden shrink">
           <iframe
@@ -202,37 +182,8 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
-
-          {/* Superposición informativa si la zona no tiene cobertura vehicular Street View directa */}
-          {viewMode === 'streetview' ? (
-            <div className="absolute bottom-2 left-2 right-2 sm:right-auto sm:max-w-md bg-slate-900/90 text-white p-2.5 rounded-xl text-[11px] backdrop-blur border border-slate-700/80 pointer-events-none">
-              <p className="font-semibold text-slate-200 flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-amber-400" />
-                <span>Inspección 360° en Tiempo Real</span>
-              </p>
-              <p className="text-slate-400 text-[10px] mt-0.5">
-                Si esta calle no tiene cobertura vehicular del auto de Google, pulsa <strong>"Satélite HD"</strong> arriba o el botón dorado abajo.
-              </p>
-            </div>
-          ) : (
-            <div className="absolute bottom-2 left-2 right-2 sm:right-auto sm:max-w-md bg-slate-900/90 text-white p-2.5 rounded-xl text-[11px] backdrop-blur border border-slate-700/80 pointer-events-none">
-              <p className="font-semibold text-slate-200 flex items-center gap-1.5">
-                <Satellite className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Vista Cenital Satélite HD Activa</span>
-              </p>
-              <p className="text-slate-400 text-[10px] mt-0.5">
-                Fotografía satelital cenital de alta resolución con calles, techos y postes visibles.
-              </p>
-            </div>
-          )}
         </div>
 
-        {/* Pie con Botones de Acción de Alto Contraste */}
-        <div className="bg-slate-100 dark:bg-slate-800/90 px-3.5 sm:px-6 py-2.5 sm:py-3 border-t border-slate-300 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
-          <div className="text-[10px] sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium text-center sm:text-left hidden xs:block">
-            <span>Esquema oficial 100% legal: </span>
-            <strong className="text-slate-900 dark:text-white">Google Maps URLs API & Esri Satélite HD</strong>
-          </div>
         {/* Pie con Botones de Acción Siempre Visibles */}
         <div className="bg-slate-100 dark:bg-slate-800/95 px-3.5 sm:px-6 py-2.5 sm:py-3 border-t border-slate-300 dark:border-slate-700 flex items-center justify-end gap-2 sm:gap-3 shrink-0 z-10">
           {/* Botón Google Earth 3D */}
@@ -247,32 +198,6 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
             <span>Google Earth 3D</span>
           </a>
 
-          <div className="flex items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
-            {/* Botón Google Earth 3D */}
-            <a
-              href={googleEarthUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600 transition-colors shadow-xs"
-              title="Abrir en Google Earth 3D para ver modelo de relieve"
-            >
-              <Globe className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-              <span>Google Earth 3D</span>
-            </a>
-
-            {/* Botón Principal Street View Oficial 360° */}
-            <a
-              href={officialStreetViewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 border border-amber-600 shadow-md shadow-amber-950/20 transition-all cursor-pointer whitespace-nowrap"
-              title="Abrir en Google Maps Street View 360° nativo (celular o pantalla completa)"
-            >
-              <Camera className="w-4 h-4 text-slate-950 shrink-0" />
-              <span>Abrir Street View 360°</span>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-900 shrink-0" />
-            </a>
-          </div>
           {/* Botón Principal Street View Oficial 360° */}
           <a
             href={officialStreetViewUrl}
