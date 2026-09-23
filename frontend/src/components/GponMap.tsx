@@ -21,7 +21,13 @@ import {
   Globe,
   Crosshair,
   MapPin,
-  Plus
+  Plus,
+  RotateCcw,
+  Check,
+  CheckCircle2,
+  RefreshCw,
+  Power,
+  Ruler
 } from 'lucide-react';
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
 import { StreetViewModal } from './StreetViewModal';
@@ -67,6 +73,14 @@ interface GponMapProps {
   onCancelPlacement?: () => void;
   tempPlacementPin?: { type: 'poste' | 'mufa' | 'nap' | 'troncal'; lat: number; lng: number } | null;
   onUpdateTempPin?: (latlng: { lat: number; lng: number }) => void;
+  isDrawingRoute?: boolean;
+  routeDraftPoints?: [number, number][];
+  onAddRoutePoint?: (latlng: [number, number]) => void;
+  onUpdateRoutePoint?: (index: number, latlng: [number, number]) => void;
+  onRemoveLastRoutePoint?: () => void;
+  onClearRoutePoints?: () => void;
+  onFinishDrawingRoute?: () => void;
+  onCancelDrawingRoute?: () => void;
 }
 
 // Controlador para escuchar cambios de límites visibles (bounds) y nivel de zoom para virtualización
@@ -231,15 +245,67 @@ const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal') 
   });
 };
 
+// Icono numerado para cada vértice en el trazado dinámico de líneas de fibra
+const createRouteDraftVertexIcon = (index: number, isLast: boolean) => {
+  return L.divIcon({
+    className: 'route-draft-vertex-icon',
+    html: `
+      <div style="position: relative; display: flex; align-items: center; justify-content: center; cursor: grab;">
+        <div style="width: ${isLast ? '26px' : '22px'}; height: ${isLast ? '26px' : '22px'}; border-radius: 50%; background: ${
+          isLast ? '#9333ea' : '#7e22ce'
+        }; color: white; font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.5); ${
+          isLast ? 'box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.45);' : ''
+        }">
+          ${index + 1}
+        </div>
+      </div>
+    `,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13]
+  });
+};
+
+// Cálculo de distancia en tiempo real para el trazado de puntos
+function calculatePointsDistance(coords: [number, number][]): { metros: number; km: number } {
+  if (!coords || coords.length < 2) return { metros: 0, km: 0 };
+  let total = 0;
+  const R = 6371000;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const [lat1, lon1] = coords[i];
+    const [lat2, lon2] = coords[i + 1];
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    total += R * c;
+  }
+  const metros = Math.round(total * 10) / 10;
+  return { metros, km: Number((metros / 1000).toFixed(2)) };
+}
+
 // Controlador de Eventos de Clic y Soltado (Drag & Drop) sobre el Lienzo de Leaflet
 const MapEventsAndDropListener: React.FC<{
   placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | null;
   onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal', latlng: { lat: number; lng: number }) => void;
-}> = ({ placementMode, onPlaceElement }) => {
+  isDrawingRoute?: boolean;
+  onAddRoutePoint?: (latlng: [number, number]) => void;
+}> = ({ placementMode, onPlaceElement, isDrawingRoute, onAddRoutePoint }) => {
   const map = useMap();
 
   useMapEvents({
     click: (e) => {
+      if (isDrawingRoute && onAddRoutePoint) {
+        onAddRoutePoint([
+          Number(e.latlng.lat.toFixed(6)),
+          Number(e.latlng.lng.toFixed(6))
+        ]);
+        return;
+      }
       if (placementMode && onPlaceElement) {
         onPlaceElement(placementMode, {
           lat: Number(e.latlng.lat.toFixed(6)),
@@ -325,7 +391,15 @@ export const GponMap: React.FC<GponMapProps> = ({
   onPlaceElement,
   onCancelPlacement,
   tempPlacementPin,
-  onUpdateTempPin
+  onUpdateTempPin,
+  isDrawingRoute = false,
+  routeDraftPoints = [],
+  onAddRoutePoint,
+  onUpdateRoutePoint,
+  onRemoveLastRoutePoint,
+  onClearRoutePoints,
+  onFinishDrawingRoute,
+  onCancelDrawingRoute
 }) => {
   // Centro por defecto: Región Ixtlahuaca - Jiquipilco
   const defaultCenter: [number, number] = useMemo(() => {
@@ -382,26 +456,29 @@ export const GponMap: React.FC<GponMapProps> = ({
   const [isLayersMenuOpen, setIsLayersMenuOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
 
-  // Estados para Geolocalización GPS en Tiempo Real
+  // Distancia calculada en tiempo real de la ruta en modo trazado borrador
+  const routeDraftDistance = useMemo(() => {
+    return calculatePointsDistance(routeDraftPoints || []);
+  }, [routeDraftPoints]);
+
+  // Estados para Geolocalización GPS a Demanda (No intrusivo, con control total de encendido/apagado)
   const [userGpsPosition, setUserGpsPosition] = useState<{
     lat: number;
     lng: number;
     accuracy: number;
     heading: number | null;
   } | null>(null);
-  const [isGpsTracking, setIsGpsTracking] = useState<boolean>(false);
+  const [isGpsActive, setIsGpsActive] = useState<boolean>(false);
+  const [isGpsLoading, setIsGpsLoading] = useState<boolean>(false);
   const [gpsCenterTrigger, setGpsCenterTrigger] = useState<number>(0);
 
-  // Rastreo GPS en tiempo real mediante Geolocation watchPosition
-  useEffect(() => {
-    if (!isGpsTracking) return;
+  const fetchGpsLocation = (centerMap: boolean = false) => {
     if (!('geolocation' in navigator)) {
       alert('Tu dispositivo o navegador no soporta geolocalización GPS.');
-      setIsGpsTracking(false);
       return;
     }
-
-    const watchId = navigator.geolocation.watchPosition(
+    setIsGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
       (pos) => {
         const nextPos = {
           lat: Number(pos.coords.latitude.toFixed(6)),
@@ -410,43 +487,27 @@ export const GponMap: React.FC<GponMapProps> = ({
           heading: pos.coords.heading
         };
         setUserGpsPosition(nextPos);
+        setIsGpsActive(true);
+        setIsGpsLoading(false);
+        if (centerMap) {
+          setGpsCenterTrigger((prev) => prev + 1);
+        }
       },
       (err) => {
         console.warn('GPS no disponible:', err.message);
+        alert('No se pudo obtener la señal GPS: ' + err.message);
+        setIsGpsLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
-
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
-    };
-  }, [isGpsTracking]);
-
-  const handleToggleGps = () => {
-    if (!isGpsTracking) {
-      setIsGpsTracking(true);
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const initPos = {
-              lat: Number(pos.coords.latitude.toFixed(6)),
-              lng: Number(pos.coords.longitude.toFixed(6)),
-              accuracy: Math.round(pos.coords.accuracy),
-              heading: pos.coords.heading
-            };
-            setUserGpsPosition(initPos);
-            setGpsCenterTrigger((prev) => prev + 1);
-          },
-          (err) => {
-            console.warn('GPS inicial error:', err);
-          },
-          { enableHighAccuracy: true, timeout: 8000 }
-        );
-      }
-    } else {
-      setGpsCenterTrigger((prev) => prev + 1);
-    }
   };
+
+  const handleTurnOffGps = () => {
+    setIsGpsActive(false);
+    setUserGpsPosition(null);
+  };
+
+
 
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
@@ -705,6 +766,83 @@ export const GponMap: React.FC<GponMapProps> = ({
         </div>
       )}
 
+      {/* Banner flotante cuando el Modo Trazado de Ruta (Puntos sucesivos con curvas reales) está activo */}
+      {isDrawingRoute && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[450] bg-slate-900/95 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl shadow-2xl border-2 border-purple-500 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 text-xs font-bold w-[95%] sm:w-auto max-w-2xl animate-fadeIn backdrop-blur-md">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <div className="p-1.5 bg-purple-600/30 text-purple-300 rounded-lg shrink-0 animate-pulse">
+              <Ruler className="w-4 h-4" />
+            </div>
+            <div className="truncate">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-purple-300 font-extrabold uppercase text-[11px] sm:text-xs tracking-wide">
+                  Trazando Línea de Fibra
+                </span>
+                <span className="bg-purple-950/80 border border-purple-500/50 text-purple-200 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+                  {routeDraftPoints.length} {routeDraftPoints.length === 1 ? 'punto' : 'puntos'}
+                </span>
+                {routeDraftPoints.length >= 2 && (
+                  <span className="bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+                    {routeDraftDistance.metros} m ({routeDraftDistance.km} km)
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-slate-300 font-normal truncate mt-0.5">
+                Haz clic en el mapa siguiendo cada curva o poste de la carretera.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end shrink-0 border-t sm:border-t-0 border-slate-700/60 pt-2 sm:pt-0">
+            <button
+              type="button"
+              disabled={routeDraftPoints.length === 0}
+              onClick={onRemoveLastRoutePoint}
+              className="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer border border-slate-700"
+              title="Deshacer último punto colocado"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Deshacer</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={routeDraftPoints.length === 0}
+              onClick={onClearRoutePoints}
+              className="bg-rose-950/60 hover:bg-rose-900/80 disabled:opacity-40 disabled:cursor-not-allowed text-rose-300 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer border border-rose-800/60"
+              title="Limpiar todos los puntos trazados"
+            >
+              <Trash2 className="w-3 h-3" />
+              <span>Limpiar</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={routeDraftPoints.length < 2}
+              onClick={onFinishDrawingRoute}
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1 rounded-lg text-[10px] font-extrabold flex items-center gap-1.5 shadow-md transition-all cursor-pointer ring-1 ring-purple-400"
+              title={
+                routeDraftPoints.length < 2
+                  ? 'Traza al menos 2 puntos para completar la línea'
+                  : 'Guardar trazado y configurar la ruta'
+              }
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Finalizar ({routeDraftPoints.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onCancelDrawingRoute}
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Salir del modo trazado"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Control Flotante de Filtros de Elementos de Red (Troncal, Mufas, Gasas, Postes) - Ubicado limpiamente debajo de los botones de zoom +/- */}
       <div className="absolute top-[82px] left-2.5 sm:left-3 z-[400]">
         {!isLayersMenuOpen ? (
@@ -917,6 +1055,8 @@ export const GponMap: React.FC<GponMapProps> = ({
         <MapEventsAndDropListener
           placementMode={placementMode}
           onPlaceElement={onPlaceElement}
+          isDrawingRoute={isDrawingRoute}
+          onAddRoutePoint={onAddRoutePoint}
         />
         <MapGpsFlyHandler
           target={userGpsPosition ? [userGpsPosition.lat, userGpsPosition.lng] : null}
@@ -1391,8 +1531,8 @@ export const GponMap: React.FC<GponMapProps> = ({
             );
           })}
 
-        {/* Baliza Satelital de Posición GPS del Usuario en Tiempo Real */}
-        {userGpsPosition && isGpsTracking && (
+        {/* Baliza Satelital de Posición GPS del Usuario a Demanda */}
+        {userGpsPosition && isGpsActive && (
           <>
             <Circle
               center={[userGpsPosition.lat, userGpsPosition.lng]}
@@ -1484,6 +1624,66 @@ export const GponMap: React.FC<GponMapProps> = ({
           </>
         )}
 
+        {/* Trazado Dinámico de Línea de Fibra Óptica (Vértices y Curvas Reales en Vivo) */}
+        {isDrawingRoute && routeDraftPoints && routeDraftPoints.length > 0 && (
+          <>
+            {/* Halo / Resplandor exterior de la línea en construcción */}
+            <Polyline
+              positions={routeDraftPoints}
+              pathOptions={{
+                color: '#c084fc',
+                weight: 7,
+                opacity: 0.5,
+                lineCap: 'round',
+                lineJoin: 'round'
+              }}
+            />
+            {/* Línea principal trazada */}
+            <Polyline
+              positions={routeDraftPoints}
+              pathOptions={{
+                color: '#9333ea',
+                weight: 4,
+                opacity: 0.95,
+                dashArray: '8, 6',
+                lineCap: 'round',
+                lineJoin: 'round'
+              }}
+            />
+            {/* Marcadores numerados arrastrables para cada vértice del trazado */}
+            {routeDraftPoints.map((pt, idx) => (
+              <Marker
+                key={`draft-vertex-${idx}`}
+                position={pt}
+                icon={createRouteDraftVertexIcon(idx, idx === routeDraftPoints.length - 1)}
+                draggable={true}
+                zIndexOffset={11000 + idx}
+                eventHandlers={{
+                  dragend: (e) => {
+                    const marker = e.target;
+                    const newLatLng = marker.getLatLng();
+                    if (onUpdateRoutePoint) {
+                      onUpdateRoutePoint(idx, [
+                        Number(newLatLng.lat.toFixed(6)),
+                        Number(newLatLng.lng.toFixed(6))
+                      ]);
+                    }
+                  }
+                }}
+              >
+                <Tooltip direction="top" offset={[0, -14]}>
+                  <div className="text-[10px] font-bold text-slate-900 bg-white px-1.5 py-0.5 rounded shadow">
+                    <span>Vértice #{idx + 1}</span>
+                    <span className="block font-mono text-[9px] text-slate-500">
+                      {pt[0].toFixed(5)}, {pt[1].toFixed(5)}
+                    </span>
+                  </div>
+                </Tooltip>
+              </Marker>
+            ))}
+          </>
+        )}
+
         {/* Marcador Temporal Interactivo de Colocación (Arrastrable para Ajuste Fino) */}
         {tempPlacementPin && (
           <Marker
@@ -1516,27 +1716,55 @@ export const GponMap: React.FC<GponMapProps> = ({
         )}
       </MapContainer>
 
-      {/* Control Flotante de Geolocalización GPS en Tiempo Real (Esquina Inferior Derecha) */}
+      {/* Control Flotante de Geolocalización GPS a Demanda (Esquina Inferior Derecha) */}
       <div className="absolute bottom-5 right-3 z-[400] flex flex-col items-end gap-1.5 pointer-events-auto">
-        {userGpsPosition && isGpsTracking && (
-          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 shadow-md text-[10px] font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1.5 animate-fadeIn">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
-            <span>GPS: &plusmn;{userGpsPosition.accuracy}m</span>
+        {!isGpsActive ? (
+          <button
+            type="button"
+            onClick={() => fetchGpsLocation(true)}
+            disabled={isGpsLoading}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer bg-white/95 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700"
+            title="Activar geolocalización GPS a demanda"
+          >
+            <Crosshair className={`w-4 h-4 text-sky-600 dark:text-sky-400 ${isGpsLoading ? 'animate-spin' : ''}`} />
+            <span>{isGpsLoading ? 'Buscando GPS...' : 'Activar GPS'}</span>
+          </button>
+        ) : (
+          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur p-1.5 rounded-xl border border-sky-300 dark:border-sky-700 shadow-xl flex items-center gap-1.5 text-xs animate-fadeIn">
+            {userGpsPosition && (
+              <div className="px-2 py-0.5 bg-sky-50 dark:bg-sky-950/50 rounded-lg text-[10px] font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span>&plusmn;{userGpsPosition.accuracy}m</span>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => fetchGpsLocation(false)}
+              disabled={isGpsLoading}
+              className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-sky-600 hover:bg-sky-500 text-white flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+              title="Actualizar mi ubicación actual por GPS ahora"
+            >
+              <RefreshCw className={`w-3 h-3 ${isGpsLoading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Actualizar</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setGpsCenterTrigger((prev) => prev + 1)}
+              className="p-1.5 rounded-lg font-bold text-[11px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-xs transition-colors cursor-pointer"
+              title="Centrar mapa en mi ubicación GPS"
+            >
+              <Crosshair className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+            </button>
+            <button
+              type="button"
+              onClick={handleTurnOffGps}
+              className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+              title="Desactivar y apagar GPS"
+            >
+              <Power className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
-        <button
-          type="button"
-          onClick={handleToggleGps}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer ${
-            isGpsTracking
-              ? 'bg-sky-600 text-white ring-2 ring-sky-400 hover:bg-sky-500 shadow-sky-950/30'
-              : 'bg-white/95 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700'
-          }`}
-          title={isGpsTracking ? 'Centrar mapa en mi posición GPS actual' : 'Activar geolocalización GPS en tiempo real'}
-        >
-          <Crosshair className={`w-4 h-4 ${isGpsTracking ? 'text-white' : 'text-sky-600 dark:text-sky-400'}`} />
-          <span className="hidden sm:inline">{isGpsTracking ? 'Mi Ubicación' : 'Activar GPS'}</span>
-        </button>
       </div>
 
       {/* Leyenda Plegable del Mapa en Esquina Inferior Izquierda */}

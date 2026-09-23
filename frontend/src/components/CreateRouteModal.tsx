@@ -8,6 +8,8 @@ interface CreateRouteModalProps {
   onClose: () => void;
   onSaveRoute: (route: FiberRoute) => void;
   defaultCoordinates?: [number, number];
+  draftPoints?: [number, number][];
+  onEditOnMap?: () => void;
 }
 
 // Cálculo geodésico Haversine para metros y kilómetros
@@ -39,7 +41,9 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
   isOpen,
   onClose,
   onSaveRoute,
-  defaultCoordinates = [19.698, -100.112]
+  defaultCoordinates = [19.698, -100.112],
+  draftPoints,
+  onEditOnMap
 }) => {
   const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState<'troncal' | 'ramal' | 'distribucion'>('troncal');
@@ -50,23 +54,30 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
   const [estado, setEstado] = useState<'operativa' | 'en_construccion' | 'planificada'>('operativa');
 
   // Coordenadas del tendido: lista de puntos [lat, lng]
-  const [points, setPoints] = useState<[number, number][]>([
-    [defaultCoordinates[0], defaultCoordinates[1]],
-    [defaultCoordinates[0] + 0.008, defaultCoordinates[1] + 0.006]
-  ]);
+  const [points, setPoints] = useState<[number, number][]>(() => {
+    if (draftPoints && draftPoints.length >= 2) return draftPoints;
+    return [
+      [defaultCoordinates[0], defaultCoordinates[1]],
+      [defaultCoordinates[0] + 0.008, defaultCoordinates[1] + 0.006]
+    ];
+  });
 
-  // Sincronizar coordenadas iniciales si el usuario arrastró o hizo clic en una posición del mapa
+  // Sincronizar coordenadas iniciales si el usuario arrastró o hizo clic en una posición del mapa o trazó puntos
   useEffect(() => {
-    if (isOpen && defaultCoordinates && defaultCoordinates.length >= 2) {
-      setPoints([
-        [Number(defaultCoordinates[0].toFixed(6)), Number(defaultCoordinates[1].toFixed(6))],
-        [
-          Number((defaultCoordinates[0] + 0.005).toFixed(6)),
-          Number((defaultCoordinates[1] + 0.005).toFixed(6))
-        ]
-      ]);
+    if (isOpen) {
+      if (draftPoints && draftPoints.length >= 2) {
+        setPoints(draftPoints);
+      } else if (defaultCoordinates && defaultCoordinates.length >= 2) {
+        setPoints([
+          [Number(defaultCoordinates[0].toFixed(6)), Number(defaultCoordinates[1].toFixed(6))],
+          [
+            Number((defaultCoordinates[0] + 0.005).toFixed(6)),
+            Number((defaultCoordinates[1] + 0.005).toFixed(6))
+          ]
+        ]);
+      }
     }
-  }, [defaultCoordinates[0], defaultCoordinates[1], isOpen]);
+  }, [isOpen, draftPoints, defaultCoordinates[0], defaultCoordinates[1]]);
 
   // Manejar cambio de tipo de cable para autoajustar color y grosor según la norma
   const handleSubtipoPresetChange = (preset: string) => {
@@ -291,19 +302,32 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
 
           {/* Lista de Vértices GPS del Tendido */}
           <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-slate-50/50 dark:bg-slate-900/50">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-indigo-500" />
                 Vértices y Trayectoria GPS del Cable ({points.length} puntos)
               </span>
-              <button
-                type="button"
-                onClick={handleAddPoint}
-                className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 px-2 py-1 rounded-md shadow-xs cursor-pointer"
-              >
-                <Plus className="w-3 h-3" />
-                <span>Agregar Vértice</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                {onEditOnMap && (
+                  <button
+                    type="button"
+                    onClick={onEditOnMap}
+                    className="flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 dark:hover:bg-purple-900/60 border border-purple-300 dark:border-purple-700 px-2.5 py-1 rounded-md shadow-xs transition-colors cursor-pointer"
+                    title="Volver al mapa para agregar más postes o seguir curvas de la calle en vivo"
+                  >
+                    <Ruler className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                    <span>Trazar / Editar en Mapa</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleAddPoint}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 px-2 py-1 rounded-md shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Agregar Vértice</span>
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2 max-h-40 overflow-y-auto pr-1">

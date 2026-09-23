@@ -131,18 +131,52 @@ export const MapViewPage: React.FC = () => {
     lng: number;
   } | null>(null);
 
+  // Estados para Trazado Interactivo de Líneas de Fibra (Puntos sucesivos con curvas reales)
+  const [isDrawingRoute, setIsDrawingRoute] = useState(false);
+  const [routeDraftPoints, setRouteDraftPoints] = useState<[number, number][]>([]);
+
+  const handleAddRoutePoint = (pt: [number, number]) => {
+    setRouteDraftPoints((prev) => [...prev, pt]);
+  };
+
+  const handleUpdateRoutePoint = (idx: number, pt: [number, number]) => {
+    setRouteDraftPoints((prev) => prev.map((p, i) => (i === idx ? pt : p)));
+  };
+
+  const handleRemoveLastRoutePoint = () => {
+    setRouteDraftPoints((prev) => prev.slice(0, -1));
+  };
+
+  const handleClearRoutePoints = () => {
+    setRouteDraftPoints([]);
+  };
+
+  const handleFinishDrawingRoute = () => {
+    setIsDrawingRoute(false);
+    setIsCreateRouteOpen(true);
+  };
+
+  const handleCancelDrawingRoute = () => {
+    setIsDrawingRoute(false);
+    setRouteDraftPoints([]);
+  };
+
   const handlePlaceElement = (type: 'poste' | 'mufa' | 'nap' | 'troncal', latlng: { lat: number; lng: number }) => {
     setDroppedCoordinates(latlng);
-    setTempPlacementPin({ type, ...latlng });
     setPlacementMode(null);
     if (type === 'poste') {
+      setTempPlacementPin({ type, ...latlng });
       setIsCreatePosteOpen(true);
     } else if (type === 'mufa') {
+      setTempPlacementPin({ type, ...latlng });
       setIsCreateMufaOpen(true);
     } else if (type === 'nap') {
+      setTempPlacementPin({ type, ...latlng });
       setIsCreateNapOpen(true);
     } else if (type === 'troncal') {
-      setIsCreateRouteOpen(true);
+      setTempPlacementPin(null);
+      setIsDrawingRoute(true);
+      setRouteDraftPoints([[latlng.lat, latlng.lng]]);
     }
   };
 
@@ -581,22 +615,28 @@ export const MapViewPage: React.FC = () => {
             <span>Simbología</span>
           </button>
 
-          {/* Botón para crear nueva línea troncal o ramal (Arrastrable hacia el mapa) */}
+          {/* Botón para crear nueva línea troncal o ramal (Trazado interactivo de curvas o arrastre) */}
           <button
             draggable={true}
             onDragStart={(e) => {
               e.dataTransfer.setData('text/plain', 'troncal');
               e.dataTransfer.setData('application/gpon-element', 'troncal');
             }}
-            onClick={() => setPlacementMode(placementMode === 'troncal' ? null : 'troncal')}
+            onClick={() => {
+              if (isDrawingRoute) {
+                setIsDrawingRoute(false);
+              } else {
+                setIsDrawingRoute(true);
+              }
+            }}
             className={`flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
-              placementMode === 'troncal' ? 'ring-2 ring-purple-500 shadow-md ring-offset-1 animate-pulse' : ''
+              isDrawingRoute ? 'ring-2 ring-purple-500 shadow-md ring-offset-1 animate-pulse bg-purple-100 dark:bg-purple-900/50' : ''
             }`}
-            title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva línea troncal o ramal"
+            title="Haz clic para trazar puntos y curvas en el mapa o arrastra para ubicar el punto inicial de la línea troncal"
           >
             <GripVertical className="w-3 h-3 text-purple-500/70 shrink-0 hidden sm:inline" />
             <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-            <span>+ Troncal / Ramal</span>
+            <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal / Ramal'}</span>
           </button>
 
           {/* Botón para crear nueva mufa de empalme (Arrastrable hacia el mapa) */}
@@ -729,6 +769,14 @@ export const MapViewPage: React.FC = () => {
             onCancelPlacement={handleCancelPlacement}
             tempPlacementPin={tempPlacementPin}
             onUpdateTempPin={handleUpdateTempPin}
+            isDrawingRoute={isDrawingRoute}
+            routeDraftPoints={routeDraftPoints}
+            onAddRoutePoint={handleAddRoutePoint}
+            onUpdateRoutePoint={handleUpdateRoutePoint}
+            onRemoveLastRoutePoint={handleRemoveLastRoutePoint}
+            onClearRoutePoints={handleClearRoutePoints}
+            onFinishDrawingRoute={handleFinishDrawingRoute}
+            onCancelDrawingRoute={handleCancelDrawingRoute}
           />
         </div>
 
@@ -920,11 +968,20 @@ export const MapViewPage: React.FC = () => {
           setIsCreateRouteOpen(false);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
+          setRouteDraftPoints([]);
+          setIsDrawingRoute(false);
         }}
         onSaveRoute={(route) => {
           handleSaveRoute(route);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
+          setRouteDraftPoints([]);
+          setIsDrawingRoute(false);
+        }}
+        draftPoints={routeDraftPoints.length >= 2 ? routeDraftPoints : undefined}
+        onEditOnMap={() => {
+          setIsCreateRouteOpen(false);
+          setIsDrawingRoute(true);
         }}
         defaultCoordinates={
           droppedCoordinates
