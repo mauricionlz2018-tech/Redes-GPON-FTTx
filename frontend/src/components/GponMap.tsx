@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, Circle, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
 import {
@@ -19,6 +20,10 @@ import {
   Eye,
   Camera,
   Globe
+  Globe,
+  Crosshair,
+  MapPin,
+  Plus
 } from 'lucide-react';
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
 import { StreetViewModal } from './StreetViewModal';
@@ -59,6 +64,11 @@ interface GponMapProps {
   customPostes?: PosteInfraestructura[];
   onDeleteNapRequest?: (nap: NapBox) => void;
   onOpenMileageCapture?: (nap: NapBox, distanceKm?: number) => void;
+  placementMode?: 'poste' | 'mufa' | 'nap' | null;
+  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap', latlng: { lat: number; lng: number }) => void;
+  onCancelPlacement?: () => void;
+  tempPlacementPin?: { type: 'poste' | 'mufa' | 'nap'; lat: number; lng: number } | null;
+  onUpdateTempPin?: (latlng: { lat: number; lng: number }) => void;
 }
 
 // Controlador para escuchar cambios de límites visibles (bounds) y nivel de zoom para virtualización
@@ -174,6 +184,113 @@ const MapStreetViewClickListener: React.FC<{
   return null;
 };
 
+// Icono animado de Baliza Satelital para la ubicación GPS del usuario en tiempo real
+const createGpsUserBeaconIcon = () => {
+  return L.divIcon({
+    className: 'gps-user-beacon-wrapper',
+    html: `
+      <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+        <span style="position: absolute; width: 30px; height: 30px; border-radius: 9999px; background: rgba(14, 165, 233, 0.45); animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+        <span style="position: relative; width: 14px; height: 14px; border-radius: 9999px; background: #0284c7; border: 2.5px solid #ffffff; box-shadow: 0 0 12px rgba(2, 132, 199, 0.95), 0 2px 4px rgba(0,0,0,0.35);"></span>
+      </div>
+    `,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17]
+  });
+};
+
+// Icono animado del Pin Temporal para ajuste fino arrastrable de elementos nuevos
+const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap') => {
+  const bg = type === 'poste' ? '#e11d48' : type === 'mufa' ? '#d97706' : '#0284c7';
+  const label = type === 'poste' ? 'POSTE' : type === 'mufa' ? 'MUFA' : 'NAP';
+  return L.divIcon({
+    className: 'temp-placement-pin-wrapper',
+    html: `
+      <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.45)); cursor: grab;">
+        <div style="background: ${bg}; color: white; font-weight: 900; font-size: 10px; padding: 2px 8px; border-radius: 8px; border: 2px solid white; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 4px;">
+          <span>+ ${label}</span>
+        </div>
+        <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid ${bg}; margin-top: -1px;"></div>
+        <div style="width: 6px; height: 6px; border-radius: 50%; background: #0f172a; margin-top: 1px;"></div>
+      </div>
+    `,
+    iconSize: [48, 44],
+    iconAnchor: [24, 40]
+  });
+};
+
+// Controlador de Eventos de Clic y Soltado (Drag & Drop) sobre el Lienzo de Leaflet
+const MapEventsAndDropListener: React.FC<{
+  placementMode?: 'poste' | 'mufa' | 'nap' | null;
+  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap', latlng: { lat: number; lng: number }) => void;
+}> = ({ placementMode, onPlaceElement }) => {
+  const map = useMap();
+
+  useMapEvents({
+    click: (e) => {
+      if (placementMode && onPlaceElement) {
+        onPlaceElement(placementMode, {
+          lat: Number(e.latlng.lat.toFixed(6)),
+          lng: Number(e.latlng.lng.toFixed(6))
+        });
+      }
+    }
+  });
+
+  useEffect(() => {
+    const container = map.getContainer();
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      const rawType = e.dataTransfer?.getData('application/gpon-element') || e.dataTransfer?.getData('text/plain');
+      if (rawType === 'poste' || rawType === 'mufa' || rawType === 'nap') {
+        const rect = container.getBoundingClientRect();
+        const clientPoint = L.point(e.clientX - rect.left, e.clientY - rect.top);
+        const latlng = map.containerPointToLatLng(clientPoint);
+        if (onPlaceElement) {
+          onPlaceElement(rawType as 'poste' | 'mufa' | 'nap', {
+            lat: Number(latlng.lat.toFixed(6)),
+            lng: Number(latlng.lng.toFixed(6))
+          });
+        }
+      }
+    };
+
+    container.addEventListener('dragover', handleDragOver);
+    container.addEventListener('drop', handleDrop);
+
+    return () => {
+      container.removeEventListener('dragover', handleDragOver);
+      container.removeEventListener('drop', handleDrop);
+    };
+  }, [map, onPlaceElement]);
+
+  return null;
+};
+
+// Controlador para animación de vuelo suave al centrar sobre el GPS del técnico
+const MapGpsFlyHandler: React.FC<{
+  target?: [number, number] | null;
+  trigger: number;
+}> = ({ target, trigger }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (target && trigger > 0) {
+      map.flyTo(target, Math.max(map.getZoom(), 16), {
+        duration: 1.2
+      });
+    }
+  }, [trigger, target, map]);
+  return null;
+};
+
 export const GponMap: React.FC<GponMapProps> = ({
   naps,
   odf,
@@ -192,6 +309,12 @@ export const GponMap: React.FC<GponMapProps> = ({
   customPostes = [],
   onDeleteNapRequest,
   onOpenMileageCapture
+  onOpenMileageCapture,
+  placementMode,
+  onPlaceElement,
+  onCancelPlacement,
+  tempPlacementPin,
+  onUpdateTempPin
 }) => {
   // Centro por defecto: Región Ixtlahuaca - Jiquipilco
   const defaultCenter: [number, number] = useMemo(() => {
@@ -247,6 +370,72 @@ export const GponMap: React.FC<GponMapProps> = ({
   const [showNaps, setShowNaps] = useState(true);
   const [isLayersMenuOpen, setIsLayersMenuOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
+
+  // Estados para Geolocalización GPS en Tiempo Real
+  const [userGpsPosition, setUserGpsPosition] = useState<{
+    lat: number;
+    lng: number;
+    accuracy: number;
+    heading: number | null;
+  } | null>(null);
+  const [isGpsTracking, setIsGpsTracking] = useState<boolean>(false);
+  const [gpsCenterTrigger, setGpsCenterTrigger] = useState<number>(0);
+
+  // Rastreo GPS en tiempo real mediante Geolocation watchPosition
+  useEffect(() => {
+    if (!isGpsTracking) return;
+    if (!('geolocation' in navigator)) {
+      alert('Tu dispositivo o navegador no soporta geolocalización GPS.');
+      setIsGpsTracking(false);
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const nextPos = {
+          lat: Number(pos.coords.latitude.toFixed(6)),
+          lng: Number(pos.coords.longitude.toFixed(6)),
+          accuracy: Math.round(pos.coords.accuracy),
+          heading: pos.coords.heading
+        };
+        setUserGpsPosition(nextPos);
+      },
+      (err) => {
+        console.warn('GPS no disponible:', err.message);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, [isGpsTracking]);
+
+  const handleToggleGps = () => {
+    if (!isGpsTracking) {
+      setIsGpsTracking(true);
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const initPos = {
+              lat: Number(pos.coords.latitude.toFixed(6)),
+              lng: Number(pos.coords.longitude.toFixed(6)),
+              accuracy: Math.round(pos.coords.accuracy),
+              heading: pos.coords.heading
+            };
+            setUserGpsPosition(initPos);
+            setGpsCenterTrigger((prev) => prev + 1);
+          },
+          (err) => {
+            console.warn('GPS inicial error:', err);
+          },
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      }
+    } else {
+      setGpsCenterTrigger((prev) => prev + 1);
+    }
+  };
 
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
@@ -475,6 +664,30 @@ export const GponMap: React.FC<GponMapProps> = ({
         </div>
       )}
 
+      {/* Banner flotante cuando el Modo de Colocación (Click / Arrastre) está activo */}
+      {placementMode && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[450] bg-slate-900/95 text-white px-3.5 sm:px-4 py-2 rounded-full shadow-2xl border-2 border-indigo-400 flex items-center justify-between gap-3 text-xs font-bold w-[94%] sm:w-auto max-w-md animate-fadeIn backdrop-blur-md">
+          <div className="flex items-center gap-2 truncate">
+            <MapPin className="w-4 h-4 text-amber-400 shrink-0 animate-bounce" />
+            <span className="truncate text-[11px] sm:text-xs">
+              Modo Colocación: Toca o arrastra al mapa para ubicar{' '}
+              <span className="text-amber-300 uppercase font-black">
+                {placementMode === 'poste' ? 'Poste' : placementMode === 'mufa' ? 'Mufa' : 'Caja NAP'}
+              </span>
+            </span>
+          </div>
+          {onCancelPlacement && (
+            <button
+              onClick={onCancelPlacement}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer shrink-0 border border-slate-600 flex items-center gap-1 transition-colors"
+            >
+              <X className="w-3 h-3" />
+              <span>Cancelar</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Control Flotante de Filtros de Elementos de Red (Troncal, Mufas, Gasas, Postes) - Ubicado limpiamente debajo de los botones de zoom +/- */}
       <div className="absolute top-[82px] left-2.5 sm:left-3 z-[400]">
         {!isLayersMenuOpen ? (
@@ -683,6 +896,14 @@ export const GponMap: React.FC<GponMapProps> = ({
         <MapStreetViewClickListener
           isActive={isStreetViewActive}
           onLocationSelect={handleMapLocationSelect}
+        />
+        <MapEventsAndDropListener
+          placementMode={placementMode}
+          onPlaceElement={onPlaceElement}
+        />
+        <MapGpsFlyHandler
+          target={userGpsPosition ? [userGpsPosition.lat, userGpsPosition.lng] : null}
+          trigger={gpsCenterTrigger}
         />
 
         {/* 1. Capa de Calles (OpenStreetMap - 100% Libre y Legal) */}
@@ -1152,7 +1373,128 @@ export const GponMap: React.FC<GponMapProps> = ({
               </Marker>
             );
           })}
+
+        {/* Baliza Satelital de Posición GPS del Usuario en Tiempo Real */}
+        {userGpsPosition && isGpsTracking && (
+          <>
+            <Circle
+              center={[userGpsPosition.lat, userGpsPosition.lng]}
+              radius={Math.max(userGpsPosition.accuracy, 5)}
+              pathOptions={{
+                color: '#0284c7',
+                fillColor: '#38bdf8',
+                fillOpacity: 0.18,
+                weight: 1.5,
+                dashArray: '4, 4'
+              }}
+            />
+            <Marker
+              position={[userGpsPosition.lat, userGpsPosition.lng]}
+              icon={createGpsUserBeaconIcon()}
+              zIndexOffset={9000}
+            >
+              <Popup className="gpon-modern-popup">
+                <div className="p-2 space-y-1.5 text-xs text-slate-800 dark:text-slate-100 min-w-[210px]">
+                  <div className="flex items-center gap-1.5 font-bold text-sky-700 dark:text-sky-400">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+                    <span>Tu Ubicación en Tiempo Real</span>
+                  </div>
+                  <p className="text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                    GPS: {userGpsPosition.lat}, {userGpsPosition.lng}
+                  </p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                    Precisión satelital: &plusmn;{userGpsPosition.accuracy} m
+                  </p>
+                  {onPlaceElement && (
+                    <div className="pt-1.5 flex gap-1.5 border-t border-slate-200 dark:border-slate-700">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onPlaceElement('poste', {
+                            lat: userGpsPosition.lat,
+                            lng: userGpsPosition.lng
+                          })
+                        }
+                        className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-1 px-1.5 rounded text-[10px] text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Poste Aquí</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onPlaceElement('nap', {
+                            lat: userGpsPosition.lat,
+                            lng: userGpsPosition.lng
+                          })
+                        }
+                        className="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-bold py-1 px-1.5 rounded text-[10px] text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>NAP Aquí</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          </>
+        )}
+
+        {/* Marcador Temporal Interactivo de Colocación (Arrastrable para Ajuste Fino) */}
+        {tempPlacementPin && (
+          <Marker
+            position={[tempPlacementPin.lat, tempPlacementPin.lng]}
+            icon={createTempPlacementPinIcon(tempPlacementPin.type)}
+            draggable={true}
+            zIndexOffset={10000}
+            eventHandlers={{
+              dragend: (e) => {
+                const marker = e.target;
+                const newLatLng = marker.getLatLng();
+                if (onUpdateTempPin) {
+                  onUpdateTempPin({
+                    lat: Number(newLatLng.lat.toFixed(6)),
+                    lng: Number(newLatLng.lng.toFixed(6))
+                  });
+                }
+              }
+            }}
+          >
+            <Tooltip permanent direction="top" offset={[0, -38]}>
+              <div className="text-[11px] font-bold text-slate-900 bg-white/95 px-2.5 py-1 rounded-lg shadow-md border border-slate-300 dark:border-slate-700 text-center">
+                <span>Arrastra para ajustar posición exacta</span>
+                <span className="block font-mono text-[10px] text-slate-600">
+                  {tempPlacementPin.lat.toFixed(6)}, {tempPlacementPin.lng.toFixed(6)}
+                </span>
+              </div>
+            </Tooltip>
+          </Marker>
+        )}
       </MapContainer>
+
+      {/* Control Flotante de Geolocalización GPS en Tiempo Real (Esquina Inferior Derecha) */}
+      <div className="absolute bottom-5 right-3 z-[400] flex flex-col items-end gap-1.5 pointer-events-auto">
+        {userGpsPosition && isGpsTracking && (
+          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 shadow-md text-[10px] font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1.5 animate-fadeIn">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+            <span>GPS: &plusmn;{userGpsPosition.accuracy}m</span>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={handleToggleGps}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer ${
+            isGpsTracking
+              ? 'bg-sky-600 text-white ring-2 ring-sky-400 hover:bg-sky-500 shadow-sky-950/30'
+              : 'bg-white/95 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700'
+          }`}
+          title={isGpsTracking ? 'Centrar mapa en mi posición GPS actual' : 'Activar geolocalización GPS en tiempo real'}
+        >
+          <Crosshair className={`w-4 h-4 ${isGpsTracking ? 'text-white' : 'text-sky-600 dark:text-sky-400'}`} />
+          <span className="hidden sm:inline">{isGpsTracking ? 'Mi Ubicación' : 'Activar GPS'}</span>
+        </button>
+      </div>
 
       {/* Leyenda Plegable del Mapa en Esquina Inferior Izquierda */}
       {!isLegendOpen ? (

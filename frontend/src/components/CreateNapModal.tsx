@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NapBox, NapPort, NapPortStatus } from '../types';
 import api from '../api/client';
 import { offlineDb } from '../db/offlineDb';
@@ -37,6 +38,13 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
   const [lat, setLat] = useState<string | number>(defaultCoordinates?.lat ?? 19.6670);
   const [lng, setLng] = useState<string | number>(defaultCoordinates?.lng ?? -100.1490);
   const [totalPuertos, setTotalPuertos] = useState<number>(16);
+
+  useEffect(() => {
+    if (defaultCoordinates) {
+      setLat(defaultCoordinates.lat);
+      setLng(defaultCoordinates.lng);
+    }
+  }, [defaultCoordinates?.lat, defaultCoordinates?.lng]);
 
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);

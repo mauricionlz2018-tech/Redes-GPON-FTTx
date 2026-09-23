@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PosteInfraestructura } from '../types';
 import { MapPin, X, Compass, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -26,6 +27,13 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
   const [lng, setLng] = useState<string | number>(defaultCoordinates[1]);
   const [locating, setLocating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (defaultCoordinates && defaultCoordinates.length >= 2) {
+      setLat(defaultCoordinates[0]);
+      setLng(defaultCoordinates[1]);
+    }
+  }, [defaultCoordinates[0], defaultCoordinates[1], isOpen]);
 
   if (!isOpen) return null;
 

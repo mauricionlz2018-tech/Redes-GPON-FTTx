@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, GitCommit, MapPin, CheckCircle2 } from 'lucide-react';
 import { EmpalmeClosure } from '../types';
 
@@ -22,6 +23,13 @@ export const CreateMufaModal: React.FC<CreateMufaModalProps> = ({
   const [lng, setLng] = useState<number>(defaultCoordinates[1]);
   const [estado, setEstado] = useState<'operativa' | 'planificada' | 'en_mantenimiento'>('operativa');
   const [tipoFusion, setTipoFusion] = useState<'paso' | 'derivacion' | 'sangria'>('derivacion');
+
+  useEffect(() => {
+    if (defaultCoordinates && defaultCoordinates.length >= 2) {
+      setLat(defaultCoordinates[0]);
+      setLng(defaultCoordinates[1]);
+    }
+  }, [defaultCoordinates[0], defaultCoordinates[1], isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -35,6 +35,8 @@ import {
   Ruler,
   MapPin,
   X
+  X,
+  GripVertical
 } from 'lucide-react';
 
 import {
@@ -120,6 +122,39 @@ export const MapViewPage: React.FC = () => {
   const [isCreateRouteOpen, setIsCreateRouteOpen] = useState(false);
   const [isCreateMufaOpen, setIsCreateMufaOpen] = useState(false);
   const [isCreatePosteOpen, setIsCreatePosteOpen] = useState(false);
+
+  // Estados para Drag & Drop y Colocación Interactiva de Elementos
+  const [placementMode, setPlacementMode] = useState<'poste' | 'mufa' | 'nap' | null>(null);
+  const [droppedCoordinates, setDroppedCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [tempPlacementPin, setTempPlacementPin] = useState<{
+    type: 'poste' | 'mufa' | 'nap';
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  const handlePlaceElement = (type: 'poste' | 'mufa' | 'nap', latlng: { lat: number; lng: number }) => {
+    setDroppedCoordinates(latlng);
+    setTempPlacementPin({ type, ...latlng });
+    setPlacementMode(null);
+    if (type === 'poste') {
+      setIsCreatePosteOpen(true);
+    } else if (type === 'mufa') {
+      setIsCreateMufaOpen(true);
+    } else if (type === 'nap') {
+      setIsCreateNapOpen(true);
+    }
+  };
+
+  const handleUpdateTempPin = (latlng: { lat: number; lng: number }) => {
+    setDroppedCoordinates(latlng);
+    setTempPlacementPin((prev) => (prev ? { ...prev, ...latlng } : null));
+  };
+
+  const handleCancelPlacement = () => {
+    setPlacementMode(null);
+    setTempPlacementPin(null);
+    setDroppedCoordinates(null);
+  };
   const [customRoutes, setCustomRoutes] = useState<FiberRoute[]>(() => {
     try {
       const saved = localStorage.getItem('gpon_custom_routes');
@@ -556,21 +591,45 @@ export const MapViewPage: React.FC = () => {
           </button>
 
           {/* Botón para crear nueva mufa de empalme */}
+          {/* Botón para crear nueva mufa de empalme (Arrastrable hacia el mapa) */}
           <button
             onClick={() => setIsCreateMufaOpen(true)}
             className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
             title="Instalar una nueva mufa / cierre de empalme torpedo en el mapa"
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData('text/plain', 'mufa');
+              e.dataTransfer.setData('application/gpon-element', 'mufa');
+            }}
+            onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
+            className={`flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
+              placementMode === 'mufa' ? 'ring-2 ring-amber-500 shadow-md ring-offset-1 animate-pulse' : ''
+            }`}
+            title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva mufa torpedo"
           >
+            <GripVertical className="w-3 h-3 text-amber-500/70 shrink-0 hidden sm:inline" />
             <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>+ Mufa</span>
           </button>
 
           {/* Botón para registrar nuevo poste */}
+          {/* Botón para registrar nuevo poste (Arrastrable hacia el mapa) */}
           <button
             onClick={() => setIsCreatePosteOpen(true)}
             className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-800 dark:to-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
             title="Registrar un nuevo poste (propuesto o CFE) en la infraestructura"
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData('text/plain', 'poste');
+              e.dataTransfer.setData('application/gpon-element', 'poste');
+            }}
+            onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
+            className={`flex items-center justify-center gap-1.5 bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-800 dark:to-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
+              placementMode === 'poste' ? 'ring-2 ring-rose-500 shadow-md ring-offset-1 animate-pulse' : ''
+            }`}
+            title="Arrastra hacia el mapa satelital o haz clic para ubicar un nuevo poste"
           >
+            <GripVertical className="w-3 h-3 text-rose-500/70 shrink-0 hidden sm:inline" />
             <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
             <span>+ Poste</span>
           </button>
@@ -601,7 +660,18 @@ export const MapViewPage: React.FC = () => {
               onClick={() => setIsCreateNapOpen(true)}
               className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg shadow-md shadow-sky-950/20 transition-all active:scale-95 cursor-pointer"
               title="Registrar e instalar nueva caja NAP en la red FTTx"
+              draggable={true}
+              onDragStart={(e) => {
+                e.dataTransfer.setData('text/plain', 'nap');
+                e.dataTransfer.setData('application/gpon-element', 'nap');
+              }}
+              onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
+              className={`flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg shadow-md shadow-sky-950/20 transition-all active:scale-95 cursor-grab active:cursor-grabbing ${
+                placementMode === 'nap' ? 'ring-2 ring-sky-300 ring-offset-1 animate-pulse' : ''
+              }`}
+              title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva caja NAP"
             >
+              <GripVertical className="w-3 h-3 text-white/70 shrink-0 hidden sm:inline" />
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span>Nueva Caja NAP</span>
             </button>
@@ -656,6 +726,11 @@ export const MapViewPage: React.FC = () => {
             onOpenMileageCapture={(nap: NapBox, dist?: number) =>
               setMileageCaptureData({ isOpen: true, nap, distanceKm: dist })
             }
+            placementMode={placementMode}
+            onPlaceElement={handlePlaceElement}
+            onCancelPlacement={handleCancelPlacement}
+            tempPlacementPin={tempPlacementPin}
+            onUpdateTempPin={handleUpdateTempPin}
           />
         </div>
 
@@ -765,10 +840,17 @@ export const MapViewPage: React.FC = () => {
       {isCreateNapOpen && (
         <CreateNapModal
           onClose={() => setIsCreateNapOpen(false)}
+          onClose={() => {
+            setIsCreateNapOpen(false);
+            setTempPlacementPin(null);
+            setDroppedCoordinates(null);
+          }}
           existingNaps={naps}
           onCreatedSuccess={(newNap) => {
             setNaps((prev) => [newNap, ...prev.filter((n) => n.id_nap !== newNap.id_nap)]);
             setSelectedNap(newNap);
+            setTempPlacementPin(null);
+            setDroppedCoordinates(null);
             setFeedbackNotice({
               type: 'success',
               message: `Caja ${newNap.identificador} registrada y desplegada exitosamente en el mapa (${newNap.total_puertos} puertos).`
@@ -777,11 +859,14 @@ export const MapViewPage: React.FC = () => {
           }}
           defaultCoordinates={
             odf?.coordenadas_gps
+            droppedCoordinates ||
+            (odf?.coordenadas_gps
               ? {
                   lat: Number((odf.coordenadas_gps.lat + 0.003).toFixed(6)),
                   lng: Number((odf.coordenadas_gps.lng + 0.003).toFixed(6))
                 }
               : undefined
+              : undefined)
           }
         />
       )}
@@ -852,8 +937,21 @@ export const MapViewPage: React.FC = () => {
         isOpen={isCreateMufaOpen}
         onClose={() => setIsCreateMufaOpen(false)}
         onSaveMufa={handleSaveMufa}
+        onClose={() => {
+          setIsCreateMufaOpen(false);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
+        onSaveMufa={(mufa) => {
+          handleSaveMufa(mufa);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
         defaultCoordinates={
           selectedNap?.coordenadas_gps
+          droppedCoordinates
+            ? [droppedCoordinates.lat, droppedCoordinates.lng]
+            : selectedNap?.coordenadas_gps
             ? [
                 Number((selectedNap.coordenadas_gps.lat + 0.002).toFixed(6)),
                 Number((selectedNap.coordenadas_gps.lng + 0.002).toFixed(6))
@@ -867,8 +965,21 @@ export const MapViewPage: React.FC = () => {
         isOpen={isCreatePosteOpen}
         onClose={() => setIsCreatePosteOpen(false)}
         onSavePoste={handleSavePoste}
+        onClose={() => {
+          setIsCreatePosteOpen(false);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
+        onSavePoste={(poste) => {
+          handleSavePoste(poste);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
         defaultCoordinates={
           selectedNap?.coordenadas_gps
+          droppedCoordinates
+            ? [droppedCoordinates.lat, droppedCoordinates.lng]
+            : selectedNap?.coordenadas_gps
             ? [
                 Number((selectedNap.coordenadas_gps.lat + 0.001).toFixed(6)),
                 Number((selectedNap.coordenadas_gps.lng + 0.001).toFixed(6))
