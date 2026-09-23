@@ -245,23 +245,21 @@ const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal') 
   });
 };
 
-// Icono numerado para cada vértice en el trazado dinámico de líneas de fibra
+// Icono numerado estándar para cada vértice en el trazado dinámico de líneas de fibra
 const createRouteDraftVertexIcon = (index: number, isLast: boolean) => {
   return L.divIcon({
     className: 'route-draft-vertex-icon',
     html: `
-      <div style="position: relative; display: flex; align-items: center; justify-content: center; cursor: grab;">
-        <div style="width: ${isLast ? '26px' : '22px'}; height: ${isLast ? '26px' : '22px'}; border-radius: 50%; background: ${
-          isLast ? '#9333ea' : '#7e22ce'
-        }; color: white; font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.5); ${
-          isLast ? 'box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.45);' : ''
-        }">
+      <div style="display: flex; align-items: center; justify-content: center; cursor: grab;">
+        <div style="width: 18px; height: 18px; border-radius: 50%; background: ${
+          isLast ? '#0284c7' : '#0f172a'
+        }; color: white; font-weight: 700; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.35);">
           ${index + 1}
         </div>
       </div>
     `,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13]
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
   });
 };
 
@@ -738,12 +736,12 @@ export const GponMap: React.FC<GponMapProps> = ({
 
       {/* Banner flotante cuando el Modo de Colocación (Click / Arrastre) está activo */}
       {placementMode && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[450] bg-slate-900/95 text-white px-3.5 sm:px-4 py-2 rounded-full shadow-2xl border-2 border-indigo-400 flex items-center justify-between gap-3 text-xs font-bold w-[94%] sm:w-auto max-w-md animate-fadeIn backdrop-blur-md">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] bg-white/95 dark:bg-slate-900/95 backdrop-blur text-slate-900 dark:text-white px-3.5 py-1.5 rounded-xl shadow-lg border border-slate-300 dark:border-slate-800 flex items-center justify-between gap-3 text-xs font-semibold w-[94%] sm:w-auto max-w-md animate-fadeIn">
           <div className="flex items-center gap-2 truncate">
-            <MapPin className="w-4 h-4 text-amber-400 shrink-0 animate-bounce" />
-            <span className="truncate text-[11px] sm:text-xs">
-              Modo Colocación: Toca o arrastra al mapa para ubicar{' '}
-              <span className="text-amber-300 uppercase font-black">
+            <MapPin className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+            <span className="truncate text-xs">
+              Ubicar en el mapa:{' '}
+              <strong className="text-sky-700 dark:text-sky-300 font-bold">
                 {placementMode === 'poste'
                   ? 'Poste'
                   : placementMode === 'mufa'
@@ -751,93 +749,79 @@ export const GponMap: React.FC<GponMapProps> = ({
                   : placementMode === 'troncal'
                   ? 'Línea Troncal'
                   : 'Caja NAP'}
-              </span>
+              </strong>
             </span>
           </div>
           {onCancelPlacement && (
             <button
               onClick={onCancelPlacement}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer shrink-0 border border-slate-600 flex items-center gap-1 transition-colors"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded transition-colors cursor-pointer"
+              title="Cancelar colocación"
             >
-              <X className="w-3 h-3" />
-              <span>Cancelar</span>
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       )}
 
-      {/* Banner flotante cuando el Modo Trazado de Ruta (Puntos sucesivos con curvas reales) está activo */}
+      {/* Barra de Control Integrada para Trazado de Ruta en el Mapa */}
       {isDrawingRoute && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[450] bg-slate-900/95 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl shadow-2xl border-2 border-purple-500 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 text-xs font-bold w-[95%] sm:w-auto max-w-2xl animate-fadeIn backdrop-blur-md">
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            <div className="p-1.5 bg-purple-600/30 text-purple-300 rounded-lg shrink-0 animate-pulse">
-              <Ruler className="w-4 h-4" />
-            </div>
-            <div className="truncate">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-purple-300 font-extrabold uppercase text-[11px] sm:text-xs tracking-wide">
-                  Trazando Línea de Fibra
-                </span>
-                <span className="bg-purple-950/80 border border-purple-500/50 text-purple-200 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
-                  {routeDraftPoints.length} {routeDraftPoints.length === 1 ? 'punto' : 'puntos'}
-                </span>
-                {routeDraftPoints.length >= 2 && (
-                  <span className="bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
-                    {routeDraftDistance.metros} m ({routeDraftDistance.km} km)
-                  </span>
-                )}
-              </div>
-              <p className="text-[10px] text-slate-300 font-normal truncate mt-0.5">
-                Haz clic en el mapa siguiendo cada curva o poste de la carretera.
-              </p>
-            </div>
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-1.5 shadow-lg flex items-center gap-2 sm:gap-3 text-xs text-slate-800 dark:text-slate-100 max-w-[94vw] whitespace-nowrap animate-fadeIn">
+          <div className="flex items-center gap-1.5 font-bold text-sky-700 dark:text-sky-400">
+            <Ruler className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+            <span className="hidden xs:inline">Trazar Troncal:</span>
+            <span className="font-mono text-slate-900 dark:text-white font-bold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[11px]">
+              {routeDraftPoints.length} {routeDraftPoints.length === 1 ? 'pt' : 'pts'}
+            </span>
+            {routeDraftPoints.length >= 2 && (
+              <span className="font-mono text-slate-600 dark:text-slate-300 text-[11px] font-semibold">
+                ({routeDraftDistance.metros} m)
+              </span>
+            )}
           </div>
 
-          <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end shrink-0 border-t sm:border-t-0 border-slate-700/60 pt-2 sm:pt-0">
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
+
+          <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
               disabled={routeDraftPoints.length === 0}
               onClick={onRemoveLastRoutePoint}
-              className="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer border border-slate-700"
-              title="Deshacer último punto colocado"
+              className="px-2 py-1 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-xs flex items-center gap-1 transition-colors cursor-pointer"
+              title="Deshacer último punto"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>Deshacer</span>
+              <span className="hidden sm:inline">Deshacer</span>
             </button>
 
             <button
               type="button"
               disabled={routeDraftPoints.length === 0}
               onClick={onClearRoutePoints}
-              className="bg-rose-950/60 hover:bg-rose-900/80 disabled:opacity-40 disabled:cursor-not-allowed text-rose-300 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer border border-rose-800/60"
-              title="Limpiar todos los puntos trazados"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              title="Borrar puntos"
             >
-              <Trash2 className="w-3 h-3" />
-              <span>Limpiar</span>
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
 
             <button
               type="button"
               disabled={routeDraftPoints.length < 2}
               onClick={onFinishDrawingRoute}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1 rounded-lg text-[10px] font-extrabold flex items-center gap-1.5 shadow-md transition-all cursor-pointer ring-1 ring-purple-400"
-              title={
-                routeDraftPoints.length < 2
-                  ? 'Traza al menos 2 puntos para completar la línea'
-                  : 'Guardar trazado y configurar la ruta'
-              }
+              className="bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs transition-colors cursor-pointer ml-0.5"
+              title="Finalizar trazado y abrir formulario"
             >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Finalizar ({routeDraftPoints.length})</span>
+              <Check className="w-3.5 h-3.5" />
+              <span>Guardar</span>
             </button>
 
             <button
               type="button"
               onClick={onCancelDrawingRoute}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-              title="Salir del modo trazado"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer ml-0.5"
+              title="Cancelar trazado"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -1627,13 +1611,13 @@ export const GponMap: React.FC<GponMapProps> = ({
         {/* Trazado Dinámico de Línea de Fibra Óptica (Vértices y Curvas Reales en Vivo) */}
         {isDrawingRoute && routeDraftPoints && routeDraftPoints.length > 0 && (
           <>
-            {/* Halo / Resplandor exterior de la línea en construcción */}
+            {/* Halo exterior para contraste sobre satélite y calles */}
             <Polyline
               positions={routeDraftPoints}
               pathOptions={{
-                color: '#c084fc',
-                weight: 7,
-                opacity: 0.5,
+                color: '#ffffff',
+                weight: 6,
+                opacity: 0.7,
                 lineCap: 'round',
                 lineJoin: 'round'
               }}
@@ -1642,10 +1626,10 @@ export const GponMap: React.FC<GponMapProps> = ({
             <Polyline
               positions={routeDraftPoints}
               pathOptions={{
-                color: '#9333ea',
-                weight: 4,
-                opacity: 0.95,
-                dashArray: '8, 6',
+                color: '#0284c7',
+                weight: 3.5,
+                opacity: 1,
+                dashArray: '6, 6',
                 lineCap: 'round',
                 lineJoin: 'round'
               }}

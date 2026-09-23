@@ -174,13 +174,13 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
         {/* Cabecera */}
         <div className="bg-slate-100 dark:bg-slate-800 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
+            <div className="p-2 bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-xl">
               <Network className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Agregar Nueva Línea Troncal / Ramal</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Registrar Línea de Fibra Óptica</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Diseño de tendido con cálculo automático de metrajes (ML y Kilómetros)
+                Configuración de tendido, capacidad de hilos y cálculo métrico
               </p>
             </div>
           </div>
@@ -194,53 +194,66 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-          {/* Card de Distancia en Tiempo Real */}
-          <div className="bg-gradient-to-r from-indigo-50 via-sky-50 to-emerald-50 dark:from-indigo-950/40 dark:via-sky-950/30 dark:to-emerald-950/30 p-3.5 rounded-xl border border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-indigo-600 text-white rounded-lg shadow-sm">
+          {/* Card de Métricas de Distancia */}
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-sky-600 dark:bg-sky-500 text-white rounded-lg shadow-sm">
                 <Ruler className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  Longitud Calculada de Tendido:
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                  Longitud Estimada de Tendido
                 </span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-black text-indigo-950 dark:text-indigo-200">
+                  <span className="text-lg font-bold text-slate-900 dark:text-white font-mono">
                     {distanciaKm} km
                   </span>
-                  <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                    ({distanciaMetros.toLocaleString()} Metros Lineales)
+                  <span className="text-xs font-mono font-medium text-slate-500 dark:text-slate-400">
+                    ({distanciaMetros.toLocaleString()} m)
                   </span>
                 </div>
               </div>
             </div>
-            <div className="text-right text-[11px] text-slate-500 font-medium">
-              <span>{points.length} Vértices GPS</span>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                {points.length} Vértices
+              </span>
+              {onEditOnMap && (
+                <button
+                  type="button"
+                  onClick={onEditOnMap}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-100/70 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/80 border border-sky-300/80 dark:border-sky-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shadow-xs"
+                  title="Trazar curvas y postes directamente sobre el mapa"
+                >
+                  <Ruler className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                  <span>Trazar en Mapa</span>
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Preset y Nombre */}
+          {/* Tipo de Cable y Nombre */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Tipo / Norma de Cable
               </label>
               <select
                 value={subtipo}
                 onChange={(e) => handleSubtipoPresetChange(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-sky-500"
               >
-                <option value="Troncal 96H">Troncal 96 Hilos (Púrpura - #4a148c)</option>
-                <option value="Troncal 48H">Troncal 48 Hilos (Café - #8d5b4c)</option>
-                <option value="Troncal 12H">Troncal 12 Hilos (Magenta - #e0009c)</option>
-                <option value="Distribución 12H">Distribución 12 Hilos (Celeste - #00e5ff)</option>
-                <option value="Ramal 24H">Ramal 24 Hilos (Naranja - #ff7043)</option>
+                <option value="Troncal 96H">Troncal 96 Hilos</option>
+                <option value="Troncal 48H">Troncal 48 Hilos</option>
+                <option value="Troncal 12H">Troncal 12 Hilos</option>
+                <option value="Distribución 12H">Distribución 12 Hilos</option>
+                <option value="Ramal 24H">Ramal 24 Hilos</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Nombre de la Ruta / Tramo *
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Nombre de la Línea / Tramo *
               </label>
               <input
                 type="text"
@@ -248,15 +261,15 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                 placeholder="Ej. Troncal Ixtlahuaca a Subestación CFE"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
               />
             </div>
           </div>
 
-          {/* Configuración avanzada de color, grosor y estado */}
+          {/* Configuración de color, hilos y estado */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Color de Línea
               </label>
               <div className="flex items-center gap-2">
@@ -264,14 +277,14 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                   type="color"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
-                  className="w-8 h-8 rounded border border-slate-300 cursor-pointer p-0.5"
+                  className="w-8 h-8 rounded border border-slate-300 dark:border-slate-700 cursor-pointer p-0.5 bg-transparent"
                 />
                 <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{color}</span>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Capacidad de Hilos
               </label>
               <input
@@ -280,18 +293,18 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                 max="288"
                 value={hilos}
                 onChange={(e) => setHilos(Number(e.target.value))}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Estado de Operación
               </label>
               <select
                 value={estado}
                 onChange={(e) => setEstado(e.target.value as any)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
               >
                 <option value="operativa">Operativa (En servicio)</option>
                 <option value="en_construccion">En Construcción / Tendido</option>
@@ -303,36 +316,23 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
           {/* Lista de Vértices GPS del Tendido */}
           <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-slate-50/50 dark:bg-slate-900/50">
             <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-indigo-500" />
-                Vértices y Trayectoria GPS del Cable ({points.length} puntos)
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                Coordenadas de los Puntos / Postes ({points.length})
               </span>
-              <div className="flex items-center gap-1.5">
-                {onEditOnMap && (
-                  <button
-                    type="button"
-                    onClick={onEditOnMap}
-                    className="flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 dark:hover:bg-purple-900/60 border border-purple-300 dark:border-purple-700 px-2.5 py-1 rounded-md shadow-xs transition-colors cursor-pointer"
-                    title="Volver al mapa para agregar más postes o seguir curvas de la calle en vivo"
-                  >
-                    <Ruler className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-                    <span>Trazar / Editar en Mapa</span>
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleAddPoint}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 px-2 py-1 rounded-md shadow-xs cursor-pointer"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>Agregar Vértice</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleAddPoint}
+                className="flex items-center gap-1 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 px-2 py-1 rounded-md shadow-xs cursor-pointer transition-colors"
+              >
+                <Plus className="w-3 h-3 text-sky-600 dark:text-sky-400" />
+                <span>Agregar Punto</span>
+              </button>
             </div>
 
             <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
               {points.map((pt, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-slate-850 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
                   <span className="text-[10px] font-bold text-slate-400 w-5 text-center">
                     #{idx + 1}
                   </span>
@@ -343,7 +343,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                       value={pt[0]}
                       onChange={(e) => handlePointChange(idx, 'lat', e.target.value)}
                       placeholder="Latitud"
-                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono"
+                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono focus:border-sky-500 focus:outline-none"
                     />
                     <input
                       type="number"
@@ -351,14 +351,14 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                       value={pt[1]}
                       onChange={(e) => handlePointChange(idx, 'lng', e.target.value)}
                       placeholder="Longitud"
-                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono"
+                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono focus:border-sky-500 focus:outline-none"
                     />
                   </div>
                   {points.length > 2 && (
                     <button
                       type="button"
                       onClick={() => handleRemovePoint(idx)}
-                      className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
+                      className="text-slate-400 hover:text-red-500 p-1 cursor-pointer transition-colors"
                       title="Eliminar este punto"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -370,20 +370,20 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
           </div>
 
           {/* Botones de acción */}
-          <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
+              className="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-md transition-all active:scale-95 cursor-pointer"
+              className="px-5 py-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-lg shadow-sky-900/20 flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Guardar e Integrar al Mapa ({distanciaKm} km)</span>
+              <span>Guardar Línea de Fibra ({distanciaKm} km)</span>
             </button>
           </div>
         </form>
