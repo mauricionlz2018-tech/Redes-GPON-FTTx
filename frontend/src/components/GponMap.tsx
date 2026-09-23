@@ -671,7 +671,7 @@ export const GponMap: React.FC<GponMapProps> = ({
       id="seccion-mapa-gpon"
       className="relative isolate w-full h-full min-h-[520px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors scroll-mt-24"
     >
-      {/* Selector flotante de Capas Cartográficas: Calles vs Satélite HD (100% Legal Esri / Maxar) + Street View 360° */}
+      {/* Selector flotante de Capas Cartográficas: Calles vs Satélite + Street View */}
       <div className="absolute top-3 right-2.5 sm:right-3 z-[400] bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl p-1 shadow-lg flex items-center gap-1">
         <button
           onClick={() => handleSelectMapLayer('streets')}
@@ -680,7 +680,7 @@ export const GponMap: React.FC<GponMapProps> = ({
               ? 'bg-sky-600 text-white shadow-xs'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
-          title="Vista cartográfica base con nombres de calles y colonias (OpenStreetMap - 100% Legal)"
+          title="Vista cartográfica base con nombres de calles y colonias"
         >
           <Map className="w-3.5 h-3.5" />
           <span>Calles</span>
@@ -690,39 +690,39 @@ export const GponMap: React.FC<GponMapProps> = ({
           onClick={() => handleSelectMapLayer('satellite')}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             mapLayer === 'satellite'
-              ? 'bg-indigo-700 text-white shadow-xs ring-1 ring-indigo-400'
+              ? 'bg-sky-700 text-white shadow-xs ring-1 ring-sky-400'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
-          title="Satélite HD de alta resolución fotorrealista con nombres de calles (Esri World Imagery / Maxar - 100% Legal)"
+          title="Satélite de alta resolución fotorrealista con nombres de calles"
         >
           <Satellite className="w-3.5 h-3.5 text-amber-300" />
-          <span>Satélite HD</span>
+          <span>Satélite</span>
         </button>
 
         <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-0.5" />
 
-        {/* Botón Pegman / Street View 360° */}
+        {/* Botón Pegman / Street View */}
         <button
           type="button"
           onClick={() => setIsStreetViewActive(!isStreetViewActive)}
-          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             isStreetViewActive
               ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-400 shadow-md animate-pulse'
-              : 'bg-amber-100 hover:bg-amber-200 text-amber-950 dark:bg-amber-950/80 dark:hover:bg-amber-900 dark:text-amber-200 border border-amber-400 dark:border-amber-600'
+              : 'bg-amber-50 hover:bg-amber-100 text-amber-900 dark:bg-amber-950/70 dark:hover:bg-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700'
           }`}
-          title="Modo explorador Street View 360°: Toca cualquier calle o elemento para inspección a nivel de calle"
+          title="Modo explorador Street View: Toca cualquier calle o elemento para inspección a nivel de calle"
         >
-          <Camera className="w-3.5 h-3.5 text-slate-950 dark:text-amber-300" />
-          <span className="hidden md:inline">Street View </span><span>360°</span>
+          <Camera className="w-3.5 h-3.5 text-amber-800 dark:text-amber-300" />
+          <span>Street View</span>
         </button>
       </div>
 
-      {/* Banner flotante informativo cuando el modo Street View está encendido (Píldora estilizada inferior) */}
+      {/* Banner flotante informativo cuando el modo Street View está encendido */}
       {isStreetViewActive && (
-        <div className="absolute bottom-12 sm:bottom-4 left-1/2 -translate-x-1/2 z-[450] bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-full shadow-xl border border-amber-600 flex items-center justify-between gap-2 text-xs font-bold w-[92%] sm:w-auto max-w-sm whitespace-nowrap animate-fadeIn">
+        <div className="absolute bottom-14 sm:bottom-6 left-1/2 -translate-x-1/2 z-[450] bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-full shadow-xl border border-amber-600 flex items-center justify-between gap-2 text-xs font-bold w-[92%] sm:w-auto max-w-sm whitespace-nowrap animate-fadeIn">
           <div className="flex items-center gap-1.5 truncate">
             <Camera className="w-3.5 h-3.5 text-slate-950 shrink-0" />
-            <span className="truncate text-[11px] sm:text-xs">Modo 360°: Toca una calle o poste</span>
+            <span className="truncate text-[11px] sm:text-xs">Modo Street View: Toca una calle o poste</span>
           </div>
           <button
             onClick={() => setIsStreetViewActive(false)}
@@ -736,7 +736,7 @@ export const GponMap: React.FC<GponMapProps> = ({
 
       {/* Banner flotante cuando el Modo de Colocación (Click / Arrastre) está activo */}
       {placementMode && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] bg-white/95 dark:bg-slate-900/95 backdrop-blur text-slate-900 dark:text-white px-3.5 py-1.5 rounded-xl shadow-lg border border-slate-300 dark:border-slate-800 flex items-center justify-between gap-3 text-xs font-semibold w-[94%] sm:w-auto max-w-md animate-fadeIn">
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[450] bg-white/95 dark:bg-slate-900/95 backdrop-blur text-slate-900 dark:text-white px-3.5 py-1.5 rounded-xl shadow-xl border border-slate-300 dark:border-slate-800 flex items-center justify-between gap-3 text-xs font-semibold w-[94%] sm:w-auto max-w-md animate-fadeIn">
           <div className="flex items-center gap-2 truncate">
             <MapPin className="w-3.5 h-3.5 text-sky-600 shrink-0" />
             <span className="truncate text-xs">
@@ -766,7 +766,7 @@ export const GponMap: React.FC<GponMapProps> = ({
 
       {/* Barra de Control Integrada para Trazado de Ruta en el Mapa */}
       {isDrawingRoute && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-1.5 shadow-lg flex items-center gap-2 sm:gap-3 text-xs text-slate-800 dark:text-slate-100 max-w-[94vw] whitespace-nowrap animate-fadeIn">
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[450] bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-1.5 shadow-xl flex items-center gap-2 sm:gap-3 text-xs text-slate-800 dark:text-slate-100 max-w-[94vw] whitespace-nowrap animate-fadeIn">
           <div className="flex items-center gap-1.5 font-bold text-sky-700 dark:text-sky-400">
             <Ruler className="w-3.5 h-3.5 text-sky-600 shrink-0" />
             <span className="hidden xs:inline">Trazar Troncal:</span>
@@ -1464,7 +1464,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                         <span>Calibrar GPS de Campo</span>
                       </button>
 
-                      {/* Botón Inspección Street View 360° Oficial */}
+                      {/* Botón Inspección Street View */}
                       <button
                         type="button"
                         onClick={() =>
@@ -1475,11 +1475,11 @@ export const GponMap: React.FC<GponMapProps> = ({
                             subtitle: `Fachada e instalación en ${nap.direccion_texto}`
                           })
                         }
-                        className="w-full bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/70 dark:hover:bg-amber-900 text-amber-950 dark:text-amber-200 text-xs py-1.5 px-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-amber-400 dark:border-amber-700 font-bold cursor-pointer"
-                        title="Ver fachada, poste y entorno en Street View 360° oficial"
+                        className="w-full bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/70 dark:hover:bg-amber-900 text-amber-950 dark:text-amber-200 text-xs py-1.5 px-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-amber-300 dark:border-amber-700 font-bold cursor-pointer"
+                        title="Ver fachada, poste y entorno en Street View"
                       >
                         <Camera className="w-3.5 h-3.5 text-amber-800 dark:text-amber-400" />
-                        <span>Inspeccionar Street View 360°</span>
+                        <span>Ver en Street View</span>
                       </button>
 
                       {onOpenMileageCapture && (

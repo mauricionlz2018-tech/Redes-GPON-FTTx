@@ -608,7 +608,7 @@ export const MapViewPage: React.FC = () => {
           {/* Botón de Simbología Estándar y Metrajes */}
           <button
             onClick={() => setIsLegendModalOpen(true)}
-            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-slate-800 dark:to-indigo-950/40 text-sky-700 dark:text-sky-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-sky-300 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+            className="flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-sky-50 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
             title="Ver norma de simbología (triángulos, mufas torpedo, gasas) y cómputo de metrajes totales en ML y km"
           >
             <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
@@ -629,13 +629,15 @@ export const MapViewPage: React.FC = () => {
                 setIsDrawingRoute(true);
               }
             }}
-            className={`flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
-              isDrawingRoute ? 'ring-2 ring-purple-500 shadow-md ring-offset-1 animate-pulse bg-purple-100 dark:bg-purple-900/50' : ''
+            className={`flex items-center justify-center gap-1.5 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
+              isDrawingRoute
+                ? 'bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-200 border-sky-400 dark:border-sky-600 ring-2 ring-sky-500 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
             title="Haz clic para trazar puntos y curvas en el mapa o arrastra para ubicar el punto inicial de la línea troncal"
           >
-            <GripVertical className="w-3 h-3 text-purple-500/70 shrink-0 hidden sm:inline" />
-            <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+            <GripVertical className="w-3 h-3 text-slate-400 shrink-0 hidden sm:inline" />
+            <Ruler className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
             <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal / Ramal'}</span>
           </button>
 
@@ -647,12 +649,14 @@ export const MapViewPage: React.FC = () => {
               e.dataTransfer.setData('application/gpon-element', 'mufa');
             }}
             onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
-            className={`flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
-              placementMode === 'mufa' ? 'ring-2 ring-amber-500 shadow-md ring-offset-1 animate-pulse' : ''
+            className={`flex items-center justify-center gap-1.5 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
+              placementMode === 'mufa'
+                ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border-amber-400 dark:border-amber-600 ring-2 ring-amber-500 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
             title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva mufa torpedo"
           >
-            <GripVertical className="w-3 h-3 text-amber-500/70 shrink-0 hidden sm:inline" />
+            <GripVertical className="w-3 h-3 text-slate-400 shrink-0 hidden sm:inline" />
             <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>+ Mufa</span>
           </button>
@@ -665,12 +669,14 @@ export const MapViewPage: React.FC = () => {
               e.dataTransfer.setData('application/gpon-element', 'poste');
             }}
             onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
-            className={`flex items-center justify-center gap-1.5 bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-800 dark:to-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
-              placementMode === 'poste' ? 'ring-2 ring-rose-500 shadow-md ring-offset-1 animate-pulse' : ''
+            className={`flex items-center justify-center gap-1.5 font-bold text-xs px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg border transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing ${
+              placementMode === 'poste'
+                ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-900 dark:text-rose-200 border-rose-400 dark:border-rose-600 ring-2 ring-rose-500 shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
             title="Arrastra hacia el mapa satelital o haz clic para ubicar un nuevo poste"
           >
-            <GripVertical className="w-3 h-3 text-rose-500/70 shrink-0 hidden sm:inline" />
+            <GripVertical className="w-3 h-3 text-slate-400 shrink-0 hidden sm:inline" />
             <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
             <span>+ Poste</span>
           </button>

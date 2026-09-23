@@ -23,7 +23,7 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
   isOpen,
   onClose,
   coordinates,
-  title = 'Inspección Street View 360°',
+  title = 'Inspección Street View',
   subtitle
 }) => {
   const [copied, setCopied] = useState(false);
@@ -122,7 +122,7 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Conmutador entre Street View 360° y Satélite HD */}
+            {/* Conmutador entre Street View y Satélite */}
             <div className="bg-slate-200 dark:bg-slate-800 p-0.5 rounded-lg flex items-center gap-0.5">
               <button
                 type="button"
@@ -132,23 +132,23 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
                     ? 'bg-amber-500 text-slate-950 shadow-xs'
                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
                 }`}
-                title="Ver toma a nivel de calle 360°"
+                title="Ver toma a nivel de calle"
               >
                 <Camera className="w-3 h-3" />
-                <span>360°</span>
+                <span>Street View</span>
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('satellite')}
                 className={`px-2 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   viewMode === 'satellite'
-                    ? 'bg-indigo-600 text-white shadow-xs'
+                    ? 'bg-sky-600 text-white shadow-xs'
                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
                 }`}
                 title="Ver satélite cenital en alta resolución"
               >
                 <Satellite className="w-3 h-3" />
-                <span>Satélite HD</span>
+                <span>Satélite</span>
               </button>
             </div>
 
@@ -175,7 +175,7 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
         <div className="relative flex-1 h-[42vh] min-h-[220px] max-h-[380px] bg-slate-950 flex flex-col items-center justify-center overflow-hidden shrink">
           <iframe
             key={viewMode}
-            title={viewMode === 'streetview' ? 'Visualizador 360 Street View' : 'Visualizador Satélite HD'}
+            title={viewMode === 'streetview' ? 'Visualizador Street View' : 'Visualizador Satélite'}
             src={viewMode === 'streetview' ? embedStreetViewUrl : embedSatelliteUrl}
             className="w-full h-full border-0 absolute inset-0"
             allowFullScreen
@@ -198,16 +198,16 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
             <span>Google Earth 3D</span>
           </a>
 
-          {/* Botón Principal Street View Oficial 360° */}
+          {/* Botón Principal Street View */}
           <a
             href={officialStreetViewUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 border border-amber-600 shadow-md shadow-amber-950/20 transition-all cursor-pointer whitespace-nowrap"
-            title="Abrir en Google Maps Street View 360° nativo (celular o pantalla completa)"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 border border-amber-600 shadow-md shadow-amber-950/20 transition-all cursor-pointer whitespace-nowrap"
+            title="Abrir en Google Maps Street View nativo (celular o pantalla completa)"
           >
             <Camera className="w-4 h-4 text-slate-950 shrink-0" />
-            <span>Abrir Street View 360°</span>
+            <span>Abrir Street View</span>
             <ExternalLink className="w-3.5 h-3.5 text-slate-900 shrink-0" />
           </a>
         </div>
