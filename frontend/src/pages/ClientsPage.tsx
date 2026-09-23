@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Client } from '../types';
 import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
-import { Search, Users, Wifi, Filter, RefreshCw, Server, Edit3, ShieldCheck } from 'lucide-react';
 import { Search, Users, Wifi, Filter, RefreshCw, Server, Edit3, ShieldCheck, X } from 'lucide-react';
 import { EditClientModal } from '../components/EditClientModal';
 import { TablePagination } from '../components/TablePagination';
@@ -22,8 +20,6 @@ export const ClientsPage: React.FC = () => {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/clientes${search ? `?q=${encodeURIComponent(search)}` : ''}`);
-      if (res.data.success) {
       const res = await api.get('/clientes');
       if (res.data?.success && Array.isArray(res.data.data)) {
         setClients(res.data.data);
@@ -53,18 +49,9 @@ export const ClientsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchClients();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
     fetchClients();
   }, []);
 
-  const filteredClients = clients.filter((c) => {
-    if (brandFilter === 'todas') return true;
-    return c.marca_ont === brandFilter;
-  });
   // Búsqueda automática e instantánea (0ms de latencia, insensible a mayúsculas y acentos)
   const filteredClients = useMemo(() => {
     const term = search
@@ -152,15 +139,11 @@ export const ClientsPage: React.FC = () => {
       {/* Controles de Búsqueda y Filtro */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-sm dark:shadow-md transition-colors">
         <div className="relative flex-1 min-w-[260px] max-w-md">
-          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3" />
           <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3 pointer-events-none" />
           <input
             type="text"
-            placeholder="Buscar por abonado, código, MAC o dirección..."
             placeholder="Buscar por abonado, código, MAC, dirección o caja..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
             onChange={(e) => {
               setSearch(e.target.value);
               setCurrentPage(1);
@@ -186,8 +169,6 @@ export const ClientsPage: React.FC = () => {
           <span className="text-xs text-slate-600 dark:text-slate-400">Marca ONT:</span>
           <select
             value={brandFilter}
-            onChange={(e) => setBrandFilter(e.target.value)}
-            className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
             onChange={(e) => {
               setBrandFilter(e.target.value);
               setCurrentPage(1);
@@ -220,7 +201,6 @@ export const ClientsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {filteredClients.map((client) => {
               {paginatedClients.map((client) => {
                 const nap = client.puerto_nap?.caja_nap;
                 const portIndex = client.puerto_nap?.indice_puerto;
@@ -268,7 +248,6 @@ export const ClientsPage: React.FC = () => {
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <button
                         onClick={() => setClientToEdit(client)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-300 dark:border-sky-800/80 text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-white text-xs transition-colors font-medium"
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-300 dark:border-sky-800/80 text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-white text-xs transition-colors font-medium cursor-pointer"
                         title="Editar datos del abonado"
                       >

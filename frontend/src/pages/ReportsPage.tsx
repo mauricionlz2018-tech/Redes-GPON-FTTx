@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { NapBox } from '../types';
 import { mockNaps } from '../data/mockGponData';
@@ -15,7 +14,6 @@ import {
   Loader2,
   Sun,
   Moon,
-  Printer
   Printer,
   Search,
   X
@@ -217,11 +215,6 @@ export const ReportsPage: React.FC = () => {
 
       {/* Tabla Detallada de Saturación por Caja NAP */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-xl transition-colors">
-        <div className="px-4 py-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between transition-colors">
-          <span className="font-semibold text-xs text-slate-800 dark:text-white uppercase tracking-wider">
-            Matriz de Estado y Saturación por Caja de Distribución (NAP)
-          </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Criterio de Alerta &ge; 80%</span>
         <div className="px-4 py-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 transition-colors">
           <div>
             <span className="font-semibold text-xs text-slate-800 dark:text-white uppercase tracking-wider block">
@@ -275,7 +268,6 @@ export const ReportsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {naps.map((nap) => {
               {paginatedNaps.map((nap) => {
                 const m = nap.metricas;
                 const pct = m?.porcentajeSaturacion ?? 0;
