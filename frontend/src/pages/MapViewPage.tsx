@@ -338,19 +338,12 @@ export const MapViewPage: React.FC = () => {
   };
 
   // Cargar NAPs, ODF e Infraestructura (Postes, Mufas, Rutas) sincronizada
-  const fetchData = useCallback(async () => {
   const fetchData = useCallback(async (isInitial = false) => {
     try {
-      setLoading(true);
       if (isInitial) setLoading(true);
 
       // Peticiones aisladas e individuales para que la falla de una no bloquee a las demás
       const [napsRes, odfRes, postesRes, mufasRes, routesRes] = await Promise.all([
-        api.get('/naps'),
-        api.get('/odf'),
-        api.get('/infra/postes').catch(() => ({ data: { success: false, data: [] } })),
-        api.get('/infra/mufas').catch(() => ({ data: { success: false, data: [] } })),
-        api.get('/infra/routes').catch(() => ({ data: { success: false, data: [] } }))
         api.get('/naps').catch((err) => {
           console.warn('Fallo al obtener NAPs:', err);
           return { data: { success: false, data: [] } };
@@ -373,7 +366,6 @@ export const MapViewPage: React.FC = () => {
         })
       ]);
 
-      if (napsRes.data.success && napsRes.data.data.length > 0) {
       if (napsRes.data?.success && Array.isArray(napsRes.data.data) && napsRes.data.data.length > 0) {
         setNaps(napsRes.data.data);
         setIsDemoMode(false);
@@ -390,118 +382,54 @@ export const MapViewPage: React.FC = () => {
         }
       }
 
-      if (odfRes.data.success && odfRes.data.data.length > 0) {
       if (odfRes.data?.success && Array.isArray(odfRes.data.data) && odfRes.data.data.length > 0) {
         setOdf(odfRes.data.data[0]);
       }
 
-      // Sincronizar Postes desde la base central con cualquier poste local
-      if (postesRes.data?.success) {
       // Sincronizar Postes desde la base central Neon DB
       if (postesRes.data?.success && Array.isArray(postesRes.data.data)) {
         const serverPostes: PosteInfraestructura[] = postesRes.data.data;
-        setCustomPostes((prev) => {
-          const map = new Map<string, PosteInfraestructura>();
-          serverPostes.forEach((p) => map.set(p.id_poste, p));
-          // Subir a la base central cualquier poste que estuviera solo en localStorage de esta máquina
-          prev.forEach((p) => {
-            if (!map.has(p.id_poste)) {
-              map.set(p.id_poste, p);
-              api.post('/infra/postes', p).catch(console.warn);
-            }
-          });
-          const merged = Array.from(map.values());
         setCustomPostes(() => {
           const filtered = serverPostes.filter((p) => !deletedPosteIds.includes(p.id_poste));
           try {
-            localStorage.setItem('gpon_custom_postes', JSON.stringify(merged));
             localStorage.setItem('gpon_custom_postes', JSON.stringify(filtered));
           } catch {}
-          return merged;
           return filtered;
         });
       }
 
-      // Sincronizar Mufas desde la base central
-      if (mufasRes.data?.success) {
       // Sincronizar Mufas desde la base central Neon DB
       if (mufasRes.data?.success && Array.isArray(mufasRes.data.data)) {
         const serverMufas: EmpalmeClosure[] = mufasRes.data.data;
-        setCustomEmpalmes((prev) => {
-          const map = new Map<string, EmpalmeClosure>();
-          serverMufas.forEach((m) => map.set(m.id_empalme, m));
-          prev.forEach((m) => {
-            if (!map.has(m.id_empalme)) {
-              map.set(m.id_empalme, m);
-              api.post('/infra/mufas', m).catch(console.warn);
-            }
-          });
-          const merged = Array.from(map.values());
         setCustomEmpalmes(() => {
           const filtered = serverMufas.filter((m) => !deletedMufaIds.includes(m.id_empalme));
           try {
-            localStorage.setItem('gpon_custom_empalmes', JSON.stringify(merged));
             localStorage.setItem('gpon_custom_empalmes', JSON.stringify(filtered));
           } catch {}
-          return merged;
           return filtered;
         });
       }
 
-      // Sincronizar Rutas desde la base central
-      if (routesRes.data?.success) {
       // Sincronizar Rutas Troncales desde la base central Neon DB
       if (routesRes.data?.success && Array.isArray(routesRes.data.data)) {
         const serverRoutes: FiberRoute[] = routesRes.data.data;
-        setCustomRoutes((prev) => {
-          const map = new Map<string, FiberRoute>();
-          serverRoutes.forEach((r) => map.set(r.id_ruta, r));
-          prev.forEach((r) => {
-            if (!map.has(r.id_ruta)) {
-              map.set(r.id_ruta, r);
-              api.post('/infra/routes', r).catch(console.warn);
-            }
-          });
-          const merged = Array.from(map.values());
         setCustomRoutes(() => {
           const filtered = serverRoutes.filter((r) => !deletedRouteIds.includes(r.id_ruta));
           try {
-            localStorage.setItem('gpon_custom_routes', JSON.stringify(merged));
             localStorage.setItem('gpon_custom_routes', JSON.stringify(filtered));
           } catch {}
-          return merged;
           return filtered;
         });
       }
     } catch (err) {
-      console.warn('Backend no disponible, activando modo interactivo de respaldo.');
-      setIsDemoMode(true);
-      const cached = await offlineDb.cached_naps.toArray();
-      if (cached.length > 0) {
-        setNaps((prev) => {
-          const map = new Map<string, NapBox>();
-          cached.forEach((n) => map.set(n.id_nap, n));
-          prev.forEach((n) => {
-            if (!map.has(n.id_nap)) map.set(n.id_nap, n);
-          });
-          return Array.from(map.values());
-        });
-      } else {
-        setNaps((prev) => (prev.length > 0 ? prev : mockNaps));
-        setOdf((prev) => (prev ? prev : mockOdf));
-        setSelectedNap((prev) => (prev ? prev : mockNaps[0]));
-      }
       console.warn('Sincronización con backend parcial o en caché offline:', err);
     } finally {
-      setLoading(false);
       if (isInitial) setLoading(false);
     }
-  }, []);
   }, [deletedRouteIds, deletedMufaIds, deletedPosteIds]);
 
   // Polling automático cada 8 segundos para sincronización multi-dispositivo en tiempo real
   useEffect(() => {
-    fetchData();
     fetchData(true);
     const syncTimer = setInterval(() => {
       fetchData(false);
@@ -812,7 +740,6 @@ export const MapViewPage: React.FC = () => {
           {/* Botón Actualizar a la derecha */}
           <div className="flex items-center justify-end shrink-0">
             <button
-              onClick={fetchData}
               onClick={() => fetchData(true)}
               disabled={loading}
               className="flex items-center justify-center gap-1.5 h-9 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer w-full sm:w-auto"
@@ -1209,8 +1136,6 @@ export const MapViewPage: React.FC = () => {
       <FiberDesignLegendModal
         isOpen={isLegendModalOpen}
         onClose={() => setIsLegendModalOpen(false)}
-        activeRoutes={[...troncalIxtJocRoutes, ...customRoutes]}
-        activeEmpalmes={[...troncalMufas, ...customEmpalmes]}
         activeRoutes={[...troncalIxtJocRoutes, ...customRoutes].filter((r) => !deletedRouteIds.includes(r.id_ruta))}
         activeEmpalmes={[...troncalMufas, ...customEmpalmes].filter((m) => !deletedMufaIds.includes(m.id_empalme))}
       />

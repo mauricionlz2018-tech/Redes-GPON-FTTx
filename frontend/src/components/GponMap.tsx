@@ -560,11 +560,8 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
   };
 
-  // Combinar rutas KMZ completas con cualquier ruta adicional
   // Combinar rutas KMZ completas con rutas de la base central y personalizadas (Filtrando eliminadas)
   const allRoutes = useMemo(() => {
-    const combined = [...troncalIxtJocRoutes];
-    fiberRoutes.forEach((fr) => {
     const combined: FiberRoute[] = [];
     (fiberRoutes || []).forEach((fr) => {
       if (!combined.some((c) => c.id_ruta === fr.id_ruta)) {
@@ -581,8 +578,6 @@ export const GponMap: React.FC<GponMapProps> = ({
         combined.push(sr);
       }
     });
-    return combined;
-  }, [fiberRoutes]);
     return combined.filter((r) => {
       if (deletedRouteIds.includes(r.id_ruta)) return false;
       if (!r.coordenadas || !Array.isArray(r.coordenadas) || r.coordenadas.length < 2) return false;
@@ -592,11 +587,8 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
   }, [fiberRoutes, deletedRouteIds]);
 
-  // Combinar empalmes KMZ con empalmes adicionales
   // Combinar empalmes KMZ con empalmes de la base central (Filtrando eliminadas)
   const allEmpalmes = useMemo(() => {
-    const combined = [...troncalMufas];
-    empalmes.forEach((em) => {
     const combined: EmpalmeClosure[] = [];
     (empalmes || []).forEach((em) => {
       if (!combined.some((c) => c.id_empalme === em.id_empalme)) {
@@ -613,8 +605,6 @@ export const GponMap: React.FC<GponMapProps> = ({
         combined.push(me);
       }
     });
-    return combined;
-  }, [empalmes]);
     return combined.filter((m) => {
       if (deletedMufaIds.includes(m.id_empalme)) return false;
       if (!m.coordenadas_gps || typeof m.coordenadas_gps.lat !== 'number' || typeof m.coordenadas_gps.lng !== 'number') return false;
@@ -622,7 +612,6 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
   }, [empalmes, deletedMufaIds]);
 
-  // Combinar postes propuestos (KMZ + personalizados del usuario)
   // Combinar postes propuestos (KMZ + personalizados de la base central)
   const allPostesPropuestos = useMemo(() => {
     const combined = [...postesPropuestos];
@@ -633,8 +622,6 @@ export const GponMap: React.FC<GponMapProps> = ({
         }
       });
     }
-    return combined;
-  }, [postesPropuestos, customPostes]);
     return combined.filter((p) => {
       if (deletedPosteIds.includes(p.id_poste)) return false;
       if (!p.coordenadas_gps || typeof p.coordenadas_gps.lat !== 'number' || typeof p.coordenadas_gps.lng !== 'number') return false;
@@ -642,7 +629,6 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
   }, [postesPropuestos, customPostes, deletedPosteIds]);
 
-  // Combinar postes CFE (KMZ + personalizados del usuario)
   // Combinar postes CFE (KMZ + personalizados de la base central)
   const allPostesCfe = useMemo(() => {
     const combined = [...postesCfe];
@@ -653,8 +639,6 @@ export const GponMap: React.FC<GponMapProps> = ({
         }
       });
     }
-    return combined;
-  }, [postesCfe, customPostes]);
     return combined.filter((p) => {
       if (deletedPosteIds.includes(p.id_poste)) return false;
       if (!p.coordenadas_gps || typeof p.coordenadas_gps.lat !== 'number' || typeof p.coordenadas_gps.lng !== 'number') return false;
