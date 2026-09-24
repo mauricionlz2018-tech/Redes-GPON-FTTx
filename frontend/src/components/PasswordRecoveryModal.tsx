@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Lock, Eye, EyeOff, X, CheckCircle2, AlertCircle, RefreshCw, Send, ShieldCheck, Clock } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, X, CheckCircle2, AlertCircle, RefreshCw, Send, ShieldCheck, Clock, KeyRound } from 'lucide-react';
 import api from '../api/client';
 
 interface PasswordRecoveryModalProps {
@@ -147,22 +147,19 @@ export const PasswordRecoveryModal: React.FC<PasswordRecoveryModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
       <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
         
-        {/* Encabezado Corporativo y Formal (Sin degradados saturados ni estilo genérico de IA) */}
-        <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 text-white flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest block font-mono">
-              GPON TELECOM S.A. DE C.V.
-            </span>
-            <h3 className="font-semibold text-sm text-slate-100 tracking-tight">
+        {/* Encabezado con Icono y Color Bonito */}
+        <div className="bg-sky-600 px-5 py-3.5 text-white flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-xl text-white flex items-center justify-center">
+              <KeyRound className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-sm sm:text-base text-white tracking-wide">
               Recuperación de Contraseña
             </h3>
-            <p className="text-[11px] text-slate-400">
-              Validación segura por correo electrónico (Gmail SMTP)
-            </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-colors cursor-pointer"
             title="Cerrar ventana"
           >
             <X className="w-4 h-4" />
