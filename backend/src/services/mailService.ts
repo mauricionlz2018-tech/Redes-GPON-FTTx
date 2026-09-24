@@ -23,22 +23,11 @@ function createTransporter() {
     return null;
   }
 
-  // Usar host smtp.gmail.com en puerto 587 con STARTTLS forzando socket IPv4 (family: 4) y timeout estricto
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // STARTTLS
-    // @ts-ignore
-    family: 4, // Fuerza conexion IPv4 evitando ENETUNREACH de IPv6
-    connectionTimeout: 6000, // Máximo 6 segundos de espera de conexión
-    greetingTimeout: 6000,
-    socketTimeout: 6000,
+    service: 'gmail',
     auth: {
       user,
       pass
-    },
-    tls: {
-      rejectUnauthorized: false
     }
   });
 }
@@ -137,10 +126,47 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
 </html>
 `;
 
+  // 1. MÉTODO PRIORITARIO EN LA NUBE: Enviar por HTTPS a través de Vercel Serverless Function
+  // El puerto 443 (HTTPS) NUNCA es bloqueado por Render ni por firewalls en la nube
+  try {
+    const vercelMailerUrl = process.env.VERCEL_MAILER_URL || 'https://redes-gpon-ft-txs.vercel.app/api/send-mail';
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+    const response = await fetch(vercelMailerUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        toEmail,
+        userName,
+        resetCode,
+        htmlContent
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data: any = await response.json();
+      if (data.success) {
+        console.log(`[Vercel Relay HTTPS] Correo enviado satisfactoriamente a: ${toEmail}`);
+        return {
+          success: true,
+          message: `Código enviado satisfactoriamente a ${toEmail}. Revisa tu bandeja de entrada o carpeta de spam.`
+        };
+      }
+    }
+  } catch (err: any) {
+    console.warn('[Vercel Relay HTTPS info]:', err.message);
+  }
+
+  // 2. MÉTODO DIRECTO / LOCAL: Enviar mediante Nodemailer SMTP nativo
   const transporter = createTransporter();
 
   if (!transporter) {
-    const errorMsg = 'El servidor no tiene configurada la contraseña de aplicación de Gmail (SMTP_PASS) en backend/.env. Para enviar correos reales, activa la verificación en 2 pasos de tu cuenta de Google, genera una "Contraseña de aplicación" de 16 caracteres y agrégala en SMTP_PASS.';
+    const errorMsg = 'El servidor no tiene configurada la contraseña de aplicación de Gmail (SMTP_PASS) en backend/.env.';
     console.error(`[SMTP ERROR] ${errorMsg}`);
     return {
       success: false,
@@ -157,7 +183,7 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
       html: htmlContent
     });
 
-    console.log(`[SMTP] Correo de recuperación enviado satisfactoriamente a: ${toEmail}`);
+    console.log(`[SMTP Directo] Correo de recuperación enviado satisfactoriamente a: ${toEmail}`);
     return {
       success: true,
       message: `Código enviado satisfactoriamente a ${toEmail}. Revisa tu bandeja de entrada o carpeta de spam.`
@@ -166,9 +192,7 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
     console.error('[SMTP ERROR] Error al enviar correo vía Gmail:', error);
     let detail = error.message || 'Error al comunicarse con el servidor de correo.';
     if (detail.includes('Invalid login') || detail.includes('Username and Password not accepted') || detail.includes('535-5.7.8')) {
-      detail = 'Credenciales de Gmail incorrectas. Recuerda que debes usar una "Contraseña de aplicación" de 16 caracteres generada desde tu cuenta de Google (Seguridad > Verificación en 2 pasos > Contraseñas de aplicaciones), no tu contraseña normal.';
-    } else if (detail.includes('ETIMEDOUT') || detail.includes('timeout') || detail.includes('ENETUNREACH') || detail.includes('ECONNREFUSED')) {
-      detail = 'Tiempo de espera agotado al conectar con Gmail SMTP. Los servidores en la nube gratuitos (como Render Free) bloquean los puertos salientes 587/465 para evitar spam. Para enviar desde la nube se requiere un plan de Render con puertos abiertos o probar la funcionalidad en entorno local.';
+      detail = 'Credenciales de Gmail incorrectas. Recuerda que debes usar una "Contraseña de aplicación" de 16 caracteres generada desde tu cuenta de Google.';
     }
     return {
       success: false,
