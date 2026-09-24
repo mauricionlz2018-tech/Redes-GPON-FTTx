@@ -400,7 +400,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
     // Generar código de 6 dígitos aleatorio
     const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutos
+    const expiresAt = Date.now() + 3 * 60 * 1000; // 3 minutos de duración estricta
 
     const cleanEmail = user.credencial_acceso.includes('@')
       ? user.credencial_acceso
@@ -413,20 +413,27 @@ export const forgotPassword = async (req: Request, res: Response) => {
       email: cleanEmail
     });
 
-    // Enviar correo con formato HTML profesional mediante SMTP
+    // Enviar correo con formato HTML profesional mediante SMTP (Gmail)
     const mailResult = await sendPasswordRecoveryEmail({
       toEmail: cleanEmail,
       userName: user.nombre_completo,
       resetCode: randomCode
     });
 
+    if (!mailResult.success) {
+      res.status(400).json({
+        success: false,
+        message: mailResult.message
+      });
+      return;
+    }
+
     res.json({
       success: true,
-      message: `Código de recuperación enviado exitosamente a ${cleanEmail}`,
+      message: `Código de seguridad enviado exitosamente a tu bandeja de correo en ${cleanEmail}. Expira en 3 minutos.`,
       data: {
         email: cleanEmail,
-        // Si el servidor SMTP no está configurado en variables de entorno, facilitamos el código para pruebas inmediatas
-        codigo_prueba: mailResult.simulated ? randomCode : undefined
+        expiresInSeconds: 180
       }
     });
   } catch (error: any) {
@@ -491,7 +498,7 @@ export const resetPassword = async (req: Request, res: Response) => {
       recoveryTokens.delete(user.id_usuario);
       res.status(400).json({
         success: false,
-        message: 'El código de seguridad ha expirado. Por favor solicita uno nuevo.'
+        message: 'El código de seguridad ha expirado (duración máxima de 3 minutos). Solicita un nuevo código a tu correo.'
       });
       return;
     }

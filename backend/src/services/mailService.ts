@@ -7,19 +7,22 @@ export interface SendRecoveryEmailOptions {
   resetLink?: string;
 }
 
-// Configuración del transporte SMTP
+// Configuración del transporte SMTP con soporte específico para Gmail y otros proveedores
 function createTransporter() {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT) || 587;
-  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-  const user = process.env.SMTP_USER || '';
-  const pass = process.env.SMTP_PASS || '';
+  const user = (process.env.SMTP_USER || '').trim();
+  // Limpia cualquier espacio si el usuario pegó la contraseña de aplicación con espacios (ej. "abcd efgh ijkl mnop")
+  const pass = (process.env.SMTP_PASS || '').trim().replace(/\s+/g, '');
 
-  if (user && pass) {
+  if (!user || !pass) {
+    return null;
+  }
+
+  const service = (process.env.SMTP_SERVICE || '').trim().toLowerCase();
+
+  // Si se usa Gmail directamente o el usuario tiene dominio @gmail.com
+  if (service === 'gmail' || user.toLowerCase().endsWith('@gmail.com')) {
     return nodemailer.createTransport({
-      host,
-      port,
-      secure,
+      service: 'gmail',
       auth: {
         user,
         pass
@@ -27,14 +30,29 @@ function createTransporter() {
     });
   }
 
-  // Si no hay credenciales SMTP configuradas en variables de entorno,
-  // se utiliza un transporte JSON/log de desarrollo para no bloquear el flujo
-  return null;
+  // Configuración estándar para servidores SMTP dedicados o corporativos
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = Number(process.env.SMTP_PORT) || 465;
+  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user,
+      pass
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
 }
 
-export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOptions): Promise<{ success: boolean; message: string; simulated?: boolean }> {
+export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOptions): Promise<{ success: boolean; message: string }> {
   const { toEmail, userName, resetCode, resetLink } = options;
-  const fromAddress = process.env.SMTP_FROM || '"GPON Telecom Soporte" <ventas@gpontelecom.com.mx>';
+  const fromUser = process.env.SMTP_USER || 'ventas@gpontelecom.com.mx';
+  const fromAddress = process.env.SMTP_FROM || `"GPON Telecom Soporte" <${fromUser}>`;
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -42,77 +60,77 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recuperación de Contraseña - GPON Telecom</title>
+  <title>Código de Seguridad - GPON Telecom</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 30px 10px;">
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 32px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" max-width="580" style="max-width: 580px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+        <table role="presentation" width="100%" style="max-width: 540px; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
           
-          <!-- Encabezado Corporativo -->
+          <!-- Encabezado Institucional -->
           <tr>
-            <td style="background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #0ea5e9 100%); padding: 32px 24px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;">
+            <td style="background-color: #0f172a; padding: 24px 28px; border-bottom: 3px solid #0284c7;">
+              <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
                 GPON TELECOM S.A. DE C.V.
+              </div>
+              <h1 style="margin: 0; color: #ffffff; font-size: 19px; font-weight: 700; letter-spacing: -0.3px;">
+                Restablecimiento de Credencial de Acceso
               </h1>
-              <p style="margin: 6px 0 0 0; color: #e0f2fe; font-size: 13px; font-weight: 500; letter-spacing: 0.3px;">
-                Sistema de Mapeo y Gestión de Redes GPON / FTTx
+              <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 12px;">
+                Mapeo GPON / FTTx • San José del Rincón, Estado de México
               </p>
             </td>
           </tr>
 
-          <!-- Cuerpo del Mensaje -->
+          <!-- Contenido -->
           <tr>
-            <td style="padding: 32px 28px;">
-              <h2 style="margin: 0 0 16px 0; color: #0f172a; font-size: 18px; font-weight: 700;">
-                Hola, ${userName}
-              </h2>
-              <p style="margin: 0 0 20px 0; color: #475569; font-size: 14px; line-height: 1.6;">
-                Hemos recibido una solicitud para restablecer la contraseña de tu cuenta operativa en la plataforma de <strong>GPON Telecom</strong>.
+            <td style="padding: 28px 28px 20px 28px;">
+              <p style="margin: 0 0 14px 0; color: #0f172a; font-size: 14px; font-weight: 600;">
+                Estimado(a) ${userName},
+              </p>
+              <p style="margin: 0 0 20px 0; color: #475569; font-size: 13px; line-height: 1.6;">
+                Has solicitado restablecer tu contraseña para ingresar a la plataforma de monitoreo y mapeo de red de <strong>GPON Telecom</strong>. Introduce el siguiente código de seguridad en el formulario del sistema:
               </p>
 
-              <!-- Tarjeta de Código de Verificación -->
-              <div style="background-color: #f0f9ff; border: 2px dashed #0284c7; border-radius: 12px; padding: 22px; text-align: center; margin: 24px 0;">
-                <span style="font-size: 12px; font-weight: 700; color: #0369a1; text-transform: uppercase; letter-spacing: 1px; display: block;">
-                  Código de Seguridad Temporal
-                </span>
-                <div style="font-size: 34px; font-weight: 900; letter-spacing: 8px; color: #0369a1; margin: 12px 0; font-family: 'Consolas', 'Courier New', monospace;">
+              <!-- Tarjeta de Código con Monospace limpio -->
+              <div style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; text-align: center; margin: 20px 0;">
+                <div style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                  Código de Verificación (PIN)
+                </div>
+                <div style="font-size: 32px; font-weight: 800; letter-spacing: 10px; color: #0f172a; margin: 8px 0; font-family: 'Consolas', 'Courier New', monospace;">
                   ${resetCode}
                 </div>
-                <span style="font-size: 12px; color: #64748b; font-weight: 500;">
-                  ⏱ Este código expira en <strong>15 minutos</strong>
-                </span>
+                <div style="font-size: 12px; color: #dc2626; font-weight: 600; margin-top: 8px;">
+                  ⏱ Este código tiene una vigencia estricta de 3 minutos
+                </div>
               </div>
 
               ${resetLink ? `
-              <div style="text-align: center; margin: 24px 0;">
-                <a href="${resetLink}" style="background-color: #0284c7; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: bold; display: inline-block;">
-                  Restablecer Contraseña Directamente
+              <div style="text-align: center; margin: 20px 0;">
+                <a href="${resetLink}" style="background-color: #0284c7; color: #ffffff; text-decoration: none; padding: 10px 24px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-block;">
+                  Restablecer Contraseña
                 </a>
               </div>
               ` : ''}
 
-              <!-- Aviso de Seguridad -->
-              <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 24px;">
-                <p style="margin: 0; color: #991b1b; font-size: 12px; line-height: 1.5;">
-                  <strong>Importante:</strong> Si tú no solicitaste este código, puedes ignorar este correo de forma segura. Tu contraseña actual permanecerá protegida y no sufrirá cambios.
+              <!-- Nota de seguridad -->
+              <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-left: 3px solid #d97706; padding: 12px 14px; border-radius: 4px; margin-top: 24px;">
+                <p style="margin: 0; color: #92400e; font-size: 11px; line-height: 1.5;">
+                  <strong>Aviso de seguridad:</strong> Si no reconoces esta operación o no solicitaste este código, ningún cambio se realizará sin esta clave. Puedes desestimar este mensaje de forma segura.
                 </p>
               </div>
             </td>
           </tr>
 
-          <!-- Pie de Página Institucional -->
+          <!-- Pie Institucional -->
           <tr>
-            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 24px; text-align: center;">
-              <p style="margin: 0 0 6px 0; color: #64748b; font-size: 12px; font-weight: 600;">
-                GPON TELECOM S.A. DE C.V.
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 28px; text-align: center;">
+              <p style="margin: 0; color: #64748b; font-size: 11px;">
+                © 2026 GPON TELECOM S.A. DE C.V. • Departamento de Soporte Técnico y Auditoría
               </p>
-              <p style="margin: 0 0 6px 0; color: #94a3b8; font-size: 11px;">
-                Ejido San José del Rincón, Estado de México • Soporte Técnico y Auditoría de Red
-              </p>
-              <p style="margin: 0; color: #94a3b8; font-size: 11px;">
-                Contacto: <a href="mailto:ventas@gpontelecom.com.mx" style="color: #0284c7; text-decoration: none;">ventas@gpontelecom.com.mx</a>
+              <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 10px;">
+                San José del Rincón, Estado de México
               </p>
             </td>
           </tr>
@@ -125,42 +143,40 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
 </html>
 `;
 
+  const transporter = createTransporter();
+
+  if (!transporter) {
+    const errorMsg = 'El servidor no tiene configurada la contraseña de aplicación de Gmail (SMTP_PASS) en backend/.env. Para enviar correos reales, activa la verificación en 2 pasos de tu cuenta de Google, genera una "Contraseña de aplicación" de 16 caracteres y agrégala en SMTP_PASS.';
+    console.error(`[SMTP ERROR] ${errorMsg}`);
+    return {
+      success: false,
+      message: errorMsg
+    };
+  }
+
   try {
-    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: fromAddress,
+      to: toEmail,
+      subject: `Código de Seguridad (${resetCode}) - GPON Telecom`,
+      text: `Hola ${userName},\n\nTu código de recuperación para GPON Telecom es: ${resetCode}\nEste código tiene una vigencia estricta de 3 minutos.\n\nSi no realizaste esta solicitud, ignora este mensaje.`,
+      html: htmlContent
+    });
 
-    if (transporter) {
-      await transporter.sendMail({
-        from: fromAddress,
-        to: toEmail,
-        subject: `Código de Recuperación de Contraseña - GPON Telecom (${resetCode})`,
-        text: `Hola ${userName},\n\nTu código de recuperación para GPON Telecom es: ${resetCode}\nExpira en 15 minutos.\n\nSi no lo solicitaste, ignora este mensaje.`,
-        html: htmlContent
-      });
-
-      console.log(`[SMTP] Correo de recuperación enviado exitosamente a: ${toEmail}`);
-      return { success: true, message: 'Correo enviado exitosamente a tu bandeja de entrada.' };
-    } else {
-      // Modo desarrollo / fallback: mostrar en log para pruebas
-      console.log(`\n======================================================`);
-      console.log(`[SMTP DEMO] Simulación de correo para: ${toEmail}`);
-      console.log(`Usuario: ${userName}`);
-      console.log(`Código de recuperación: ${resetCode}`);
-      console.log(`======================================================\n`);
-
-      return {
-        success: true,
-        message: 'Código de recuperación generado exitosamente.',
-        simulated: true
-      };
-    }
-  } catch (error: any) {
-    console.error('[SMTP ERROR] Error enviando correo de recuperación:', error);
-    // Devolvemos el resultado seguro para que el usuario pueda usar el código incluso si el servidor SMTP falla
+    console.log(`[SMTP] Correo de recuperación enviado satisfactoriamente a: ${toEmail}`);
     return {
       success: true,
-      message: 'Código de recuperación generado y registrado.',
-      simulated: true
+      message: `Código enviado satisfactoriamente a ${toEmail}. Revisa tu bandeja de entrada o carpeta de spam.`
+    };
+  } catch (error: any) {
+    console.error('[SMTP ERROR] Error al enviar correo vía Gmail:', error);
+    let detail = error.message || 'Error al comunicarse con el servidor de correo.';
+    if (detail.includes('Invalid login') || detail.includes('Username and Password not accepted') || detail.includes('535-5.7.8')) {
+      detail = 'Credenciales de Gmail incorrectas. Recuerda que debes usar una "Contraseña de aplicación" de 16 caracteres generada desde tu cuenta de Google (Seguridad > Verificación en 2 pasos > Contraseñas de aplicaciones), no tu contraseña normal.';
+    }
+    return {
+      success: false,
+      message: detail
     };
   }
 }
-
