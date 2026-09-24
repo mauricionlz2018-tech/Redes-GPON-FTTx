@@ -1657,21 +1657,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                         <span>Ver en Street View</span>
                       </button>
 
-                      {onOpenMileageCapture && (
-                        <button
-                          onClick={() =>
-                            onOpenMileageCapture(
-                              nap,
-                              activeRoute ? Number((activeRoute.distanceMeters / 1000).toFixed(1)) : undefined
-                            )
-                          }
-                          className="w-full bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-emerald-200 dark:border-emerald-800/60 cursor-pointer"
-                          title="Capturar y grabar kilometraje del técnico hacia esta caja"
-                        >
-                          <Car className="w-3.5 h-3.5" />
-                          <span>Grabar Kilometraje de Traslado</span>
-                        </button>
-                      )}
+                      
 
                       {onDeleteNapRequest && (
                         <button

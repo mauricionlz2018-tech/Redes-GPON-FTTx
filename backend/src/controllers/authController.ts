@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { User } from '../models';
+import { sequelize } from '../config/database';
+import { sendPasswordRecoveryEmail } from '../services/mailService';
 
 const loginSchema = z.object({
   credencial_acceso: z.string().min(3),
@@ -22,8 +24,26 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const { credencial_acceso, password } = parseResult.data;
+    const cleanCredencial = credencial_acceso.trim().toLowerCase();
 
-    const user = await User.findOne({ where: { credencial_acceso } });
+    // Búsqueda flexible insensible a mayúsculas
+    let user = await User.findOne({
+      where: sequelize.where(
+        sequelize.fn('LOWER', sequelize.col('credencial_acceso')),
+        cleanCredencial
+      )
+    });
+
+    // Si el usuario escribió sólo "tecnico", "admin" o "soporte", probar con @gpon.com
+    if (!user && !cleanCredencial.includes('@')) {
+      user = await User.findOne({
+        where: sequelize.where(
+          sequelize.fn('LOWER', sequelize.col('credencial_acceso')),
+          `${cleanCredencial}@gpon.com`
+        )
+      });
+    }
+
     if (!user) {
       res.status(401).json({
         success: false,
@@ -328,5 +348,176 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message || 'Error interno al eliminar usuario' });
   }
 };
+
+// ============================
+// Recuperación de Contraseña (SMTP Seguro con Código Temporal)
+// ============================
+interface RecoveryEntry {
+  code: string;
+  expiresAt: number;
+  userId: string;
+  email: string;
+}
+const recoveryTokens = new Map<string, RecoveryEntry>();
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { credencial_acceso, email } = req.body;
+    const target = (email || credencial_acceso || '').trim().toLowerCase();
+
+    if (!target) {
+      res.status(400).json({
+        success: false,
+        message: 'Por favor proporciona el correo electrónico o usuario registrado.'
+      });
+      return;
+    }
+
+    let user = await User.findOne({
+      where: sequelize.where(
+        sequelize.fn('LOWER', sequelize.col('credencial_acceso')),
+        target
+      )
+    });
+
+    if (!user && !target.includes('@')) {
+      user = await User.findOne({
+        where: sequelize.where(
+          sequelize.fn('LOWER', sequelize.col('credencial_acceso')),
+          `${target}@gpon.com`
+        )
+      });
+    }
+
+    if (!user) {
+      // Por privacidad y seguridad, informamos que si está registrado se envió
+      res.json({
+        success: true,
+        message: 'Si el correo o usuario está registrado en GPON Telecom, recibirás el código de recuperación en tu bandeja.'
+      });
+      return;
+    }
+
+    // Generar código de 6 dígitos aleatorio
+    const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutos
+
+    const cleanEmail = user.credencial_acceso.includes('@')
+      ? user.credencial_acceso
+      : `${user.credencial_acceso}@gpontelecom.com.mx`;
+
+    recoveryTokens.set(user.id_usuario, {
+      code: randomCode,
+      expiresAt,
+      userId: user.id_usuario,
+      email: cleanEmail
+    });
+
+    // Enviar correo con formato HTML profesional mediante SMTP
+    const mailResult = await sendPasswordRecoveryEmail({
+      toEmail: cleanEmail,
+      userName: user.nombre_completo,
+      resetCode: randomCode
+    });
+
+    res.json({
+      success: true,
+      message: `Código de recuperación enviado exitosamente a ${cleanEmail}`,
+      data: {
+        email: cleanEmail,
+        // Si el servidor SMTP no está configurado en variables de entorno, facilitamos el código para pruebas inmediatas
+        codigo_prueba: mailResult.simulated ? randomCode : undefined
+      }
+    });
+  } catch (error: any) {
+    console.error('Error en forgotPassword:', error);
+    res.status(500).json({ success: false, message: error.message || 'Error al procesar recuperación de contraseña' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { credencial_acceso, email, codigo, token, newPassword } = req.body;
+    const target = (email || credencial_acceso || '').trim().toLowerCase();
+    const inputCode = (codigo || token || '').trim();
+
+    if (!target || !inputCode || !newPassword) {
+      res.status(400).json({
+        success: false,
+        message: 'Faltan campos obligatorios (correo, código y nueva contraseña).'
+      });
+      return;
+    }
+
+    if (newPassword.length < 4) {
+      res.status(400).json({
+        success: false,
+        message: 'La nueva contraseña debe tener al menos 4 caracteres.'
+      });
+      return;
+    }
+
+    let user = await User.findOne({
+      where: sequelize.where(
+        sequelize.fn('LOWER', sequelize.col('credencial_acceso')),
+        target
+      )
+    });
+
+    if (!user && !target.includes('@')) {
+      user = await User.findOne({
+        where: sequelize.where(
+          sequelize.fn('LOWER', sequelize.col('credencial_acceso')),
+          `${target}@gpon.com`
+        )
+      });
+    }
+
+    if (!user) {
+      res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+      return;
+    }
+
+    const entry = recoveryTokens.get(user.id_usuario);
+    if (!entry) {
+      res.status(400).json({
+        success: false,
+        message: 'No hay ninguna solicitud de recuperación activa para este usuario o el código ya fue utilizado.'
+      });
+      return;
+    }
+
+    if (Date.now() > entry.expiresAt) {
+      recoveryTokens.delete(user.id_usuario);
+      res.status(400).json({
+        success: false,
+        message: 'El código de seguridad ha expirado. Por favor solicita uno nuevo.'
+      });
+      return;
+    }
+
+    if (entry.code !== inputCode) {
+      res.status(400).json({
+        success: false,
+        message: 'El código ingresado es incorrecto. Verifica los 6 dígitos recibidos en tu correo.'
+      });
+      return;
+    }
+
+    // Actualizar contraseña con hash de bcrypt
+    const password_hash = await bcrypt.hash(newPassword, 10);
+    await user.update({ password_hash });
+    recoveryTokens.delete(user.id_usuario);
+
+    res.json({
+      success: true,
+      message: '¡Contraseña restablecida exitosamente! Ya puedes iniciar sesión con tu nueva contraseña.'
+    });
+  } catch (error: any) {
+    console.error('Error en resetPassword:', error);
+    res.status(500).json({ success: false, message: error.message || 'Error al restablecer la contraseña' });
+  }
+};
+
 
 

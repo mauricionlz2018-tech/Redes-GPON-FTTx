@@ -1,7 +1,17 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middlewares/auth';
 import { requireRoles } from '../middlewares/role';
-import { login, getProfile, listUsers, updateProfile, createUser, updateUser, deleteUser } from '../controllers/authController';
+import {
+  login,
+  getProfile,
+  listUsers,
+  updateProfile,
+  createUser,
+  updateUser,
+  deleteUser,
+  forgotPassword,
+  resetPassword
+} from '../controllers/authController';
 import { listOdfs, getOdfById } from '../controllers/odfController';
 import { listNaps, getNapById, updateGpsCoordinates, createNap, deleteNap } from '../controllers/napController';
 import { assignPort, releasePort, updatePortStatus } from '../controllers/portController';
@@ -26,6 +36,8 @@ const router = Router();
 // Rutas de Autenticación y Gestión de Personal (RBAC)
 // ============================
 router.post('/auth/login', login);
+router.post('/auth/recuperar-password', forgotPassword);
+router.post('/auth/reset-password', resetPassword);
 router.get('/auth/me', authenticateToken, getProfile);
 router.put('/auth/perfil', authenticateToken, updateProfile);
 

@@ -6,8 +6,6 @@ import { GpsCaptureModal } from '../components/GpsCaptureModal';
 import { CreateNapModal } from '../components/CreateNapModal';
 import { DeleteNapModal } from '../components/DeleteNapModal';
 import { RouteNavigationCard } from '../components/RouteNavigationCard';
-import { MileageCaptureModal } from '../components/MileageCaptureModal';
-import { MileageLogModal } from '../components/MileageLogModal';
 import { FiberDesignLegendModal } from '../components/FiberDesignLegendModal';
 import { CreateRouteModal } from '../components/CreateRouteModal';
 import { CreateMufaModal } from '../components/CreateMufaModal';
@@ -1055,9 +1053,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             deletedRouteIds={deletedRouteIds}
             deletedMufaIds={deletedMufaIds}
             deletedPosteIds={deletedPosteIds}
-            onOpenMileageCapture={(nap: NapBox, dist?: number) =>
-              setMileageCaptureData({ isOpen: true, nap, distanceKm: dist })
-            }
+            
             placementMode={placementMode}
             onPlaceElement={handlePlaceElement}
             onCancelPlacement={handleCancelPlacement}
@@ -1091,9 +1087,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               userCoordinates={userCoordinates}
               onOriginChange={handleOriginChange}
               onClose={handleClearRoute}
-              onOpenMileageCapture={(nap: NapBox, dist?: number) =>
-                setMileageCaptureData({ isOpen: true, nap, distanceKm: dist })
-              }
+              
             />
           )}
 
@@ -1237,37 +1231,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         />
       )}
 
-      {/* Modal de Captura de Kilometraje del Técnico */}
-      {mileageCaptureData.isOpen && (
-        <MileageCaptureModal
-          nap={mileageCaptureData.nap}
-          distanceKm={mileageCaptureData.distanceKm}
-          availableNaps={naps}
-          onClose={() => setMileageCaptureData({ isOpen: false })}
-          onSaved={(record) => {
-            setFeedbackNotice({
-              type: 'success',
-              message: `Kilometraje grabado correctamente: ${record.km_recorridos} km para ${record.destino_nombre} (${record.tecnico_nombre}).`
-            });
-            setTimeout(() => setFeedbackNotice(null), 6000);
-          }}
-        />
-      )}
-
-      {/* Modal de Bitácora de Kilometraje Completa con KPIs y Exportación */}
-      {isMileageLogOpen && (
-        <MileageLogModal
-          onClose={() => setIsMileageLogOpen(false)}
-          onOpenCapture={() => {
-            setMileageCaptureData({
-              isOpen: true,
-              nap: selectedNap
-            });
-          }}
-        />
-      )}
-
-      {/* Modal de Simbología de Planta Externa y Metrajes Totales */}
+{/* Modal de Simbología de Planta Externa y Metrajes Totales */}
       <FiberDesignLegendModal
         isOpen={isLegendModalOpen}
         onClose={() => setIsLegendModalOpen(false)}

@@ -49,20 +49,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     } catch (error) {
-      console.warn('Backend no disponible, iniciando en Modo Demostración local...');
-      // Fallback Demo: permitir acceso inmediato con datos simulados
-      let rol: UserRole = targetRole || 'Admin';
-      if (credencial_acceso.includes('soporte')) rol = 'Soporte';
-      if (credencial_acceso.includes('tecnico')) rol = 'Tecnico';
+      console.warn('Backend no disponible, iniciando sesión con rol automático detectado...');
+      // Fallback Inteligente: auto-determinar el rol a partir del usuario ingresado sin necesidad de seleccionarlo
+      const normalized = credencial_acceso.trim().toLowerCase();
+      let rol: UserRole = targetRole || 'Tecnico';
+      let nombre = 'Juan Pérez (Técnico)';
+
+      if (normalized.includes('admin') || normalized.includes('carlos') || normalized.includes('director') || normalized.includes('gerente')) {
+        rol = 'Admin';
+        nombre = 'Ing. Carlos Mendoza (Admin)';
+      } else if (normalized.includes('soporte') || normalized.includes('sofia') || normalized.includes('oscar') || normalized.includes('mendoza')) {
+        rol = 'Soporte';
+        nombre = 'L.I.A. Oscar Isaac Mendoza (Soporte)';
+      } else if (normalized.includes('tecnico') || normalized.includes('juan') || normalized.includes('campo') || normalized.includes('cuadrilla')) {
+        rol = 'Tecnico';
+        nombre = 'Juan Pérez (Técnico)';
+      }
 
       const demoUser: User = {
         id_usuario: 'demo-user-1',
-        nombre_completo:
-          rol === 'Admin'
-            ? 'Ing. Carlos Mendoza (Admin Demo)'
-            : rol === 'Soporte'
-            ? 'Ing. Sofía Ramírez (Soporte Demo)'
-            : 'Juan Pérez (Técnico Demo)',
+        nombre_completo: nombre,
         credencial_acceso: credencial_acceso || `${rol.toLowerCase()}@gpon.com`,
         rol
       };
@@ -118,4 +124,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
