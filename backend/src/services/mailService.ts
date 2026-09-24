@@ -1,4 +1,10 @@
+import dns from 'dns';
 import nodemailer from 'nodemailer';
+
+// Forzar resolución IPv4 primero para evitar error ENETUNREACH en contenedores Linux/Render/Docker sin IPv6
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 export interface SendRecoveryEmailOptions {
   toEmail: string;
@@ -7,38 +13,21 @@ export interface SendRecoveryEmailOptions {
   resetLink?: string;
 }
 
-// Configuración del transporte SMTP con soporte específico para Gmail y otros proveedores
+// Configuración del transporte SMTP con soporte específico para Gmail sobre IPv4
 function createTransporter() {
   const user = (process.env.SMTP_USER || 'nolazcomaury2004@gmail.com').trim();
-  // Limpia cualquier espacio si se ingreso la clave con espacios (ej. "bxyy zmeh egwz faru")
+  // Limpia cualquier espacio si se ingresó la clave con espacios (ej. "bxyy zmeh egwz faru")
   const pass = (process.env.SMTP_PASS || 'bxyyzmehegwzfaru').trim().replace(/\s+/g, '');
 
   if (!user || !pass) {
     return null;
   }
 
-  const service = (process.env.SMTP_SERVICE || '').trim().toLowerCase();
-
-  // Si se usa Gmail directamente o el usuario tiene dominio @gmail.com
-  if (service === 'gmail' || user.toLowerCase().endsWith('@gmail.com')) {
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user,
-        pass
-      }
-    });
-  }
-
-  // Configuración estándar para servidores SMTP dedicados o corporativos
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT) || 465;
-  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-
+  // Usar host smtp.gmail.com en puerto 587 con STARTTLS sobre IPv4 (máxima compatibilidad en Render)
   return nodemailer.createTransport({
-    host,
-    port,
-    secure,
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // STARTTLS
     auth: {
       user,
       pass
