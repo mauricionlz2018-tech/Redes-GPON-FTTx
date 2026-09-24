@@ -9,9 +9,9 @@ export interface SendRecoveryEmailOptions {
 
 // Configuración del transporte SMTP con soporte específico para Gmail y otros proveedores
 function createTransporter() {
-  const user = (process.env.SMTP_USER || '').trim();
-  // Limpia cualquier espacio si el usuario pegó la contraseña de aplicación con espacios (ej. "abcd efgh ijkl mnop")
-  const pass = (process.env.SMTP_PASS || '').trim().replace(/\s+/g, '');
+  const user = (process.env.SMTP_USER || 'nolazcomaury2004@gmail.com').trim();
+  // Limpia cualquier espacio si se ingreso la clave con espacios (ej. "bxyy zmeh egwz faru")
+  const pass = (process.env.SMTP_PASS || 'bxyyzmehegwzfaru').trim().replace(/\s+/g, '');
 
   if (!user || !pass) {
     return null;
@@ -51,8 +51,8 @@ function createTransporter() {
 
 export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOptions): Promise<{ success: boolean; message: string }> {
   const { toEmail, userName, resetCode, resetLink } = options;
-  const fromUser = process.env.SMTP_USER || 'ventas@gpontelecom.com.mx';
-  const fromAddress = process.env.SMTP_FROM || `"GPON Telecom Soporte" <${fromUser}>`;
+  const fromUser = process.env.SMTP_USER || 'nolazcomaury2004@gmail.com';
+  const fromAddress = process.env.SMTP_FROM || `"GPON Telecom S.A. de C.V." <${fromUser}>`;
 
   const htmlContent = `
 <!DOCTYPE html>
