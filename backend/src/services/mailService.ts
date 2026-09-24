@@ -23,11 +23,16 @@ function createTransporter() {
     return null;
   }
 
-  // Usar host smtp.gmail.com en puerto 587 con STARTTLS sobre IPv4 (máxima compatibilidad en Render)
+  // Usar host smtp.gmail.com en puerto 587 con STARTTLS forzando socket IPv4 (family: 4) y timeout estricto
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false, // STARTTLS
+    // @ts-ignore
+    family: 4, // Fuerza conexion IPv4 evitando ENETUNREACH de IPv6
+    connectionTimeout: 6000, // Máximo 6 segundos de espera de conexión
+    greetingTimeout: 6000,
+    socketTimeout: 6000,
     auth: {
       user,
       pass
@@ -162,6 +167,8 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
     let detail = error.message || 'Error al comunicarse con el servidor de correo.';
     if (detail.includes('Invalid login') || detail.includes('Username and Password not accepted') || detail.includes('535-5.7.8')) {
       detail = 'Credenciales de Gmail incorrectas. Recuerda que debes usar una "Contraseña de aplicación" de 16 caracteres generada desde tu cuenta de Google (Seguridad > Verificación en 2 pasos > Contraseñas de aplicaciones), no tu contraseña normal.';
+    } else if (detail.includes('ETIMEDOUT') || detail.includes('timeout') || detail.includes('ENETUNREACH') || detail.includes('ECONNREFUSED')) {
+      detail = 'Tiempo de espera agotado al conectar con Gmail SMTP. Los servidores en la nube gratuitos (como Render Free) bloquean los puertos salientes 587/465 para evitar spam. Para enviar desde la nube se requiere un plan de Render con puertos abiertos o probar la funcionalidad en entorno local.';
     }
     return {
       success: false,
