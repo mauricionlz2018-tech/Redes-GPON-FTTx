@@ -237,27 +237,27 @@ export const AssistantChatbot: React.FC = () => {
 
   return (
     <>
-      {/* Botón Flotante en la esquina inferior derecha */}
-      <div className="fixed bottom-5 right-5 z-[9990]">
+      {/* Botón Flotante en la esquina inferior derecha (por encima de la barra de navegación móvil) */}
+      <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[9990]">
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="flex items-center gap-2.5 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-semibold text-xs sm:text-sm px-4 py-3 rounded-full shadow-xl shadow-sky-900/30 hover:shadow-sky-600/40 transition-all duration-300 active:scale-95 cursor-pointer border border-sky-400/30 group"
+            className="flex items-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-semibold text-xs sm:text-sm p-3 sm:px-4 sm:py-2.5 rounded-full shadow-2xl shadow-sky-950/60 hover:shadow-sky-600/40 transition-all duration-300 active:scale-95 cursor-pointer border border-sky-400/30 group"
             title="Abrir Asistente GPON"
           >
-            <div className="relative">
-              <Bot className="w-5 h-5 text-white animate-bounce" />
+            <div className="relative flex items-center justify-center">
+              <Bot className="w-5 h-5 text-white" />
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-sky-700" />
             </div>
-            <span className="tracking-wide">Asistente GPON</span>
-            <Sparkles className="w-3.5 h-3.5 text-sky-200 group-hover:rotate-12 transition-transform" />
+            <span className="tracking-wide hidden sm:inline">Asistente GPON</span>
+            <Sparkles className="w-3.5 h-3.5 text-sky-200 group-hover:rotate-12 transition-transform hidden sm:inline" />
           </button>
         )}
       </div>
 
       {/* Ventana Modal del Asistente */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 z-[9995] w-[95vw] sm:w-[440px] max-h-[85vh] h-[640px] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl shadow-slate-950/40 overflow-hidden transition-colors animate-fadeIn font-sans">
+        <div className="fixed inset-x-3 bottom-18 sm:inset-auto sm:bottom-6 sm:right-6 z-[9995] sm:w-[440px] max-h-[76vh] sm:max-h-[85vh] h-[600px] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl shadow-slate-950/40 overflow-hidden transition-colors animate-fadeIn font-sans">
           {/* Cabecera Amigable */}
           <div className="bg-gradient-to-r from-sky-600 to-sky-700 p-4 text-white flex items-center justify-between shrink-0 shadow-sm">
             <div className="flex items-center gap-3">

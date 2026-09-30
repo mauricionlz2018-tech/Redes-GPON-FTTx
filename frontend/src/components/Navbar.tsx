@@ -97,8 +97,8 @@ export const Navbar: React.FC = () => {
                 />
               </div>
               <div className="min-w-0">
-                <span className="font-bold text-xs sm:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 truncate">
-                  GPON <span className="hidden sm:inline">TELECOM</span>
+                <span className="font-bold text-xs sm:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+                  GPON TELECOM
                 </span>
                 <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 -mt-0.5 hidden md:block truncate">
                   Inventario y Mapeo Lógico de Fibra

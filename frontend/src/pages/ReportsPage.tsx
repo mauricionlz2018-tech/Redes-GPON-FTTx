@@ -113,7 +113,7 @@ export const ReportsPage: React.FC = () => {
   const paginatedNaps = filteredNaps.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-24 sm:py-6 space-y-6">
       {/* Encabezado y Acción de Descarga con selección de Tema */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 transition-colors">
         <div>

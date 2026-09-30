@@ -88,13 +88,13 @@ export const ClientsPage: React.FC = () => {
   const paginatedClients = filteredClients.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-24 sm:py-6 space-y-6">
       {/* Encabezado */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 transition-colors">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-            Padrón de Abonados Conectados FTTx
+            Padrón de Abonados Conectados
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Consulta y administración de clientes vinculados a puertos de cajas NAP.
