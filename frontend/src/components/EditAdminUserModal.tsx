@@ -13,6 +13,7 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
+  CheckCircle,
   CheckCircle2,
   Loader2
 } from 'lucide-react';
@@ -30,8 +31,8 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
 }) => {
   const [nombreCompleto, setNombreCompleto] = useState(userToEdit.nombre_completo);
   const [credencialAcceso, setCredencialAcceso] = useState(userToEdit.credencial_acceso);
-  const [rol, setRol] = useState<UserRole>(userToEdit.rol);
   const [newPassword, setNewPassword] = useState('');
+  const [rol, setRol] = useState<UserRole>(userToEdit.rol);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -42,31 +43,24 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
     label: string;
     icon: any;
     desc: string;
-    badgeClass: string;
   }[] = [
     {
       role: 'Tecnico',
-      label: 'Técnico de Campo',
+      label: 'Técnico',
       icon: Wrench,
-      desc: 'Acceso a mapa móvil, asignación de puertos y GPS.',
-      badgeClass:
-        'border-amber-400 bg-amber-50 text-amber-950 dark:bg-amber-950/60 dark:text-amber-100 dark:border-amber-600'
+      desc: 'Acceso a mapa móvil, asignación inicial de puertos y calibración GPS.'
     },
     {
       role: 'Soporte',
-      label: 'Soporte Técnico',
+      label: 'Soporte',
       icon: ShieldAlert,
-      desc: 'Gestión de infraestructura y liberación de puertos.',
-      badgeClass:
-        'border-emerald-400 bg-emerald-50 text-emerald-950 dark:bg-emerald-950/60 dark:text-emerald-100 dark:border-emerald-600'
+      desc: 'Gestión de infraestructura, liberación de puertos y edición de abonados.'
     },
     {
       role: 'Admin',
-      label: 'Administrador NOC',
+      label: 'Admin',
       icon: Shield,
-      desc: 'Control total de la red, gestión de personal y ODF.',
-      badgeClass:
-        'border-indigo-400 bg-indigo-50 text-indigo-950 dark:bg-indigo-950/60 dark:text-indigo-100 dark:border-indigo-600'
+      desc: 'Control total de la red, gestión de personal, reportes ejecutivos y ODF.'
     }
   ];
 
@@ -84,44 +78,36 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
     }
 
     if (!cleanCredencial || cleanCredencial.length < 3) {
-      setErrorMsg('La credencial o correo es obligatorio.');
+      setErrorMsg('La credencial o correo de acceso es obligatoria.');
       return;
     }
 
     if (newPassword && newPassword.length < 4) {
-      setErrorMsg('Si deseas restablecer la contraseña, debe tener al menos 4 caracteres.');
+      setErrorMsg('La nueva contraseña debe tener al menos 4 caracteres.');
       return;
     }
 
     setLoading(true);
     try {
-      const payload: {
-        nombre_completo: string;
-        credencial_acceso: string;
-        rol: UserRole;
-        password?: string;
-      } = {
+      const payload: any = {
         nombre_completo: cleanNombre,
         credencial_acceso: cleanCredencial,
         rol
       };
 
-      if (newPassword) {
-        payload.password = newPassword;
+      if (newPassword.trim()) {
+        payload.password = newPassword.trim();
       }
 
       const res = await api.put(`/auth/usuarios/${userToEdit.id_usuario}`, payload);
 
       if (res.data.success) {
-        const updated: User = {
-          ...userToEdit,
-          ...res.data.data
-        };
-        setSuccessMsg(`Usuario ${updated.nombre_completo} actualizado con éxito.`);
+        const updated: User = res.data.data;
+        setSuccessMsg(`¡${updated.nombre_completo} fue actualizado con éxito!`);
         setTimeout(() => {
           onUserUpdated(updated);
           onClose();
-        }, 1100);
+        }, 900);
       } else {
         setErrorMsg(res.data.message || 'No fue posible actualizar al usuario.');
       }
@@ -135,8 +121,7 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
           ...userToEdit,
           nombre_completo: cleanNombre,
           credencial_acceso: cleanCredencial,
-          rol,
-          updatedAt: new Date().toISOString()
+          rol
         };
 
         try {
@@ -154,7 +139,7 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
         setTimeout(() => {
           onUserUpdated(updatedFallback);
           onClose();
-        }, 1100);
+        }, 900);
       }
     } finally {
       setLoading(false);
@@ -163,33 +148,29 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="edit-admin-user-title"
     >
-      <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh] transition-colors">
-        {/* Cabecera */}
-        <div className="bg-slate-100 dark:bg-slate-800/90 px-5 sm:px-6 py-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-700 text-white rounded-xl shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh] transition-colors">
+        {/* Cabecera estándar */}
+        <div className="bg-slate-100 dark:bg-gradient-to-r dark:from-slate-800 dark:to-sky-950 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-xl">
               <UserCog className="w-5 h-5" />
             </div>
             <div>
-              <h2
-                id="edit-admin-user-title"
-                className="text-base sm:text-lg font-bold text-slate-900 dark:text-white"
-              >
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 Editar Datos de Personal
               </h2>
-              <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Modificar rol, credencial o restablecer contraseña
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             aria-label="Cerrar modal"
           >
             <X className="w-5 h-5" />
@@ -198,81 +179,79 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
 
         {/* Mensajes */}
         {errorMsg && (
-          <div className="mx-5 mt-4 p-3 bg-rose-50 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-700 rounded-xl flex items-start gap-2.5 text-xs text-rose-950 dark:text-rose-100 font-medium">
-            <AlertCircle className="w-4 h-4 text-rose-700 dark:text-rose-400 shrink-0 mt-0.5" />
+          <div className="mx-6 mt-4 p-3 rounded-lg bg-red-500/10 dark:bg-red-950/50 border border-red-500/30 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mx-5 mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 rounded-xl flex items-start gap-2.5 text-xs text-emerald-950 dark:text-emerald-100 font-medium">
-            <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="mx-6 mt-4 p-3 rounded-lg bg-emerald-500/10 dark:bg-emerald-950/50 border border-emerald-500/30 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
           {/* Nombre Completo */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-              <UserIcon className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-              <span>Nombre y Apellidos *</span>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Nombre y Apellidos *
             </label>
             <input
               type="text"
               required
               value={nombreCompleto}
               onChange={(e) => setNombreCompleto(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 font-medium"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
             />
           </div>
 
           {/* Credencial / Correo */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-              <Mail className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-              <span>Credencial o Correo de Acceso *</span>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Credencial o Correo de Acceso *
             </label>
             <input
               type="text"
               required
               value={credencialAcceso}
               onChange={(e) => setCredencialAcceso(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 font-medium"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
             />
           </div>
 
           {/* Selector de Rol */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
-              Rol del Usuario *
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              Rol Asignado *
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               {rolesConfig.map((r) => {
-                const Icon = r.icon;
                 const isSelected = rol === r.role;
+                const Icon = r.icon;
                 return (
                   <button
                     key={r.role}
                     type="button"
                     onClick={() => setRol(r.role)}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
-                        ? `${r.badgeClass} ring-2 ring-indigo-600 dark:ring-indigo-400 shadow-sm font-bold`
-                        : 'border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
+                        ? 'border-sky-500 bg-sky-50 dark:bg-sky-950/40 text-slate-900 dark:text-white ring-1 ring-sky-500 shadow-xs'
+                        : 'border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm">
-                        <Icon className="w-4 h-4 shrink-0" />
-                        <span>{r.role}</span>
+                      <div className="flex items-center gap-1.5 font-bold text-xs">
+                        <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'}`} />
+                        <span>{r.label}</span>
                       </div>
                       {isSelected && (
-                        <CheckCircle2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                       )}
                     </div>
-                    <p className="text-[10px] leading-tight opacity-90 font-medium">
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-snug">
                       {r.desc}
                     </p>
                   </button>
@@ -282,37 +261,36 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
           </div>
 
           {/* Restablecer Contraseña (Opcional) */}
-          <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-700">
-            <label className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center justify-between">
-              <span className="flex items-center gap-1">
-                <Lock className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
-                <span>Restablecer Contraseña (Dejar en blanco para no cambiar)</span>
-              </span>
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Restablecer Contraseña (Dejar en blanco para no cambiar)
+              </label>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-0.5"
-                title={showPassword ? 'Ocultar' : 'Ver'}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[11px] flex items-center gap-1 cursor-pointer"
               >
                 {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                <span>{showPassword ? 'Ocultar' : 'Ver'}</span>
               </button>
-            </label>
+            </div>
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Nueva contraseña opcional (mínimo 4 caracteres)"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 font-medium"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
             />
           </div>
 
           {/* Botones */}
-          <div className="pt-4 border-t border-slate-300 dark:border-slate-700 flex items-center justify-end gap-2.5">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white rounded-xl text-xs sm:text-sm font-bold border border-slate-300 dark:border-slate-600 transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors cursor-pointer"
             >
               Cancelar
             </button>
@@ -320,7 +298,7 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 bg-indigo-700 hover:bg-indigo-600 active:bg-indigo-800 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-indigo-950/20 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+              className="px-5 py-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-lg shadow-sky-900/30 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -329,7 +307,7 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle className="w-4 h-4" />
                   <span>Actualizar Datos</span>
                 </>
               )}
@@ -340,4 +318,3 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
     </div>
   );
 };
-

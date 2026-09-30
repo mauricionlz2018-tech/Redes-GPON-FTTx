@@ -5,15 +5,16 @@ import api from '../api/client';
 import { CreateUserModal } from '../components/CreateUserModal';
 import { EditAdminUserModal } from '../components/EditAdminUserModal';
 import { DeleteUserConfirmModal } from '../components/DeleteUserConfirmModal';
+import { TablePagination } from '../components/TablePagination';
 import {
-  Users,
+  UserCog,
   UserPlus,
   Shield,
   ShieldAlert,
   Wrench,
   Search,
   Filter,
-  Edit2,
+  Edit3,
   Trash2,
   RefreshCw,
   CheckCircle2,
@@ -21,7 +22,6 @@ import {
   Calendar,
   Lock,
   Mail,
-  UserCheck,
   X
 } from 'lucide-react';
 
@@ -56,6 +56,10 @@ export const UsersManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<'Todos' | UserRole>('Todos');
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   // Modales
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -106,7 +110,6 @@ export const UsersManagementPage: React.FC = () => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Manejo de eventos de creación, actualización y borrado
   const handleUserCreated = (newUser: User) => {
     setUsers((prev) => [newUser, ...prev]);
     showNotification('success', `Personal "${newUser.nombre_completo}" registrado correctamente.`);
@@ -135,6 +138,17 @@ export const UsersManagementPage: React.FC = () => {
     });
   }, [users, searchTerm, filterRole]);
 
+  // Reset de página al filtrar
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterRole]);
+
+  // Paginación
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+
   // Métricas
   const totalUsers = users.length;
   const countTecnicos = users.filter((u) => u.rol === 'Tecnico').length;
@@ -144,11 +158,11 @@ export const UsersManagementPage: React.FC = () => {
   const getRoleBadgeClasses = (rol: UserRole) => {
     switch (rol) {
       case 'Admin':
-        return 'bg-indigo-100 text-indigo-950 border-indigo-400 dark:bg-indigo-950 dark:text-indigo-200 dark:border-indigo-600';
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800';
       case 'Soporte':
-        return 'bg-emerald-100 text-emerald-950 border-emerald-400 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-600';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800';
       case 'Tecnico':
-        return 'bg-amber-100 text-amber-950 border-amber-400 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-600';
+        return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800';
     }
   };
 
@@ -167,39 +181,32 @@ export const UsersManagementPage: React.FC = () => {
   if (currentUser?.rol !== 'Admin') {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="bg-white dark:bg-slate-900 border-2 border-rose-300 dark:border-rose-800 rounded-2xl p-8 text-center space-y-4 shadow-xl">
-          <div className="w-16 h-16 bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-700 rounded-2xl flex items-center justify-center mx-auto">
-            <Lock className="w-8 h-8" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center space-y-4 shadow-sm">
+          <div className="w-14 h-14 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mx-auto">
+            <Lock className="w-7 h-7" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
             Acceso Restringido
           </h2>
-          <p className="text-sm text-slate-700 dark:text-slate-300 max-w-md mx-auto font-medium">
-            El panel de <strong className="text-slate-900 dark:text-white">Gestión de Personal</strong> está reservado exclusivamente para cuentas con rol de <strong className="text-indigo-700 dark:text-indigo-300">Administrador</strong>.
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+            El panel de Gestión de Personal está reservado exclusivamente para cuentas con rol de Administrador.
           </p>
-          <div className="pt-3">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Puedes cambiar de rol desde la barra superior para acceder a este módulo.
-            </p>
-          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 space-y-6">
-      {/* Encabezado y Botón Principal de Alta */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-300 dark:border-slate-800 pb-4 transition-colors">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      {/* Encabezado uniforme con Abonados y Reportes */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 transition-colors">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-              <Users className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
-              <span>Gestión de Personal y Técnicos</span>
-            </h1>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 mt-1 font-medium">
-            Administración centralizada de cuadrillas de campo, técnicos de empalme, personal de soporte y administradores.
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <UserCog className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            <span>Gestión de Personal y Técnicos</span>
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Administración de cuadrillas de campo, técnicos de empalme, personal de soporte y administradores.
           </p>
         </div>
 
@@ -207,19 +214,18 @@ export const UsersManagementPage: React.FC = () => {
           <button
             onClick={fetchUsers}
             disabled={loading}
-            className="p-2 sm:px-3 sm:py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl border border-slate-300 dark:border-slate-700 transition-colors shadow-xs active:scale-95 cursor-pointer text-xs font-bold flex items-center gap-1.5"
+            className="p-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
             title="Recargar lista de usuarios"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Actualizar</span>
           </button>
 
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="flex items-center justify-center gap-2 bg-indigo-700 hover:bg-indigo-600 active:bg-indigo-800 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md shadow-indigo-950/20 transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
           >
             <UserPlus className="w-4 h-4 shrink-0" />
-            <span>+ Agregar Personal</span>
+            <span>Agregar Personal</span>
           </button>
         </div>
       </div>
@@ -227,23 +233,23 @@ export const UsersManagementPage: React.FC = () => {
       {/* Notificación de feedback accesible */}
       {notice && (
         <div
-          className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 text-xs sm:text-sm font-semibold transition-all ${
+          className={`p-3 rounded-lg border flex items-center justify-between gap-3 text-xs transition-all ${
             notice.type === 'success'
-              ? 'bg-emerald-50 text-emerald-950 border-emerald-400 dark:bg-emerald-950/80 dark:text-emerald-100 dark:border-emerald-700'
-              : 'bg-rose-50 text-rose-950 border-rose-400 dark:bg-rose-950/80 dark:text-rose-100 dark:border-rose-700'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+              : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
           }`}
         >
           <div className="flex items-center gap-2">
             {notice.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-rose-700 dark:text-rose-400 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
             )}
             <span>{notice.message}</span>
           </div>
           <button
             onClick={() => setNotice(null)}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
             aria-label="Cerrar notificación"
           >
             <X className="w-4 h-4" />
@@ -251,114 +257,113 @@ export const UsersManagementPage: React.FC = () => {
         </div>
       )}
 
-      {/* 4 Tarjetas de Métricas de Personal con Alto Contraste */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* 4 Tarjetas de Métricas de Personal con diseño estándar idéntico a Reportes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Personal */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-4 rounded-xl shadow-xs transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Personal</span>
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg border border-slate-300 dark:border-slate-700">
-              <Users className="w-4 h-4" />
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Personal</span>
+            <div className="p-2 bg-sky-500/10 text-sky-600 dark:text-sky-400 rounded-lg">
+              <UserCog className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{totalUsers}</div>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 font-medium">Usuarios registrados</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{totalUsers}</p>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">Usuarios registrados</span>
         </div>
 
         {/* Técnicos de Campo */}
-        <div className="bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-800/80 p-4 rounded-xl shadow-xs transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-950 dark:text-amber-200">Técnicos de Campo</span>
-            <div className="p-2 bg-amber-100 text-amber-950 dark:bg-amber-950 dark:text-amber-200 rounded-lg border border-amber-400 dark:border-amber-700">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Técnicos de Campo</span>
+            <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">
               <Wrench className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{countTecnicos}</div>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 font-medium">Cuadrillas activas</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{countTecnicos}</p>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">Cuadrillas activas</span>
         </div>
 
         {/* Soporte Técnico */}
-        <div className="bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800/80 p-4 rounded-xl shadow-xs transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200">Soporte Técnico</span>
-            <div className="p-2 bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-200 rounded-lg border border-emerald-400 dark:border-emerald-700">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Soporte Técnico</span>
+            <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
               <ShieldAlert className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{countSoporte}</div>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 font-medium">Mantenimiento y clientes</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{countSoporte}</p>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">Mantenimiento y clientes</span>
         </div>
 
         {/* Administradores */}
-        <div className="bg-white dark:bg-slate-900 border border-indigo-300 dark:border-indigo-800/80 p-4 rounded-xl shadow-xs transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-indigo-950 dark:text-indigo-200">Administradores</span>
-            <div className="p-2 bg-indigo-100 text-indigo-950 dark:bg-indigo-950 dark:text-indigo-200 rounded-lg border border-indigo-400 dark:border-indigo-700">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Administradores</span>
+            <div className="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg">
               <Shield className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{countAdmins}</div>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 font-medium">Control total NOC</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{countAdmins}</p>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">Control total NOC</span>
         </div>
       </div>
 
-      {/* Barra de Búsqueda y Filtros */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-3 sm:p-4 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-xs">
+      {/* Barra de Búsqueda y Filtros con diseño estándar */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-sm">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
           <input
             type="text"
             placeholder="Buscar personal por nombre o correo (ej. Juan, tecnico@gpon.com)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-3.5 py-2 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 font-medium"
+            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-10 pr-3.5 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
           />
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
-          <Filter className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0 hidden md:block" />
+          <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0 hidden md:block" />
           {(['Todos', 'Tecnico', 'Soporte', 'Admin'] as const).map((r) => {
             const isSelected = filterRole === r;
-            const label = r === 'Todos' ? 'Todos' : r === 'Tecnico' ? 'Técnicos' : r === 'Soporte' ? 'Soporte' : 'Admins';
             return (
               <button
                 key={r}
                 onClick={() => setFilterRole(r)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
                   isSelected
-                    ? 'bg-indigo-700 text-white shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700'
+                    ? 'bg-sky-600 text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
                 }`}
               >
-                {label}
+                {r === 'Todos' ? 'Todos' : r === 'Tecnico' ? 'Técnicos' : r}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Tabla de Usuarios Accesible con Alto Contraste */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden transition-colors">
+      {/* Tabla de Personal uniforme con la tabla de Abonados */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-md transition-colors">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800/80 border-b border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
-                <th className="py-3 px-4">Personal</th>
-                <th className="py-3 px-4">Credencial / Acceso</th>
-                <th className="py-3 px-4">Rol Asignado</th>
-                <th className="py-3 px-4 hidden md:table-cell">Fecha de Registro</th>
-                <th className="py-3 px-4 text-right">Acciones</th>
+          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+            <thead className="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th className="px-4 py-3">Personal</th>
+                <th className="px-4 py-3">Credencial / Acceso</th>
+                <th className="px-4 py-3">Rol Asignado</th>
+                <th className="px-4 py-3 hidden md:table-cell">Fecha de Registro</th>
+                <th className="px-4 py-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs sm:text-sm">
-              {filteredUsers.length === 0 ? (
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              {paginatedUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-600 dark:text-slate-400 font-medium">
+                  <td colSpan={5} className="py-8 text-center text-slate-500 dark:text-slate-400">
                     No se encontraron usuarios que coincidan con la búsqueda o filtro aplicado.
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((u) => {
+                paginatedUsers.map((u) => {
                   const isCurrent = currentUser?.id_usuario === u.id_usuario;
                   const initials = u.nombre_completo
                     .split(' ')
@@ -374,29 +379,21 @@ export const UsersManagementPage: React.FC = () => {
                       className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                     >
                       {/* Personal / Nombre */}
-                      <td className="py-3.5 px-4">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 border ${
-                              u.rol === 'Admin'
-                                ? 'bg-indigo-700 text-white border-indigo-800'
-                                : u.rol === 'Soporte'
-                                ? 'bg-emerald-700 text-white border-emerald-800'
-                                : 'bg-amber-600 text-white border-amber-700'
-                            }`}
-                          >
+                          <div className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400 font-semibold text-xs flex items-center justify-center shrink-0 border border-sky-200 dark:border-sky-800/60">
                             {initials}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <div className="font-medium text-slate-900 dark:text-white flex items-center gap-1.5">
                               <span>{u.nombre_completo}</span>
                               {isCurrent && (
-                                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-950 dark:bg-indigo-950 dark:text-indigo-200 border border-indigo-400 dark:border-indigo-600">
+                                <span className="text-[10px] bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-300 dark:border-sky-800 px-1.5 py-0.2 rounded font-medium">
                                   Tú
                                 </span>
                               )}
                             </div>
-                            <span className="text-[11px] text-slate-600 dark:text-slate-400 font-medium block">
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 block">
                               ID: {u.id_usuario.slice(0, 8)}...
                             </span>
                           </div>
@@ -404,17 +401,17 @@ export const UsersManagementPage: React.FC = () => {
                       </td>
 
                       {/* Credencial / Correo */}
-                      <td className="py-3.5 px-4 font-mono text-slate-800 dark:text-slate-200 font-medium">
+                      <td className="px-4 py-3 font-mono text-slate-700 dark:text-slate-300">
                         <div className="flex items-center gap-1.5">
-                          <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{u.credencial_acceso}</span>
                         </div>
                       </td>
 
-                      {/* Rol con Badge de Alto Contraste */}
-                      <td className="py-3.5 px-4">
+                      {/* Rol con Badge Estándar */}
+                      <td className="px-4 py-3">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border ${getRoleBadgeClasses(
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium border ${getRoleBadgeClasses(
                             u.rol
                           )}`}
                         >
@@ -424,9 +421,9 @@ export const UsersManagementPage: React.FC = () => {
                       </td>
 
                       {/* Fecha de Registro */}
-                      <td className="py-3.5 px-4 hidden md:table-cell text-slate-700 dark:text-slate-300 font-medium">
+                      <td className="px-4 py-3 hidden md:table-cell text-slate-500 dark:text-slate-400">
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>
                             {u.createdAt
                               ? new Date(u.createdAt).toLocaleDateString('es-MX', {
@@ -440,29 +437,25 @@ export const UsersManagementPage: React.FC = () => {
                       </td>
 
                       {/* Acciones */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setEditingUser(u)}
-                            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
+                            className="p-1.5 text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                             title="Editar usuario o rol"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            <Edit3 className="w-4 h-4" />
                           </button>
 
                           <button
                             onClick={() => setDeletingUser(u)}
                             disabled={isCurrent}
-                            className={`p-1.5 rounded-lg border transition-colors ${
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                               isCurrent
-                                ? 'opacity-30 cursor-not-allowed bg-slate-100 text-slate-400 border-slate-300 dark:bg-slate-800 dark:text-slate-600 dark:border-slate-800'
-                                : 'bg-rose-50 hover:bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:hover:bg-rose-900/80 dark:text-rose-200 border-rose-300 dark:border-rose-800 cursor-pointer'
+                                ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40'
+                                : 'text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
-                            title={
-                              isCurrent
-                                ? 'No puedes autoeliminar tu propia cuenta en sesión'
-                                : 'Eliminar usuario'
-                            }
+                            title={isCurrent ? 'No puedes eliminar tu propia cuenta' : 'Eliminar usuario'}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -475,9 +468,23 @@ export const UsersManagementPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Paginación */}
+        {filteredUsers.length > 0 && (
+          <TablePagination
+            currentPage={safeCurrentPage}
+            totalItems={filteredUsers.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={(num) => {
+              setItemsPerPage(num);
+              setCurrentPage(1);
+            }}
+          />
+        )}
       </div>
 
-      {/* Modales */}
+      {/* Modales de Personal */}
       {isCreateOpen && (
         <CreateUserModal
           onClose={() => setIsCreateOpen(false)}
@@ -503,4 +510,3 @@ export const UsersManagementPage: React.FC = () => {
     </div>
   );
 };
-

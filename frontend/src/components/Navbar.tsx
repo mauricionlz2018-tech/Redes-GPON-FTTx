@@ -99,9 +99,6 @@ export const Navbar: React.FC = () => {
               <div className="min-w-0">
                 <span className="font-bold text-xs sm:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 truncate">
                   GPON <span className="hidden sm:inline">TELECOM</span>
-                  <span className="text-[8px] sm:text-[10px] uppercase font-semibold px-1 sm:px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 shrink-0">
-                    FTTx
-                  </span>
                 </span>
                 <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 -mt-0.5 hidden md:block truncate">
                   Inventario y Mapeo Lógico de Fibra
@@ -150,16 +147,6 @@ export const Navbar: React.FC = () => {
                     <span className="hidden lg:inline text-[11px]">Oscuro</span>
                   </>
                 )}
-              </button>
-
-              {/* Botón de Asistente Virtual y Manual */}
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('open-gpon-assistant'))}
-                className="flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all text-xs font-semibold shadow-sm active:scale-95"
-                title="Abrir Asistente Virtual y Manual de Usuario"
-              >
-                <Bot className="w-3.5 h-3.5" />
-                <span className="hidden lg:inline text-[11px]">Asistente</span>
               </button>
 
               {/* Botón de Descarga APK Móvil */}

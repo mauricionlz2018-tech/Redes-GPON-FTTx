@@ -122,11 +122,11 @@ export const ReportsPage: React.FC = () => {
             Reportes e Indicadores de Saturación GPON
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Métricas de capacidad de red FTTx y exportación de reportes ejecutivos en PDF de alta fidelidad.
+            Métricas de capacidad de red y exportación de reportes ejecutivos en PDF de alta fidelidad.
           </p>
         </div>
 
-        {/* Acciones de Descarga e Impresión */}
+        {/* Acciones de Descarga */}
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <button
             onClick={() => handleDownloadPdf('light')}
@@ -140,15 +140,6 @@ export const ReportsPage: React.FC = () => {
               <Download className="w-3.5 h-3.5" />
             )}
             <span>Descargar Reporte PDF</span>
-          </button>
-
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 text-xs font-semibold py-2 px-3.5 rounded-xl shadow-sm transition-all active:scale-95"
-            title="Imprimir vista de reporte directamente o guardar en PDF"
-          >
-            <Printer className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
-            <span>Imprimir Vista</span>
           </button>
         </div>
       </div>

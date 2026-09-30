@@ -1,798 +1,463 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  KNOWLEDGE_BASE,
-  MANUAL_MODULES,
-  QUICK_QUESTIONS,
-  PREDETERMINED_CATEGORIES,
-  searchKnowledge,
-  getLearnedKnowledge,
-  saveLearnedKnowledge,
-  deleteLearnedKnowledge,
-  KnowledgeItem,
-  LearnedKnowledgeItem,
-  PredeterminedCategory
-} from '../data/assistantKnowledgeBase';
-import {
   Bot,
   X,
   Send,
-  MessageSquare,
-  BookOpen,
-  HelpCircle,
   RotateCcw,
-  Sparkles,
   ChevronRight,
-  ChevronDown,
-  MapPin,
-  UserCheck,
-  Shield,
-  Compass,
-  WifiOff,
-  FileText,
-  Activity,
-  AlertCircle,
+  ArrowLeft,
   CheckCircle2,
+  AlertCircle,
+  HelpCircle,
+  MapPin,
+  Plug,
+  Unlock,
+  FileText,
+  UserPlus,
+  WifiOff,
   Search,
-  GraduationCap,
-  Plus,
-  Trash2,
-  Layers,
-  Sparkle
+  Sparkles
 } from 'lucide-react';
 
-interface ChatMessage {
+interface StepGuide {
   id: string;
-  sender: 'bot' | 'user';
-  text: string;
-  knowledgeItem?: KnowledgeItem;
-  unresolvedQuery?: string;
-  timestamp: string;
+  title: string;
+  shortDesc: string;
+  icon: any;
+  iconBg: string;
+  iconColor: string;
+  explanation: string;
+  steps: string[];
+  tip?: string;
+  keywords: string[];
 }
+
+const STEP_GUIDES: StepGuide[] = [
+  {
+    id: 'add-nap',
+    title: '¿Cómo agregar una Caja NAP en el mapa?',
+    shortDesc: 'Registro de divisor óptico 1:16 con coordenadas GPS.',
+    icon: MapPin,
+    iconBg: 'bg-sky-500/10 dark:bg-sky-500/20',
+    iconColor: 'text-sky-600 dark:text-sky-400',
+    explanation:
+      'Para desplegar una nueva caja terminal óptica (NAP) en la red, sigue estos sencillos pasos:',
+    steps: [
+      'Ve a la pestaña "Mapa de Red" en la barra de navegación superior.',
+      'Haz clic en el botón azul "+ Agregar NAP" ubicado en la barra de herramientas del mapa (o haz doble clic sobre el punto exacto de la calle donde está el poste).',
+      'El sistema detectará automáticamente el siguiente identificador correlativo (ej. NAP-SJR-26).',
+      'Ingresa el nombre de la zona (ej. Centro, San Juan) y la dirección o referencia física.',
+      'Verifica las coordenadas GPS capturadas automáticamente o pulsa el botón de geolocalización.',
+      'Haz clic en "Guardar y Desplegar Caja". La NAP se creará de inmediato con sus 16 puertos listos.'
+    ],
+    tip: 'Si el nombre ya existe en la red, el sistema te advertirá en tiempo real para evitar duplicados.',
+    keywords: ['agregar caja', 'crear nap', 'nueva caja', 'divisor', 'poste', 'mapa']
+  },
+  {
+    id: 'connect-client',
+    title: '¿Cómo conectar a un nuevo abonado?',
+    shortDesc: 'Asignación de puerto óptico, datos de suscriptor y ONT.',
+    icon: Plug,
+    iconBg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    explanation:
+      'Para dar de alta a un suscriptor y conectarlo a un puerto físico libre en una caja NAP:',
+    steps: [
+      'En el mapa, haz clic sobre el icono de la Caja NAP donde se realizará la acometida.',
+      'En el panel de información que se despliega a la derecha, pulsa "Ver Matriz de Puertos".',
+      'Busca cualquier puerto que esté en color verde (Estado: "Libre") y pulsa en "Asignar / Conectar".',
+      'Escribe el número de contrato o cliente (ej. CLI-1090) y el nombre completo del titular.',
+      'Ingresa la marca del equipo ONT instalado (Huawei, ZTE, V-SOL, TP-Link) y su dirección MAC.',
+      'Pulsa en "Confirmar Conexión Óptica". El puerto cambiará a color azul (Ocupado).'
+    ],
+    tip: 'El cálculo de potencia óptica estimada (dBm) se actualiza de forma automática en el sistema.',
+    keywords: ['conectar', 'abonado', 'cliente', 'asignar puerto', 'ont', 'mac', 'nuevo cliente']
+  },
+  {
+    id: 'release-port',
+    title: '¿Cómo liberar un puerto ocupado?',
+    shortDesc: 'Desvincular cliente por cancelación y regresar puerto a Libre.',
+    icon: Unlock,
+    iconBg: 'bg-amber-500/10 dark:bg-amber-500/20',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+    explanation:
+      'Cuando un cliente cancela su servicio o se traslada de domicilio, puedes liberar el conector óptico:',
+    steps: [
+      'Asegúrate de haber iniciado sesión con rol de "Soporte" o "Administrador" (los técnicos en campo solo tienen permisos de lectura/conexión).',
+      'Abre la Caja NAP en el mapa o búscala en la pestaña "Abonados".',
+      'Ingresa a la "Matriz de Puertos" de la caja.',
+      'Ubica el puerto ocupado (azul) que deseas vaciar y pulsa el botón "Liberar Puerto".',
+      'Confirma la acción en el diálogo de seguridad. El puerto volverá automáticamente a estado Verde (Libre) y el cliente quedará desvinculado.'
+    ],
+    tip: 'Por auditoría de telecomunicaciones, la acción queda registrada con fecha, hora y usuario responsable.',
+    keywords: ['liberar', 'desconectar', 'cancelar', 'vaciar puerto', 'desvincular']
+  },
+  {
+    id: 'download-pdf',
+    title: '¿Cómo descargar el reporte de saturación en PDF?',
+    shortDesc: 'Generación del informe ejecutivo oficial con gráficas y tablas.',
+    icon: FileText,
+    iconBg: 'bg-indigo-500/10 dark:bg-indigo-500/20',
+    iconColor: 'text-indigo-600 dark:text-indigo-400',
+    explanation:
+      'Para generar y descargar el reporte de capacidad de la red GPON en formato PDF:',
+    steps: [
+      'Ve a la pestaña "Reportes PDF" en el menú principal superior.',
+      'Revisa las métricas globales en pantalla (Total de NAPs, Puertos totales, Libres y Saturación global).',
+      'En la esquina superior derecha, haz clic en el botón azul "Descargar Reporte PDF".',
+      'El servidor compilará al instante el documento con diseño corporativo institucional, tablas de todas las cajas y firma de auditoría.',
+      'El archivo PDF se descargará automáticamente en tu dispositivo.'
+    ],
+    tip: 'Puedes filtrar la tabla de reportes por zona o nombre de caja antes de revisar la saturación.',
+    keywords: ['pdf', 'reporte', 'descargar', 'informe', 'saturacion', 'imprimir']
+  },
+  {
+    id: 'manage-users',
+    title: '¿Cómo dar de alta nuevo personal?',
+    shortDesc: 'Registro de técnicos de campo, soporte o administradores.',
+    icon: UserPlus,
+    iconBg: 'bg-purple-500/10 dark:bg-purple-500/20',
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    explanation:
+      'Si tienes rol de Administrador, puedes agregar miembros a las cuadrillas de trabajo:',
+    steps: [
+      'Dirígete a la sección "Personal" en la barra de navegación superior.',
+      'Haz clic en el botón "+ Agregar Personal" arriba a la derecha.',
+      'Ingresa el nombre y apellidos completos del colaborador.',
+      'Define su correo o credencial de acceso (ej. tecnico3@gpon.com).',
+      'Selecciona el rol adecuado: Técnico (campo), Soporte (red y clientes) o Admin (control total).',
+      'Establece una contraseña inicial segura y pulsa "Guardar Personal".'
+    ],
+    tip: 'El nuevo colaborador podrá iniciar sesión de inmediato con las credenciales asignadas.',
+    keywords: ['personal', 'tecnico', 'crear usuario', 'alta usuario', 'agregar personal', 'rol']
+  },
+  {
+    id: 'offline-mode',
+    title: '¿Cómo funciona el modo sin conexión (Offline)?',
+    shortDesc: 'Uso de la plataforma en zonas rurales sin señal celular.',
+    icon: WifiOff,
+    iconBg: 'bg-rose-500/10 dark:bg-rose-500/20',
+    iconColor: 'text-rose-600 dark:text-rose-400',
+    explanation:
+      'En campo es común quedarse sin cobertura de telefonía. El sistema opera 100% de forma autónoma:',
+    steps: [
+      'La aplicación almacena automáticamente la cartografía, las cajas NAP y los clientes en la memoria local (IndexedDB) de tu teléfono o laptop.',
+      'Si pierdes la conexión, verás el indicador amarillo "Offline" en la barra superior.',
+      'Puedes seguir navegando por el mapa, consultando puertos y registrando conexiones como de costumbre.',
+      'Todas las acciones se guardan en una cola local protegida.',
+      'En cuanto tu dispositivo vuelva a tener señal WiFi o 4G/5G, pulsa "Sync" o el sistema sincronizará los cambios automáticamente.'
+    ],
+    tip: 'Puedes instalar la aplicación como APK / PWA tocando el botón "APK" de la barra superior para abrirla sin navegador.',
+    keywords: ['offline', 'sin internet', 'sin conexion', 'sincronizar', 'pwa', 'cobertura']
+  },
+  {
+    id: 'quick-search',
+    title: '¿Cómo buscar una caja o abonado rápidamente?',
+    shortDesc: 'Uso del buscador en tiempo real en el mapa y tablas.',
+    icon: Search,
+    iconBg: 'bg-sky-500/10 dark:bg-sky-500/20',
+    iconColor: 'text-sky-600 dark:text-sky-400',
+    explanation:
+      'Localiza elementos al instante escribiendo cualquier parte de su nombre o código:',
+    steps: [
+      'En el mapa: utiliza la barra de búsqueda en la parte superior izquierda. Escribe el número de NAP (ej. 24) o la zona (ej. Centro) y el mapa volará directamente hacia ella.',
+      'En Abonados: escribe en el buscador el nombre del suscriptor (ej. Carlos) o el código (ej. CLI-1002); los resultados se filtran al momento.',
+      'Cada tabla muestra 20 registros por página para que la navegación sea rápida y ligera.'
+    ],
+    tip: 'No te preocupes por acentos o mayúsculas; el buscador es inteligente y reconoce coincidencias de cualquier forma.',
+    keywords: ['buscar', 'buscador', 'encontrar', 'localizar', 'filtrar']
+  }
+];
 
 export const AssistantChatbot: React.FC = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'faq' | 'learn' | 'manual'>('chat');
-  const [inputQuery, setInputQuery] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [expandedModule, setExpandedModule] = useState<string | null>('mod_mapa');
-  const [manualSearch, setManualSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('cat_naps');
-
-  // Estado para el formulario de aprendizaje dinámico
-  const [learnQuestion, setLearnQuestion] = useState('');
-  const [learnAnswer, setLearnAnswer] = useState('');
-  const [learnAuthor, setLearnAuthor] = useState('');
-  const [learnSuccess, setLearnSuccess] = useState<string | null>(null);
-  const [learnedList, setLearnedList] = useState<LearnedKnowledgeItem[]>([]);
-
-  // Cargar conocimientos aprendidos
-  const refreshLearnedList = () => {
-    setLearnedList(getLearnedKnowledge());
-  };
+  const [selectedGuide, setSelectedGuide] = useState<StepGuide | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [customAnswer, setCustomAnswer] = useState<string | null>(null);
+  const chatBodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    refreshLearnedList();
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-gpon-assistant', handleOpen);
+    return () => window.removeEventListener('open-gpon-assistant', handleOpen);
   }, []);
 
-  // Mensaje inicial de bienvenida según el rol
-  const getInitialMessage = (): ChatMessage => {
-    const roleName = user?.rol || 'Usuario';
-    return {
-      id: 'msg-initial',
-      sender: 'bot',
-      text: `¡Hola ${user?.nombre_completo || 'Compañero'}! Bienvenido al Asistente Inteligente GPON. Tu sesión actual tiene rol de ${roleName}.\n\nPuedes hacerme cualquier consulta técnica sobre cajas NAP, puertos, potencias en dBm, reportes PDF o navegación en campo. También puedes explorar las preguntas predeterminadas o enseñarme nuevas respuestas.`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-  };
-
-  const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    if (isOpen && activeTab === 'chat') {
-      scrollToBottom();
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = 0;
     }
-  }, [messages, isOpen, activeTab]);
+  }, [selectedGuide, customAnswer]);
 
-  useEffect(() => {
-    const handleOpenEvent = () => {
-      setIsOpen(true);
-    };
-    window.addEventListener('open-gpon-assistant', handleOpenEvent);
-    return () => window.removeEventListener('open-gpon-assistant', handleOpenEvent);
-  }, []);
+  const handleSelectGuide = (guide: StepGuide) => {
+    setSelectedGuide(guide);
+    setCustomAnswer(null);
+  };
 
-  const handleSendMessage = (textToSend?: string) => {
-    const query = (textToSend || inputQuery).trim();
+  const handleBackToMenu = () => {
+    setSelectedGuide(null);
+    setCustomAnswer(null);
+    setSearchQuery('');
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchQuery.trim().toLowerCase();
     if (!query) return;
 
-    const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
-      sender: 'user',
-      text: query,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
+    // Buscar coincidencia en las guías
+    const found = STEP_GUIDES.find(
+      (g) =>
+        g.title.toLowerCase().includes(query) ||
+        g.keywords.some((k) => query.includes(k) || k.includes(query)) ||
+        g.steps.some((s) => s.toLowerCase().includes(query))
+    );
 
-    setMessages((prev) => [...prev, userMsg]);
-    if (!textToSend) setInputQuery('');
-    setIsTyping(true);
-
-    // Procesamiento con búsqueda local (NLP + Base de Aprendizaje)
-    setTimeout(() => {
-      const match = searchKnowledge(query);
-
-      let botResponse: ChatMessage;
-
-      if (match) {
-        botResponse = {
-          id: `bot-${Date.now()}`,
-          sender: 'bot',
-          text: match.item.shortAnswer,
-          knowledgeItem: match.item,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-      } else {
-        botResponse = {
-          id: `bot-${Date.now()}`,
-          sender: 'bot',
-          text:
-            'No encontré una respuesta directa para esa consulta exacta en la base técnica.',
-          unresolvedQuery: query,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-      }
-
-      setMessages((prev) => [...prev, botResponse]);
-      setIsTyping(false);
-    }, 300);
-  };
-
-  const handleResetChat = () => {
-    setMessages([getInitialMessage()]);
-  };
-
-  const handleAskQuestionChip = (question: string) => {
-    setActiveTab('chat');
-    handleSendMessage(question);
-  };
-
-  const handleStartTeaching = (prefillQuestion?: string) => {
-    if (prefillQuestion) {
-      setLearnQuestion(prefillQuestion);
-    }
-    setActiveTab('learn');
-  };
-
-  const handleSaveLearning = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!learnQuestion.trim() || !learnAnswer.trim()) return;
-
-    const author = learnAuthor.trim() || user?.nombre_completo || 'Equipo de Operación';
-    saveLearnedKnowledge(learnQuestion, learnAnswer, author);
-
-    refreshLearnedList();
-    setLearnSuccess(`¡Excelente! He memorizado esta respuesta. Ahora podré responderla a quien consulte.`);
-    setLearnQuestion('');
-    setLearnAnswer('');
-
-    setTimeout(() => {
-      setLearnSuccess(null);
-    }, 4000);
-  };
-
-  const handleDeleteLearned = (id: string) => {
-    deleteLearnedKnowledge(id);
-    refreshLearnedList();
-  };
-
-  // Filtrado de módulos del manual
-  const filteredModules = MANUAL_MODULES.filter(
-    (m) =>
-      m.title.toLowerCase().includes(manualSearch.toLowerCase()) ||
-      m.subtitle.toLowerCase().includes(manualSearch.toLowerCase()) ||
-      m.sections.some(
-        (s) =>
-          s.heading.toLowerCase().includes(manualSearch.toLowerCase()) ||
-          s.content.toLowerCase().includes(manualSearch.toLowerCase())
-      )
-  );
-
-  const getCategoryIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'MapPin':
-        return <MapPin className="w-3.5 h-3.5 text-sky-400" />;
-      case 'Layers':
-        return <Layers className="w-3.5 h-3.5 text-emerald-400" />;
-      case 'Activity':
-        return <Activity className="w-3.5 h-3.5 text-amber-400" />;
-      case 'Shield':
-        return <Shield className="w-3.5 h-3.5 text-purple-400" />;
-      case 'FileText':
-        return <FileText className="w-3.5 h-3.5 text-cyan-400" />;
-      case 'Compass':
-        return <Compass className="w-3.5 h-3.5 text-orange-400" />;
-      default:
-        return <Bot className="w-3.5 h-3.5 text-blue-400" />;
+    if (found) {
+      setSelectedGuide(found);
+      setCustomAnswer(null);
+    } else {
+      setSelectedGuide(null);
+      setCustomAnswer(
+        `No encontré un procedimiento exacto para "${searchQuery}". Por favor selecciona una de las guías del menú a continuación o prueba buscando palabras clave como "agregar caja", "conectar abonado", "liberar puerto" o "descargar pdf".`
+      );
     }
   };
+
+  const filteredGuides = STEP_GUIDES.filter((g) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      g.title.toLowerCase().includes(q) ||
+      g.shortDesc.toLowerCase().includes(q) ||
+      g.keywords.some((k) => k.includes(q))
+    );
+  });
 
   return (
     <>
-      {/* Botón Flotante: Circular y compacto en celular, pill estilizado en PC */}
-      <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
-        {!isOpen ? (
+      {/* Botón Flotante en la esquina inferior derecha */}
+      <div className="fixed bottom-5 right-5 z-[9990]">
+        {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="group flex items-center justify-center sm:gap-2.5 bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white w-12 h-12 sm:w-auto sm:px-4 sm:py-3 rounded-full shadow-2xl shadow-sky-950/60 border border-sky-300/40 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
-            title="Abrir Asistente Virtual GPON"
-            aria-label="Abrir Asistente Virtual GPON"
+            className="flex items-center gap-2.5 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-semibold text-xs sm:text-sm px-4 py-3 rounded-full shadow-xl shadow-sky-900/30 hover:shadow-sky-600/40 transition-all duration-300 active:scale-95 cursor-pointer border border-sky-400/30 group"
+            title="Abrir Asistente GPON"
           >
-            <div className="relative flex items-center justify-center">
-              <Bot className="w-5 h-5 animate-pulse" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-900 rounded-full" />
+            <div className="relative">
+              <Bot className="w-5 h-5 text-white animate-bounce" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-sky-700" />
             </div>
-            <span className="hidden sm:inline font-semibold text-xs tracking-wide">Asistente GPON</span>
-            <Sparkles className="hidden sm:inline w-3.5 h-3.5 text-sky-200 group-hover:rotate-12 transition-transform" />
+            <span className="tracking-wide">Asistente GPON</span>
+            <Sparkles className="w-3.5 h-3.5 text-sky-200 group-hover:rotate-12 transition-transform" />
           </button>
-        ) : null}
+        )}
       </div>
 
-      {/* Ventana Flotante del Asistente Virtual */}
+      {/* Ventana Modal del Asistente */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] w-[95vw] sm:w-[480px] h-[85vh] sm:h-[620px] max-h-[85vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fadeIn text-slate-100">
-          {/* Cabecera del Asistente */}
-          <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-800 p-3 sm:p-3.5 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md border border-slate-700 flex-shrink-0">
-                <img
-                  src="/logo-gpon.png"
-                  alt="GPON Telecom"
-                  className="w-full h-full object-contain"
-                />
+        <div className="fixed bottom-4 right-4 z-[9995] w-[95vw] sm:w-[440px] max-h-[85vh] h-[640px] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl shadow-slate-950/40 overflow-hidden transition-colors animate-fadeIn font-sans">
+          {/* Cabecera Amigable */}
+          <div className="bg-gradient-to-r from-sky-600 to-sky-700 p-4 text-white flex items-center justify-between shrink-0 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center border border-white/20 shadow-xs">
+                <Bot className="w-5 h-5 text-white" />
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-xs sm:text-sm text-white truncate">Asistente GPON Telecom</h3>
-                  <span className="inline-flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full font-medium shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-sm text-white tracking-tight">
+                    Asistente GPON Telecom
+                  </h3>
+                  <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-400/20 text-emerald-100 px-2 py-0.2 rounded-full font-medium border border-emerald-400/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
                     En línea
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-400 truncate">
-                  ISP EDOMEX • Soporte Técnico y Guía Inteligente
+                <p className="text-[11px] text-sky-100 opacity-90">
+                  Guía paso a paso • {user?.rol || 'Técnico'}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1">
               <button
-                onClick={handleResetChat}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                title="Reiniciar conversación"
+                onClick={handleBackToMenu}
+                className="p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                title="Volver al menú principal"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                title="Cerrar ventana"
+                className="p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                title="Cerrar asistente"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Selector de Pestañas: Chatbot, FAQ Predeterminado, Enseñar al Bot, Manual */}
-          <div className="flex items-center bg-slate-950/90 p-1 border-b border-slate-800 gap-1 flex-shrink-0 overflow-x-auto scrollbar-none">
-            <button
-              onClick={() => setActiveTab('chat')}
-              className={`flex-1 min-w-[70px] flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'chat'
-                  ? 'bg-sky-600 text-white shadow-md shadow-sky-950/50'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-              }`}
-            >
-              <MessageSquare className="w-3.5 h-3.5 shrink-0" />
-              <span>Chat</span>
-            </button>
+          {/* Cuerpo Principal del Asistente */}
+          <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-slate-50/70 dark:bg-slate-950/40">
+            {/* Si el usuario seleccionó una guía paso a paso específica */}
+            {selectedGuide ? (
+              <div className="space-y-3.5 animate-fadeIn">
+                {/* Botón de Regresar al Menú */}
+                <button
+                  onClick={handleBackToMenu}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Volver al menú de opciones</span>
+                </button>
 
-            <button
-              onClick={() => setActiveTab('faq')}
-              className={`flex-1 min-w-[85px] flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'faq'
-                  ? 'bg-sky-600 text-white shadow-md shadow-sky-950/50'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-              }`}
-            >
-              <HelpCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>Preguntas</span>
-            </button>
+                {/* Tarjeta de la Guía */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2.5 rounded-xl shrink-0 ${selectedGuide.iconBg}`}>
+                      <selectedGuide.icon className={`w-5 h-5 ${selectedGuide.iconColor}`} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white leading-snug">
+                        {selectedGuide.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        {selectedGuide.explanation}
+                      </p>
+                    </div>
+                  </div>
 
-            <button
-              onClick={() => setActiveTab('learn')}
-              className={`flex-1 min-w-[85px] flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'learn'
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-950/50'
-                  : 'text-emerald-400 hover:text-emerald-300 hover:bg-slate-900'
-              }`}
-              title="Enseñar nuevas respuestas al bot"
-            >
-              <GraduationCap className="w-3.5 h-3.5 shrink-0" />
-              <span>Aprender</span>
-              {learnedList.length > 0 && (
-                <span className="text-[9px] bg-emerald-500/20 px-1 rounded-full font-bold">
-                  {learnedList.length}
-                </span>
-              )}
-            </button>
+                  {/* Lista de Pasos Numerados Claros */}
+                  <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 block">
+                      Procedimiento Paso a Paso:
+                    </span>
+                    <div className="space-y-2">
+                      {selectedGuide.steps.map((step, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 text-xs text-slate-700 dark:text-slate-300"
+                        >
+                          <span className="w-5 h-5 rounded-full bg-sky-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <span className="leading-relaxed flex-1">{step}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-            <button
-              onClick={() => setActiveTab('manual')}
-              className={`flex-1 min-w-[75px] flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'manual'
-                  ? 'bg-sky-600 text-white shadow-md shadow-sky-950/50'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5 shrink-0" />
-              <span>Manual</span>
-            </button>
-          </div>
+                  {/* Recomendación / Tip */}
+                  {selectedGuide.tip && (
+                    <div className="p-3 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 flex items-start gap-2 text-xs text-sky-900 dark:text-sky-200">
+                      <AlertCircle className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
+                      <div className="leading-relaxed">
+                        <strong className="font-semibold">Recomendación técnica: </strong>
+                        <span>{selectedGuide.tip}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-          {/* ================================================================ */}
-          {/* PESTAÑA 1: CHATBOT INTERACTIVO */}
-          {/* ================================================================ */}
-          {activeTab === 'chat' && (
-            <div className="flex-1 flex flex-col min-h-0 bg-slate-900/90">
-              {/* Chips de Preguntas Rápidas en la parte superior */}
-              <div className="p-2 border-b border-slate-800 bg-slate-950/40">
-                <div className="flex items-center justify-between mb-1 px-1">
-                  <span className="text-[10px] text-slate-400 font-semibold">
-                    Consultas frecuentes (toca para preguntar):
-                  </span>
+                {/* Botón inferior para regresar */}
+                <div className="text-center pt-1">
                   <button
-                    onClick={() => setActiveTab('faq')}
-                    className="text-[10px] text-sky-400 hover:underline cursor-pointer flex items-center gap-0.5"
+                    onClick={handleBackToMenu}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                   >
-                    <span>Ver todas</span>
-                    <ChevronRight className="w-2.5 h-2.5" />
+                    Ver otras preguntas y procedimientos
                   </button>
                 </div>
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                  {QUICK_QUESTIONS.map((q, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleAskQuestionChip(q)}
-                      className="text-[11px] whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-sky-200 border border-slate-750 hover:border-sky-500/40 px-2.5 py-1 rounded-full transition-colors flex-shrink-0 cursor-pointer"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
               </div>
-
-              {/* Lista de Mensajes */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
-                  >
-                    <div
-                      className={`max-w-[90%] sm:max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed shadow-sm ${
-                        msg.sender === 'user'
-                          ? 'bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-br-none'
-                          : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-bl-none'
-                      }`}
-                    >
-                      {msg.sender === 'bot' && (
-                        <div className="flex items-center justify-between gap-1.5 mb-1.5">
-                          <div className="flex items-center gap-1.5 text-sky-400 font-bold text-[11px]">
-                            <Bot className="w-3.5 h-3.5" />
-                            <span>Asistente GPON</span>
-                          </div>
-
-                          {/* Distintivo de respuesta aprendida por el usuario */}
-                          {msg.knowledgeItem?.isLearned && (
-                            <span className="inline-flex items-center gap-1 text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded-full font-medium">
-                              <Sparkle className="w-2.5 h-2.5" />
-                              Respuesta Aprendida
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      <p className="whitespace-pre-line">{msg.text}</p>
-
-                      {/* Tarjeta de pasos si viene de base técnica */}
-                      {msg.knowledgeItem?.detailedSteps && (
-                        <div className="mt-2.5 pt-2 border-t border-slate-700/80 space-y-2">
-                          <span className="text-[10px] uppercase font-bold text-sky-400 block mb-1">
-                            Procedimiento Paso a Paso:
-                          </span>
-                          <div className="space-y-1.5 bg-slate-900/70 p-2.5 rounded-lg border border-slate-750">
-                            {msg.knowledgeItem.detailedSteps.map((step, sIdx) => (
-                              <div key={sIdx} className="text-[11px] text-slate-300 flex items-start gap-1.5">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <span>{step}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Recomendación Técnica */}
-                      {msg.knowledgeItem?.tips && msg.knowledgeItem.tips.length > 0 && (
-                        <div className="mt-2 bg-sky-950/40 border border-sky-800/60 p-2 rounded-lg">
-                          <span className="text-[10px] font-bold text-sky-300 flex items-center gap-1 mb-0.5">
-                            <AlertCircle className="w-3 h-3" />
-                            Recomendación Técnica:
-                          </span>
-                          {msg.knowledgeItem.tips.map((tip, tIdx) => (
-                            <p key={tIdx} className="text-[10px] text-slate-300">
-                              {tip}
-                            </p>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Si la consulta no tuvo respuesta directa: invitación a enseñarle al bot */}
-                      {msg.unresolvedQuery && (
-                        <div className="mt-2.5 pt-2 border-t border-slate-700/80 space-y-2">
-                          <p className="text-[11px] text-slate-400">
-                            Puedes consultar las preguntas frecuentes en la pestaña superior o enseñarme la respuesta a esta duda para recordarla en el futuro:
-                          </p>
-                          <button
-                            onClick={() => handleStartTeaching(msg.unresolvedQuery)}
-                            className="w-full bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 font-semibold py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                          >
-                            <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Enseñar respuesta a esta duda</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-[9px] text-slate-500 mt-1 px-1">{msg.timestamp}</span>
+            ) : (
+              /* Vista de Menú Principal de Opciones Paso a Paso */
+              <div className="space-y-3.5 animate-fadeIn">
+                {/* Saludo inicial amigable */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-xs">
+                  <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-xs">
+                    <Sparkles className="w-4 h-4 text-sky-500" />
+                    <span>¡Hola, {user?.nombre_completo.split(' ')[0] || 'Compañero'}!</span>
                   </div>
-                ))}
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    Selecciona una de las siguientes opciones para ver el procedimiento paso a paso detallado:
+                  </p>
+                </div>
 
-                {isTyping && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-800/70 border border-slate-700 w-fit px-3 py-2 rounded-2xl rounded-bl-none">
-                    <Bot className="w-3.5 h-3.5 text-sky-400 animate-bounce" />
-                    <span className="text-[11px]">Consultando base técnica y conocimientos...</span>
+                {/* Mensaje de respuesta personalizada si no hubo match */}
+                {customAnswer && (
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+                    <HelpCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">{customAnswer}</span>
                   </div>
                 )}
-                <div ref={messagesEndRef} />
-              </div>
 
-              {/* Barra de Entrada de Pregunta */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendMessage();
-                }}
-                className="p-2.5 bg-slate-950 border-t border-slate-800 flex items-center gap-2 flex-shrink-0"
-              >
-                <input
-                  type="text"
-                  value={inputQuery}
-                  onChange={(e) => setInputQuery(e.target.value)}
-                  placeholder="Escribe tu consulta (ej. eliminar caja, dBm, sincronizar)..."
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
-                />
-                <button
-                  type="submit"
-                  disabled={!inputQuery.trim()}
-                  className="bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white p-2 rounded-xl transition-colors shadow-md flex-shrink-0 cursor-pointer"
-                  title="Enviar consulta"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* ================================================================ */}
-          {/* PESTAÑA 2: PREGUNTAS PREDETERMINADAS POR CATEGORÍA */}
-          {/* ================================================================ */}
-          {activeTab === 'faq' && (
-            <div className="flex-1 flex flex-col min-h-0 bg-slate-900/90">
-              <div className="p-3 border-b border-slate-800 bg-slate-950/60">
-                <h4 className="text-xs font-bold text-white mb-0.5">Catálogo de Preguntas Predeterminadas</h4>
-                <p className="text-[10px] text-slate-400">
-                  Selecciona una categoría y toca cualquier pregunta para obtener la respuesta paso a paso.
-                </p>
-
-                {/* Filtro de Categorías en píldoras */}
-                <div className="flex gap-1.5 overflow-x-auto mt-2.5 pb-1 scrollbar-none">
-                  {PREDETERMINED_CATEGORIES.map((cat) => {
-                    const isSelected = selectedCategory === cat.id;
+                {/* Menú de Botones Paso a Paso */}
+                <div className="space-y-2">
+                  {filteredGuides.map((guide) => {
+                    const Icon = guide.icon;
                     return (
                       <button
-                        key={cat.id}
-                        onClick={() => setSelectedCategory(cat.id)}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-sky-600 text-white shadow-sm'
-                            : 'bg-slate-800 text-slate-300 hover:bg-slate-750 border border-slate-700'
-                        }`}
+                        key={guide.id}
+                        onClick={() => handleSelectGuide(guide)}
+                        className="w-full text-left p-3 rounded-xl bg-white hover:bg-sky-50/70 dark:bg-slate-900 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 transition-all shadow-xs group cursor-pointer flex items-center justify-between gap-3"
                       >
-                        {getCategoryIcon(cat.iconName)}
-                        <span>{cat.name}</span>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`p-2 rounded-lg shrink-0 ${guide.iconBg}`}>
+                            <Icon className={`w-4 h-4 ${guide.iconColor}`} />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="font-semibold text-xs text-slate-800 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors truncate">
+                              {guide.title}
+                            </h4>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                              {guide.shortDesc}
+                            </p>
+                          </div>
+                        </div>
+
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all shrink-0" />
                       </button>
                     );
                   })}
                 </div>
               </div>
+            )}
+          </div>
 
-              {/* Lista de preguntas de la categoría seleccionada */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                {PREDETERMINED_CATEGORIES.filter((c) => c.id === selectedCategory).map((category) => (
-                  <div key={category.id} className="space-y-2">
-                    <p className="text-[11px] text-slate-400 italic mb-2">
-                      {category.description}
-                    </p>
-
-                    {category.questions.map((item, qIdx) => (
-                      <div
-                        key={qIdx}
-                        className="bg-slate-850 hover:bg-slate-800 border border-slate-750 rounded-xl p-3 transition-colors flex flex-col gap-2"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h5 className="text-xs font-bold text-sky-300">{item.question}</h5>
-                            <p className="text-[11px] text-slate-400 mt-0.5">{item.summary}</p>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => handleAskQuestionChip(item.question)}
-                          className="self-end bg-sky-600/20 hover:bg-sky-600/40 text-sky-300 border border-sky-500/30 text-[11px] font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
-                        >
-                          <MessageSquare className="w-3 h-3" />
-                          <span>Ver respuesta en el Chat</span>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
+          {/* Barra de Entrada / Pregunta rápida */}
+          <form
+            onSubmit={handleSearchSubmit}
+            className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0"
+          >
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Escribe tu consulta (ej. agregar caja, puerto)..."
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-          )}
 
-          {/* ================================================================ */}
-          {/* PESTAÑA 3: ENSEÑAR AL BOT (APRENDIZAJE DINÁMICO) */}
-          {/* ================================================================ */}
-          {activeTab === 'learn' && (
-            <div className="flex-1 flex flex-col min-h-0 bg-slate-900/90 overflow-y-auto p-3 space-y-4">
-              {/* Tarjeta de Formulario para Enseñar */}
-              <div className="bg-slate-850 border border-slate-750 rounded-2xl p-3.5 shadow-sm">
-                <div className="flex items-center gap-2 mb-1.5 text-emerald-400">
-                  <div className="p-1.5 bg-emerald-500/20 rounded-lg">
-                    <GraduationCap className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-xs font-bold text-white">Enseñar nueva respuesta al Asistente</h4>
-                </div>
-                <p className="text-[10px] text-slate-400 mb-3">
-                  Escribe una duda y la respuesta técnica adecuada. El bot memorizará la información y responderá de forma automática cuando alguien consulte sobre ese tema.
-                </p>
-
-                {learnSuccess && (
-                  <div className="mb-3 p-2 bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 rounded-lg text-xs flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>{learnSuccess}</span>
-                  </div>
-                )}
-
-                <form onSubmit={handleSaveLearning} className="space-y-2.5">
-                  <div>
-                    <label className="block text-[10px] font-semibold text-slate-300 uppercase mb-1">
-                      Pregunta o consulta del usuario *
-                    </label>
-                    <input
-                      type="text"
-                      value={learnQuestion}
-                      onChange={(e) => setLearnQuestion(e.target.value)}
-                      placeholder="Ej: ¿Qué hacer si se corta la fibra en el troncal?"
-                      required
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-semibold text-slate-300 uppercase mb-1">
-                      Respuesta que debe dar el bot *
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={learnAnswer}
-                      onChange={(e) => setLearnAnswer(e.target.value)}
-                      placeholder="Ej: Reportar inmediatamente a ODF Central, verificar el reflectómetro OTDR y revisar las coordenadas de la muffa más cercana..."
-                      required
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-semibold text-slate-300 uppercase mb-1">
-                      Autor o Rol (opcional)
-                    </label>
-                    <input
-                      type="text"
-                      value={learnAuthor}
-                      onChange={(e) => setLearnAuthor(e.target.value)}
-                      placeholder={user?.nombre_completo || 'Soporte / Administrador'}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs py-2 px-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Guardar y Enseñar al Asistente</span>
-                  </button>
-                </form>
-              </div>
-
-              {/* Lista de Conocimientos Aprendidos */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h5 className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Conocimientos memorizados por el bot ({learnedList.length})</span>
-                  </h5>
-                </div>
-
-                {learnedList.length === 0 ? (
-                  <div className="p-4 rounded-xl border border-dashed border-slate-800 text-center text-[11px] text-slate-500">
-                    Aún no se han registrado respuestas personalizadas. ¡Utiliza el formulario de arriba para enseñarle!
-                  </div>
-                ) : (
-                  learnedList.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-slate-850 border border-slate-750 rounded-xl p-3 flex flex-col gap-1.5"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h6 className="text-xs font-bold text-emerald-300">{item.question}</h6>
-                          <span className="text-[9px] text-slate-500">
-                            Por {item.author || 'Equipo'} • {item.createdAt}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => handleDeleteLearned(item.id)}
-                          className="p-1 text-slate-500 hover:text-red-400 rounded transition-colors cursor-pointer"
-                          title="Eliminar este conocimiento"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      <p className="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                        {item.answer}
-                      </p>
-
-                      <button
-                        onClick={() => handleAskQuestionChip(item.question)}
-                        className="self-end text-[10px] text-sky-400 hover:underline flex items-center gap-1 cursor-pointer pt-0.5"
-                      >
-                        <MessageSquare className="w-3 h-3" />
-                        <span>Probar en el Chat</span>
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ================================================================ */}
-          {/* PESTAÑA 4: MANUAL RÁPIDO ILUSTRADO */}
-          {/* ================================================================ */}
-          {activeTab === 'manual' && (
-            <div className="flex-1 flex flex-col min-h-0 bg-slate-900/90">
-              {/* Buscador de Manual */}
-              <div className="p-2.5 border-b border-slate-800 bg-slate-950/60">
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                  <input
-                    type="text"
-                    value={manualSearch}
-                    onChange={(e) => setManualSearch(e.target.value)}
-                    placeholder="Buscar tema en el manual (ej. GPS, roles, splitter)..."
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
-                  />
-                </div>
-              </div>
-
-              {/* Acordeón de Módulos */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
-                {filteredModules.map((mod) => {
-                  const isExpanded = expandedModule === mod.id;
-                  return (
-                    <div
-                      key={mod.id}
-                      className="border border-slate-800 rounded-xl bg-slate-850 overflow-hidden transition-colors"
-                    >
-                      <button
-                        onClick={() => setExpandedModule(isExpanded ? null : mod.id)}
-                        className="w-full p-3 flex items-center justify-between text-left hover:bg-slate-800/80 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="p-1.5 rounded-lg bg-slate-800 border border-slate-700">
-                            {getCategoryIcon(mod.iconName)}
-                          </div>
-                          <div>
-                            <h4 className="text-xs font-bold text-white">{mod.title}</h4>
-                            <p className="text-[10px] text-slate-400">{mod.subtitle}</p>
-                          </div>
-                        </div>
-                        {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                        )}
-                      </button>
-
-                      {isExpanded && (
-                        <div className="p-3 border-t border-slate-800 bg-slate-900/60 space-y-3 text-xs">
-                          {mod.sections.map((sec, secIdx) => (
-                            <div key={secIdx} className="space-y-1.5">
-                              <h5 className="font-semibold text-sky-400 text-[11px] flex items-center gap-1">
-                                <span>{sec.heading}</span>
-                              </h5>
-                              <p className="text-slate-300 text-[11px] leading-relaxed">{sec.content}</p>
-
-                              {sec.points && (
-                                <ul className="space-y-1 pl-1">
-                                  {sec.points.map((pt, pIdx) => (
-                                    <li key={pIdx} className="text-[11px] text-slate-400 flex items-start gap-1.5">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-sky-400 flex-shrink-0 mt-1.5" />
-                                      <span>{pt}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-
-                              {sec.important && (
-                                <div className="p-2 bg-amber-950/30 border border-amber-800/50 rounded-lg text-[10px] text-amber-200">
-                                  <span className="font-bold">Regla Importante: </span>
-                                  {sec.important}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-
-                          <button
-                            onClick={() => handleAskQuestionChip(`Quiero saber más sobre: ${mod.title}`)}
-                            className="w-full mt-2 py-1.5 px-3 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                          >
-                            <MessageSquare className="w-3 h-3" />
-                            <span>Preguntar al Asistente sobre este tema</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {filteredModules.length === 0 && (
-                  <div className="p-6 text-center text-slate-500 text-xs">
-                    No se encontraron temas en el manual para esa búsqueda.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+            <button
+              type="submit"
+              disabled={!searchQuery.trim()}
+              className="p-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl transition-colors disabled:opacity-40 cursor-pointer shadow-xs active:scale-95 shrink-0"
+              title="Buscar procedimiento"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </form>
         </div>
       )}
     </>
