@@ -32,8 +32,8 @@ module.exports = async function handler(req, res) {
     await transporter.sendMail({
       from: '"GPON Telecom S.A. de C.V." <nolazcomaury2004@gmail.com>',
       to: toEmail,
-      subject: `Código de verificación: ${resetCode} - GPON Telecom`,
-      text: `Hola ${userName || 'Usuario'},\n\nTu código de verificación para GPON Telecom es: ${resetCode}\nVálido durante 3 minutos.\n\nSi no realizaste esta solicitud, puedes ignorar este mensaje.`,
+      subject: `Código de Seguridad (${resetCode}) - GPON Telecom`,
+      text: `Hola ${userName || 'Usuario'},\n\nTu código de recuperación para GPON Telecom es: ${resetCode}\nEste código tiene una vigencia estricta de 3 minutos.\n\nSi no realizaste esta solicitud, ignora este mensaje.`,
       html: htmlContent
     });
 
@@ -50,3 +50,4 @@ module.exports = async function handler(req, res) {
     });
   }
 };
+

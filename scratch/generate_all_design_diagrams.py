@@ -80,8 +80,7 @@ def generate_diagram_1():
     draw = ImageDraw.Draw(img)
 
     draw.rectangle([(40, 30), (W - 40, 100)], fill=C_GRAY_LIGHT, outline=C_BLACK, width=3)
-    draw.text((W // 2, 52), "DIAGRAMA DE NAVEGACIÓN DEL SISTEMA WEB (USER NAVIGATION FLOW)", font=FONT_TITLE, fill=C_BLACK, anchor="mm")
-    draw.text((W // 2, 82), "Flujo interactivo de navegación, control de acceso, cartografía GIS, chasis de puertos y sincronización offline", font=FONT_SUBTITLE, fill=C_GRAY_DARK, anchor="mm")
+    # Title removed per user instruction
 
     draw_box(draw, (60, 140, 420, 330), "1. Módulo Autenticación", [
         ("• Vista: ", "Pantalla de Inicio de Sesión"),
@@ -270,8 +269,7 @@ def generate_diagram_2():
     draw = ImageDraw.Draw(img)
 
     draw.rectangle([(40, 30), (W - 40, 100)], fill=C_GRAY_LIGHT, outline=C_BLACK, width=3)
-    draw.text((W // 2, 52), "DIAGRAMA DE ARQUITECTURA DE INFORMACIÓN DEL SISTEMA WEB", font=FONT_TITLE, fill=C_BLACK, anchor="mm")
-    draw.text((W // 2, 82), "Jerarquía de módulos, niveles de navegación, pantallas funcionales, diálogos modales y controles operativos", font=FONT_SUBTITLE, fill=C_GRAY_DARK, anchor="mm")
+    # Title removed per user instruction
 
     draw_box(draw, (1100, 130, 1500, 220), "Nivel 0: Autenticación", [
         ("• Vista: ", "Acceso Seguro (Login JWT)"),
@@ -426,8 +424,7 @@ def generate_diagram_3():
     draw = ImageDraw.Draw(img)
 
     draw.rectangle([(40, 30), (W - 40, 100)], fill=C_GRAY_LIGHT, outline=C_BLACK, width=3)
-    draw.text((W // 2, 52), "DIAGRAMA DE MÁQUINA DE ESTADOS FINITOS DEL PUERTO ÓPTICO SC-APC (UML FSM)", font=FONT_TITLE, fill=C_BLACK, anchor="mm")
-    draw.text((W // 2, 82), "Ciclo de vida transaccional, control de concurrencia pesimista ACID y contingencia operativa de red", font=FONT_SUBTITLE, fill=C_GRAY_DARK, anchor="mm")
+    # Title removed per user instruction
 
     # Initial State
     draw.ellipse([(100, 350), (150, 400)], fill=C_BLACK, outline=C_BLACK)
@@ -571,8 +568,7 @@ def generate_diagram_4():
     draw = ImageDraw.Draw(img)
 
     draw.rectangle([(40, 30), (W - 40, 100)], fill=C_GRAY_LIGHT, outline=C_BLACK, width=3)
-    draw.text((W // 2, 52), "DIAGRAMA DE PAQUETES Y COMPONENTES DE SOFTWARE (UML COMPONENT DIAGRAM)", font=FONT_TITLE, fill=C_BLACK, anchor="mm")
-    draw.text((W // 2, 82), "Arquitectura multicapa desacoplada: Capa de Presentación (PWA), Lógica de Aplicación (REST API) y Persistencia Híbrida", font=FONT_SUBTITLE, fill=C_GRAY_DARK, anchor="mm")
+    # Title removed per user instruction
 
     # Package Helper
     def draw_package(draw, xy, pkg_title, tab_w=520, width=3):
@@ -772,8 +768,7 @@ def generate_diagram_5():
     draw = ImageDraw.Draw(img)
 
     draw.rectangle([(40, 30), (W - 40, 100)], fill=C_GRAY_LIGHT, outline=C_BLACK, width=3)
-    draw.text((W // 2, 52), "DIAGRAMA DE ROBUSTEZ V-O-C: ASIGNACIÓN Y CONCURRENCIA DE PUERTO ÓPTICO", font=FONT_TITLE, fill=C_BLACK, anchor="mm")
-    draw.text((W // 2, 82), "Análisis semántico del Caso de Uso: Actores, Objetos Límite (Boundary), Controladores (Control) y Entidades (Entity)", font=FONT_SUBTITLE, fill=C_GRAY_DARK, anchor="mm")
+    # Title removed per user instruction
 
     # Jacobson Symbol Helpers
     def draw_actor(draw, xy, name):
@@ -924,8 +919,7 @@ def generate_diagram_6():
     draw = ImageDraw.Draw(img)
 
     draw.rectangle([(40, 30), (W - 40, 100)], fill=C_GRAY_LIGHT, outline=C_BLACK, width=3)
-    draw.text((W // 2, 52), "DIAGRAMA DE SECUENCIA UML: SINCRONIZACIÓN ASÍNCRONA EN DIFERIDO (OFFLINE-FIRST)", font=FONT_TITLE, fill=C_BLACK, anchor="mm")
-    draw.text((W // 2, 82), "Flujo temporal de mutaciones, almacenamiento local en IndexedDB y conciliación transaccional al restaurar conectividad", font=FONT_SUBTITLE, fill=C_GRAY_DARK, anchor="mm")
+    # Title removed per user instruction
 
     # Lifelines
     lifelines = [
@@ -1068,8 +1062,7 @@ def generate_diagram_7():
     draw = ImageDraw.Draw(img)
 
     draw.rectangle([(40, 30), (W - 40, 100)], fill=C_GRAY_LIGHT, outline=C_BLACK, width=3)
-    draw.text((W // 2, 52), "DIAGRAMA DE TOPOLOGÍA LÓGICA Y FÍSICA DE LA RED PASIVA GPON / FTTx", font=FONT_TITLE, fill=C_BLACK, anchor="mm")
-    draw.text((W // 2, 82), "Jerarquía de distribución punto a multipunto: OLT, ODF Central, Splitters Nivel 1 y 2, Cajas NAP y Acometida ONT", font=FONT_SUBTITLE, fill=C_GRAY_DARK, anchor="mm")
+    # Title removed per user instruction
 
     # Column 1: Central Office
     draw_box(draw, (60, 140, 440, 880), "1. Cabecera Central (NOC)", [

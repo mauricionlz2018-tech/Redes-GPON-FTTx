@@ -22,11 +22,9 @@ def create_project_flowchart_bw():
     font_badge = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 20)
 
     # Header
-    draw.text((W // 2, 75), "DIAGRAMA DE FLUJO GENERAL DE OPERACIÓN DEL SISTEMA", font=font_title, fill=(20, 20, 20), anchor="mm")
-    draw.text((W // 2, 125), "Plataforma de Inventario, Concurrencia ACID y Mapeo Lógico GPON / FTTx | Proceso Operativo Integral", font=font_sub, fill=(100, 100, 100), anchor="mm")
+    # Title stripped
     # Header in solid black
-    draw.text((W // 2, 75), "DIAGRAMA DE FLUJO GENERAL DE OPERACIÓN DEL SISTEMA", font=font_title, fill=(0, 0, 0), anchor="mm")
-    draw.text((W // 2, 125), "Plataforma de Inventario, Concurrencia ACID y Mapeo Lógico GPON / FTTx | Proceso Operativo Integral", font=font_sub, fill=(0, 0, 0), anchor="mm")
+    # Title stripped
 
     # Colors
     C_START = (46, 125, 50)         # Dark Green

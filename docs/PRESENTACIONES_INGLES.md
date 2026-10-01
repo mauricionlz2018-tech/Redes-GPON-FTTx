@@ -50,54 +50,53 @@
 
 ---
 
-### 🇺🇸 Speech in English (Texto para Estudiar y Presentar)
+### Speech in English (Texto Claro para Estudiar y Presentar)
 
-> *"Good morning, professor and classmates.*
->
-> *Today, I am pleased to present our project: **'GPON and FTTx Logical Network Mapping and Inventory System'**, developed for **GPON Telecom**.*
->
-> *In modern telecommunications, fiber optic networks are expanding rapidly. However, many Internet Service Providers still manage their physical infrastructure manually, using spreadsheets or paper notes.*
->
-> *In rural and semi-urban areas like **San José del Rincón**, this manual approach causes three critical problems:*
-> * **First**, terminal access boxes—known as **NAP boxes**—saturate unexpectedly without prior warning.*
-> * **Second**, field technicians working at the same time can accidentally assign two different customers to the exact same physical optical port.*
-> * **And third**, in areas with poor cellular signal, technicians cannot access central records, leading to blind installations and lost time.*
->
-> *To solve this, we designed a comprehensive web platform for fiber infrastructure management.*
->
-> *Our system covers the complete passive network:*
-> * *It tracks the Central Optical Distribution Frame (ODF), PON ports, and optical cables.*
-> * *It visualizes every NAP box on an interactive map using GPS coordinates.*
-> * *And it features an **Offline-First architecture**, allowing technicians to work smoothly even without internet connection.*
->
-> *In conclusion, our objective is to eliminate duplicate connections, optimize technical response times, and provide real-time visibility of the whole network.*
->
-> *Thank you very much for your attention. I am happy to answer any questions."*
+> *"Good morning, professor and classmates.*  
+> *My name is Mauricio Nolazco. Today, I will present our project: **'GPON Network Inventory and Mapping System'**, developed for **GPON Telecom**.*  
+>  
+> *This project is a web application designed to manage and visualize fiber optic infrastructure in **San José del Rincón**.*  
+>  
+> *To build this system, we use three main tools:*  
+> * *First, for the database, we use **PostgreSQL** with **Docker** to store information about cables, boxes, and clients safely.*  
+> * *Second, for the backend, we use **Node.js** and **Express** with **TypeScript** to create a secure central API.*  
+> * *Third, for the frontend, we use **React** and **Leaflet** with **OpenStreetMap** to create a fast, interactive map.*  
+>  
+> *Now, how does the system work?*  
+> * *Field technicians can open the application directly from their phones.*  
+> * *On the map, they can see every terminal box—known as a **NAP box**—with colors: **green** means available ports, and **red** means full capacity.*  
+> * *When a technician selects a box, they see the sixteen physical ports.*  
+> * *They can connect a new customer, check signal levels, and update the status in real time.*  
+> * *And if there is no mobile signal in rural areas, the app saves the work on the phone and sends the data automatically when internet returns.*  
+>  
+> *In conclusion, this application eliminates paper notes, prevents duplicate connections, and helps technicians work faster in the field.*  
+>  
+> *Thank you very much for your time. I am ready for your questions."*
 
 ---
 
-### 🇲🇽 Traducción al Español (Para Entender Cada Línea)
+### Traducción al Español (Línea por Línea)
 
 > "Buenos días, profesor y compañeros.  
-> Hoy me complace presentar nuestro proyecto: **'Sistema de Inventario y Mapeo Lógico de Redes GPON y FTTx'**, desarrollado para **GPON Telecom**.  
+> Mi nombre es Mauricio Nolazco. Hoy les presentaré nuestro proyecto: **'Sistema de Inventario y Mapeo de Redes GPON'**, desarrollado para **GPON Telecom**.  
 >  
-> En las telecomunicaciones modernas, las redes de fibra óptica se expanden rápidamente. Sin embargo, muchos proveedores de internet todavía administran su infraestructura física manualmente, usando hojas de cálculo o notas en papel.  
+> Este proyecto es una aplicación web diseñada para gestionar y visualizar la infraestructura de fibra óptica en **San José del Rincón**.  
 >  
-> En zonas rurales y semiurbanas como **San José del Rincón**, este enfoque manual provoca tres problemas críticos:  
-> * **Primero**, las cajas terminales de acceso —conocidas como **cajas NAP**— se saturan de forma imprevista sin previo aviso.  
-> * **Segundo**, los técnicos en campo que trabajan al mismo tiempo pueden asignar accidentalmente a dos clientes diferentes al mismo puerto óptico físico.  
-> * **Y tercero**, en áreas con poca señal celular, los técnicos no pueden consultar los registros centrales, lo que causa instalaciones a ciegas y pérdida de tiempo.  
+> Para construir este sistema, utilizamos tres herramientas principales:  
+> * Primero, para la base de datos, usamos **PostgreSQL** con **Docker** para guardar la información de cables, cajas y clientes de forma segura.  
+> * Segundo, para el backend, usamos **Node.js** y **Express** con **TypeScript** para crear una API central y segura.  
+> * Tercero, para el frontend, usamos **React** y **Leaflet** con **OpenStreetMap** para crear un mapa interactivo y rápido.  
 >  
-> Para solucionar esto, diseñamos una plataforma web integral para la gestión de infraestructura de fibra.  
+> Ahora, ¿cómo funciona el sistema?  
+> * Los técnicos de campo pueden abrir la aplicación directamente desde sus teléfonos.  
+> * En el mapa pueden ver cada caja terminal —conocida como **caja NAP**— con colores: **verde** significa puertos disponibles y **rojo** significa capacidad llena.  
+> * Cuando el técnico selecciona una caja, ve los dieciséis puertos físicos.  
+> * Puede conectar a un nuevo cliente, revisar los niveles de señal y actualizar el estado en tiempo real.  
+> * Y si no hay señal celular en zonas rurales, la app guarda el trabajo en el teléfono y envía los datos automáticamente cuando regresa el internet.  
 >  
-> Nuestro sistema abarca toda la red pasiva:  
-> * Da seguimiento al Distribuidor Óptico Central (ODF), puertos PON y cables ópticos.  
-> * Visualiza cada caja NAP en un mapa interactivo mediante coordenadas GPS.  
-> * Y cuenta con una **arquitectura Offline-First**, permitiendo a los técnicos trabajar sin problemas incluso sin conexión a internet.  
+> En conclusión, esta aplicación elimina las notas en papel, evita conexiones duplicadas y ayuda a los técnicos a trabajar más rápido en campo.  
 >  
-> En conclusión, nuestro objetivo es eliminar conexiones duplicadas, optimizar los tiempos de respuesta técnica y ofrecer visibilidad en tiempo real de toda la red.  
->  
-> Muchas gracias por su atención. Con gusto respondo cualquier pregunta."
+> Muchas gracias por su tiempo. Estoy listo para sus preguntas."
 
 ---
 
