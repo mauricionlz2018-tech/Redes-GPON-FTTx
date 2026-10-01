@@ -94,7 +94,7 @@ export const LoginPage: React.FC = () => {
           GPON TELECOM S.A. DE C.V.
         </h1>
         <p className="mt-1 text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
-          Sistema de Gestión y Mapeo GPON / FTTx
+          Sistema de Inventario y Mapeo GPON / FTTx
         </p>
         <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
           San José del Rincón, Estado de México
