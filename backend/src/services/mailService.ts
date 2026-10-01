@@ -37,55 +37,62 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
   const fromUser = process.env.SMTP_USER || 'nolazcomaury2004@gmail.com';
   const fromAddress = process.env.SMTP_FROM || `"GPON Telecom S.A. de C.V." <${fromUser}>`;
 
+  // Plantilla HTML corporativa sobria, limpia y sin emojis
   const htmlContent = `
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Código de Seguridad - GPON Telecom</title>
+  <title>Código de Verificación - GPON Telecom</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 32px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 36px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" style="max-width: 540px; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <table role="presentation" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);">
           
-          <!-- Encabezado Institucional -->
+          <!-- Encabezado Institucional Sobrio -->
           <tr>
-            <td style="background-color: #0f172a; padding: 24px 28px; border-bottom: 3px solid #0284c7;">
-              <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
-                GPON TELECOM S.A. DE C.V.
-              </div>
-              <h1 style="margin: 0; color: #ffffff; font-size: 19px; font-weight: 700; letter-spacing: -0.3px;">
-                Restablecimiento de Credencial de Acceso
-              </h1>
-              <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 12px;">
-                Mapeo GPON / FTTx • San José del Rincón, Estado de México
-              </p>
+            <td style="background-color: #0f172a; padding: 22px 28px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td>
+                    <div style="font-size: 13px; font-weight: 800; color: #38bdf8; letter-spacing: 1.2px; text-transform: uppercase;">
+                      GPON TELECOM
+                    </div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">
+                      Sistema de Gestión y Mapeo de Red
+                    </div>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
-          <!-- Contenido -->
+          <!-- Contenido Principal -->
           <tr>
-            <td style="padding: 28px 28px 20px 28px;">
-              <p style="margin: 0 0 14px 0; color: #0f172a; font-size: 14px; font-weight: 600;">
-                Estimado(a) ${userName},
+            <td style="padding: 28px;">
+              <h2 style="margin: 0 0 16px 0; font-size: 17px; font-weight: 700; color: #0f172a;">
+                Recuperación de contraseña
+              </h2>
+              <p style="margin: 0 0 14px 0; color: #334155; font-size: 14px; line-height: 1.5;">
+                Hola, ${userName}:
               </p>
               <p style="margin: 0 0 20px 0; color: #475569; font-size: 13px; line-height: 1.6;">
-                Has solicitado restablecer tu contraseña para ingresar a la plataforma de monitoreo y mapeo de red de <strong>GPON Telecom</strong>. Introduce el siguiente código de seguridad en el formulario del sistema:
+                Recibimos una solicitud para restablecer tu contraseña de acceso en la plataforma de <strong>GPON Telecom</strong>. Ingresa el siguiente código de seguridad en el formulario:
               </p>
 
-              <!-- Tarjeta de Código con Monospace limpio -->
-              <div style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; text-align: center; margin: 20px 0;">
-                <div style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-                  Código de Verificación (PIN)
+              <!-- Bloque del Código -->
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; margin: 22px 0;">
+                <div style="font-size: 11px; font-weight: 600; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">
+                  Código de verificación
                 </div>
-                <div style="font-size: 32px; font-weight: 800; letter-spacing: 10px; color: #0f172a; margin: 8px 0; font-family: 'Consolas', 'Courier New', monospace;">
+                <div style="font-size: 34px; font-weight: 800; letter-spacing: 10px; color: #0f172a; font-family: 'Consolas', 'Courier New', monospace; padding: 4px 0;">
                   ${resetCode}
                 </div>
-                <div style="font-size: 12px; color: #dc2626; font-weight: 600; margin-top: 8px;">
-                  ⏱ Este código tiene una vigencia estricta de 3 minutos
+                <div style="font-size: 12px; color: #64748b; margin-top: 6px;">
+                  Válido durante 3 minutos
                 </div>
               </div>
 
@@ -97,12 +104,10 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
               </div>
               ` : ''}
 
-              <!-- Nota de seguridad -->
-              <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-left: 3px solid #d97706; padding: 12px 14px; border-radius: 4px; margin-top: 24px;">
-                <p style="margin: 0; color: #92400e; font-size: 11px; line-height: 1.5;">
-                  <strong>Aviso de seguridad:</strong> Si no reconoces esta operación o no solicitaste este código, ningún cambio se realizará sin esta clave. Puedes desestimar este mensaje de forma segura.
-                </p>
-              </div>
+              <!-- Nota de Seguridad sin alertas amarillas ni emojis -->
+              <p style="margin: 22px 0 0 0; color: #64748b; font-size: 12px; line-height: 1.5; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                Si tú no solicitaste este cambio, puedes ignorar este correo con tranquilidad. Tu contraseña actual permanecerá sin modificaciones.
+              </p>
             </td>
           </tr>
 
@@ -110,10 +115,10 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
           <tr>
             <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 28px; text-align: center;">
               <p style="margin: 0; color: #64748b; font-size: 11px;">
-                © 2026 GPON TELECOM S.A. DE C.V. • Departamento de Soporte Técnico y Auditoría
+                GPON TELECOM S.A. DE C.V. • San José del Rincón, Estado de México
               </p>
               <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 10px;">
-                San José del Rincón, Estado de México
+                Este es un mensaje automático de seguridad. Por favor no respondas a este correo.
               </p>
             </td>
           </tr>
@@ -178,8 +183,8 @@ export async function sendPasswordRecoveryEmail(options: SendRecoveryEmailOption
     await transporter.sendMail({
       from: fromAddress,
       to: toEmail,
-      subject: `Código de Seguridad (${resetCode}) - GPON Telecom`,
-      text: `Hola ${userName},\n\nTu código de recuperación para GPON Telecom es: ${resetCode}\nEste código tiene una vigencia estricta de 3 minutos.\n\nSi no realizaste esta solicitud, ignora este mensaje.`,
+      subject: `Código de verificación: ${resetCode} - GPON Telecom`,
+      text: `Hola ${userName},\n\nTu código de verificación para GPON Telecom es: ${resetCode}\nVálido durante 3 minutos.\n\nSi no realizaste esta solicitud, puedes ignorar este mensaje.`,
       html: htmlContent
     });
 
