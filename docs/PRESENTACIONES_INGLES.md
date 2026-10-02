@@ -52,51 +52,51 @@
 
 ### Speech in English (Texto Claro para Estudiar y Presentar)
 
-> *"Good morning, professor.*  
-> *My name is Mauricio Nolazco. Today, I will present my project: **'Inventory and Logical Mapping System for GPON and FTTx Networks'**, developed for **GPON Telecom**.*  
+> *"Good morning, professor and classmates.*  
+> *My name is Mauricio Nolazco. Today, I will present our project: **'GPON Network Inventory and Mapping System'**, developed for **GPON Telecom**.*  
 >  
-> *This project is a web application I designed to manage and visualize fiber optic infrastructure in **San José del Rincón**.*  
+> *This project is a web application designed to manage and visualize fiber optic infrastructure in **San José del Rincón**.*  
 >  
-> *To build this system, I use three main tools:*  
-> * *First, for the database, I use **PostgreSQL** with **Docker** to store all information about cables, NAP boxes, and clients safely.*  
-> * *Second, for the backend, I use **Node.js** and **Express** with **TypeScript** to create a secure central API.*  
-> * *Third, for the frontend, I use **React** and **Leaflet** with **OpenStreetMap** to display an interactive map.*  
+> *To build this system, we use three main tools:*  
+> * *First, for the database, we use **PostgreSQL** with **Docker** to store information about cables, boxes, and clients safely.*  
+> * *Second, for the backend, we use **Node.js** and **Express** with **TypeScript** to create a secure central API.*  
+> * *Third, for the frontend, we use **React** and **Leaflet** with **OpenStreetMap** to create a fast, interactive map.*  
 >  
 > *Now, how does the system work?*  
-> * *Field technicians can open the application directly from their mobile phones.*  
-> * *On the map, they can see every terminal NAP box with status colors: **green** means available ports, and **red** means full capacity.*  
-> * *When a technician selects a box, the system shows the sixteen physical ports.*  
-> * *From the phone, the technician can connect a new customer, check optical signal levels, and update port status in real time.*  
-> * *If there is no mobile signal in rural areas, the app saves the work locally and sends the data automatically when internet returns.*  
+> * *Field technicians can open the application directly from their phones.*  
+> * *On the map, they can see every terminal box—known as a **NAP box**—with colors: **green** means available ports, and **red** means full capacity.*  
+> * *When a technician selects a box, they see the sixteen physical ports.*  
+> * *They can connect a new customer, check signal levels, and update the status in real time.*  
+> * *And if there is no mobile signal in rural areas, the app saves the work on the phone and sends the data automatically when internet returns.*  
 >  
-> *In conclusion, this project eliminates paper notes, prevents duplicate connections, and helps technicians work faster in the field.*  
+> *In conclusion, this application eliminates paper notes, prevents duplicate connections, and helps technicians work faster in the field.*  
 >  
-> *Thank you very much for your time and attention."*
+> *Thank you very much for your time. I am ready for your questions."*
 
 ---
 
 ### Traducción al Español (Línea por Línea)
 
-> "Buenos días, profesor.  
-> Mi nombre es Mauricio Nolazco. Hoy presentaré mi proyecto: **'Sistema de Inventario y Mapeo Lógico de Redes GPON / FTTx'**, desarrollado para **GPON Telecom**.  
+> "Buenos días, profesor y compañeros.  
+> Mi nombre es Mauricio Nolazco. Hoy les presentaré nuestro proyecto: **'Sistema de Inventario y Mapeo de Redes GPON'**, desarrollado para **GPON Telecom**.  
 >  
-> Este proyecto es una aplicación web que diseñé para gestionar y visualizar la infraestructura de fibra óptica en **San José del Rincón**.  
+> Este proyecto es una aplicación web diseñada para gestionar y visualizar la infraestructura de fibra óptica en **San José del Rincón**.  
 >  
-> Para construir este sistema, utilizo tres herramientas principales:  
-> * Primero, para la base de datos, uso **PostgreSQL** con **Docker** para almacenar toda la información sobre cables, cajas NAP y clientes de forma segura.  
-> * Segundo, para el backend, uso **Node.js** y **Express** con **TypeScript** para crear una API central segura.  
-> * Tercero, para el frontend, uso **React** y **Leaflet** con **OpenStreetMap** para mostrar un mapa interactivo.  
+> Para construir este sistema, utilizamos tres herramientas principales:  
+> * Primero, para la base de datos, usamos **PostgreSQL** con **Docker** para guardar la información de cables, cajas y clientes de forma segura.  
+> * Segundo, para el backend, usamos **Node.js** y **Express** con **TypeScript** para crear una API central y segura.  
+> * Tercero, para el frontend, usamos **React** y **Leaflet** con **OpenStreetMap** para crear un mapa interactivo y rápido.  
 >  
 > Ahora, ¿cómo funciona el sistema?  
-> * Los técnicos de campo pueden abrir la aplicación directamente desde sus teléfonos móviles.  
-> * En el mapa pueden ver cada caja terminal NAP con colores de estado: **verde** significa puertos disponibles y **rojo** significa capacidad llena.  
-> * Cuando un técnico selecciona una caja, el sistema muestra los dieciséis puertos físicos.  
-> * Desde el teléfono, el técnico puede conectar a un nuevo cliente, revisar los niveles de señal óptica y actualizar el estado del puerto en tiempo real.  
-> * Si no hay señal móvil en zonas rurales, la app guarda el trabajo localmente y envía los datos automáticamente cuando regresa el internet.  
+> * Los técnicos de campo pueden abrir la aplicación directamente desde sus teléfonos.  
+> * En el mapa pueden ver cada caja terminal —conocida como **caja NAP**— con colores: **verde** significa puertos disponibles y **rojo** significa capacidad llena.  
+> * Cuando el técnico selecciona una caja, ve los dieciséis puertos físicos.  
+> * Puede conectar a un nuevo cliente, revisar los niveles de señal y actualizar el estado en tiempo real.  
+> * Y si no hay señal celular en zonas rurales, la app guarda el trabajo en el teléfono y envía los datos automáticamente cuando regresa el internet.  
 >  
-> En conclusión, este proyecto elimina las notas en papel, previene conexiones duplicadas y ayuda a los técnicos a trabajar más rápido en campo.  
+> En conclusión, esta aplicación elimina las notas en papel, evita conexiones duplicadas y ayuda a los técnicos a trabajar más rápido en campo.  
 >  
-> Muchas gracias por su tiempo y atención."
+> Muchas gracias por su tiempo. Estoy listo para sus preguntas."
 
 ---
 
