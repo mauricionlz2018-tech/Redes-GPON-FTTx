@@ -53,14 +53,14 @@
 ### Speech in English (Texto Claro para Estudiar y Presentar)
 
 > *"Good morning, professor and classmates.*  
-> *My name is Mauricio Nolazco. Today, I will present my project: **'GPON Network Inventory and Mapping System'**, developed for **GPON Telecom**.*  
+> *My name is Mauricio Nolazco. Today, I will present our project: **'GPON Network Inventory and Mapping System'**, developed for **GPON Telecom**.*  
 >  
-> *This project is a web application I designed to manage and visualize fiber optic infrastructure in **San José del Rincón**.*  
+> *This project is a web application designed to manage and visualize fiber optic infrastructure in **San José del Rincón**.*  
 >  
-> *To build this system, I use three main tools:*  
-> * *First, for the database, I use **PostgreSQL** with **Docker** to store information about cables, boxes, and clients safely.*  
-> * *Second, for the backend, I use **Node.js** and **Express** with **TypeScript** to create a secure central API.*  
-> * *Third, for the frontend, I use **React** and **Leaflet** with **OpenStreetMap** to create a fast, interactive map.*  
+> *To build this system, we use three main tools:*  
+> * *First, for the database, we use **PostgreSQL** with **Docker** to store information about cables, boxes, and clients safely.*  
+> * *Second, for the backend, we use **Node.js** and **Express** with **TypeScript** to create a secure central API.*  
+> * *Third, for the frontend, we use **React** and **Leaflet** with **OpenStreetMap** to create a fast, interactive map.*  
 >  
 > *Now, how does the system work?*  
 > * *Field technicians can open the application directly from their phones.*  
@@ -78,14 +78,14 @@
 ### Traducción al Español (Línea por Línea)
 
 > "Buenos días, profesor y compañeros.  
-> Mi nombre es Mauricio Nolazco. Hoy les presentaré mi proyecto: **'Sistema de Inventario y Mapeo de Redes GPON'**, desarrollado para **GPON Telecom**.  
+> Mi nombre es Mauricio Nolazco. Hoy les presentaré nuestro proyecto: **'Sistema de Inventario y Mapeo de Redes GPON'**, desarrollado para **GPON Telecom**.  
 >  
-> Este proyecto es una aplicación web que diseñé para gestionar y visualizar la infraestructura de fibra óptica en **San José del Rincón**.  
+> Este proyecto es una aplicación web diseñada para gestionar y visualizar la infraestructura de fibra óptica en **San José del Rincón**.  
 >  
-> Para construir este sistema, utilizo tres herramientas principales:  
-> * Primero, para la base de datos, uso **PostgreSQL** con **Docker** para guardar la información de cables, cajas y clientes de forma segura.  
-> * Segundo, para el backend, uso **Node.js** y **Express** con **TypeScript** para crear una API central y segura.  
-> * Tercero, para el frontend, uso **React** y **Leaflet** con **OpenStreetMap** para crear un mapa interactivo y rápido.  
+> Para construir este sistema, utilizamos tres herramientas principales:  
+> * Primero, para la base de datos, usamos **PostgreSQL** con **Docker** para guardar la información de cables, cajas y clientes de forma segura.  
+> * Segundo, para el backend, usamos **Node.js** y **Express** con **TypeScript** para crear una API central y segura.  
+> * Tercero, para el frontend, usamos **React** y **Leaflet** con **OpenStreetMap** para crear un mapa interactivo y rápido.  
 >  
 > Ahora, ¿cómo funciona el sistema?  
 > * Los técnicos de campo pueden abrir la aplicación directamente desde sus teléfonos.  
