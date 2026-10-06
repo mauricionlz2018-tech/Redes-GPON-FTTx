@@ -94,7 +94,7 @@ export const ClientsPage: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-            Padrón de Abonados Conectados
+            Padrón de Abonados Conectados FTTx
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Consulta y administración de clientes vinculados a puertos de cajas NAP.

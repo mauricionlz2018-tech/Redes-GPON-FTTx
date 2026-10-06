@@ -1,5 +1,5 @@
 {
-  "short_name": "GPON TELECOM",
+  "short_name": "GPON FTTx",
   "name": "GPON TELECOM - Mapeo e Inventario Lógico",
   "description": "Sistema móvil de inventario cartográfico, asignación de puertos y gestión de fibra óptica en campo.",
   "id": "/mapa",

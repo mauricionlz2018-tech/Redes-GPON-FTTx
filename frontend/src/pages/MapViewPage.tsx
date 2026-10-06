@@ -34,7 +34,8 @@ import {
   Ruler,
   MapPin,
   X,
-  GripVertical
+  GripVertical,
+  Download
 } from 'lucide-react';
 
 import {
@@ -42,8 +43,12 @@ import {
   mockOdf,
   troncalIxtJocRoutes,
   troncalMufas,
+  troncalGasas,
+  troncalPostesCfe,
+  troncalPostesPropuestos,
   getTroncalDesignMetrics
 } from '../data/mockGponData';
+import { exportGponNetworkToKmz } from '../utils/kmzExport';
 
 export const MapViewPage: React.FC = () => {
   const [naps, setNaps] = useState<NapBox[]>(mockNaps);
@@ -266,6 +271,59 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     localStorage.setItem(key, JSON.stringify(Array.from(ids)));
   } catch {}
 };
+
+  const [isExportingKmz, setIsExportingKmz] = useState(false);
+
+  const handleExportKmz = async () => {
+    try {
+      setIsExportingKmz(true);
+      setFeedbackNotice({
+        type: 'success',
+        message: 'Compilando capas geográficas completas (Cajas NAP, troncales, mufas, postes)...'
+      });
+
+      const activeRoutes = [...troncalIxtJocRoutes, ...customRoutes].filter(
+        (r) => !deletedRouteIds.includes(r.id_ruta)
+      );
+      const activeEmpalmes = [...troncalMufas, ...customEmpalmes].filter(
+        (m) => !deletedMufaIds.includes(m.id_empalme)
+      );
+      const activePostesPropuestos = [
+        ...troncalPostesPropuestos,
+        ...customPostes.filter((p) => p.tipo === 'poste_propuesto')
+      ].filter((p) => !deletedPosteIds.includes(p.id_poste));
+      const activePostesCfe = [
+        ...troncalPostesCfe,
+        ...customPostes.filter((p) => p.tipo === 'poste_cfe')
+      ].filter((p) => !deletedPosteIds.includes(p.id_poste));
+
+      await exportGponNetworkToKmz({
+        naps,
+        odf,
+        fiberRoutes: activeRoutes,
+        empalmes: activeEmpalmes,
+        gasas: troncalGasas,
+        postesPropuestos: activePostesPropuestos,
+        postesCfe: activePostesCfe,
+        filename: 'Red_GPON_San_Jose_del_Rincon.kmz'
+      });
+
+      setFeedbackNotice({
+        type: 'success',
+        message: '¡Descarga exitosa! Archivo KMZ descargado para abrir en Google Earth o software GIS.'
+      });
+      setTimeout(() => setFeedbackNotice(null), 5000);
+    } catch (err) {
+      console.error('Error al exportar KMZ:', err);
+      setFeedbackNotice({
+        type: 'error',
+        message: 'Ocurrió un error al compilar el archivo KMZ de la red.'
+      });
+      setTimeout(() => setFeedbackNotice(null), 5000);
+    } finally {
+      setIsExportingKmz(false);
+    }
+  };
 
   const handleSaveRoute = async (newRoute: FiberRoute) => {
     setCustomRoutes((prev) => {
@@ -858,8 +916,18 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             </div>
           </div>
 
-          {/* Botón Actualizar a la derecha */}
-          <div className="flex items-center justify-end shrink-0">
+          {/* Botones Descargar KMZ y Actualizar a la derecha */}
+          <div className="flex items-center justify-end shrink-0 gap-2 w-full sm:w-auto">
+            <button
+              onClick={handleExportKmz}
+              disabled={isExportingKmz}
+              className="flex items-center justify-center gap-1.5 h-9 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 rounded-lg border border-emerald-500 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial"
+              title="Descargar toda la infraestructura geográfica de la red (cajas NAP, fibra óptica, mufas y postes) en archivo KMZ para Google Earth"
+            >
+              <Download className={`w-3.5 h-3.5 shrink-0 ${isExportingKmz ? 'animate-bounce' : ''}`} />
+              <span>{isExportingKmz ? 'Generando...' : 'Descargar KMZ'}</span>
+            </button>
+
             <button
               onClick={() => {
                 fetchData(true);
@@ -875,7 +943,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                 setTimeout(() => setFeedbackNotice(null), 4000);
               }}
               disabled={loading}
-              className="flex items-center justify-center gap-1.5 h-9 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer w-full sm:w-auto"
+              className="flex items-center justify-center gap-1.5 h-9 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial"
               title="Actualizar datos de la red y comprobar nueva versión"
             >
               <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
