@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { DataDisclaimerModal } from '../components/DataDisclaimerModal';
 import { PasswordRecoveryModal } from '../components/PasswordRecoveryModal';
 
@@ -45,24 +45,23 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
+      if (rememberMe) {
+        localStorage.setItem('gpon_remember_me', 'true');
+        localStorage.setItem('gpon_saved_credencial', credencial.trim());
+        localStorage.setItem('gpon_saved_password', password);
+      } else {
+        localStorage.removeItem('gpon_remember_me');
+        localStorage.removeItem('gpon_saved_credencial');
+        localStorage.removeItem('gpon_saved_password');
+      }
+
+      // El sistema auto-detecta el rol según la cuenta en la base de datos o credencial
       const success = await login(credencial.trim(), password);
       if (success) {
-        if (rememberMe) {
-          localStorage.setItem('gpon_remember_me', 'true');
-          localStorage.setItem('gpon_saved_credencial', credencial.trim());
-          localStorage.setItem('gpon_saved_password', password);
-        } else {
-          localStorage.removeItem('gpon_remember_me');
-          localStorage.removeItem('gpon_saved_credencial');
-          localStorage.removeItem('gpon_saved_password');
-        }
         navigate('/mapa');
       } else {
-        setErrorMsg('Usuario o contraseña incorrectos. Verifica tus credenciales.');
+        setErrorMsg('Credenciales inválidas. Verifica tu usuario/correo y contraseña.');
       }
-    } catch (err: any) {
-      console.error('Error al iniciar sesión:', err);
-      setErrorMsg(err.message || 'Usuario o contraseña incorrectos. Verifica tus credenciales.');
     } finally {
       setLoading(false);
     }
@@ -82,18 +81,20 @@ export const LoginPage: React.FC = () => {
       {/* Encabezado Corporativo Oficial */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10 px-4">
         <div className="flex justify-center mb-3">
-          <img
-            src="/logo-gpon.png"
-            alt="GPON TELECOM"
-            className="h-16 sm:h-20 w-auto object-contain transition-transform hover:scale-102 drop-shadow-xs"
-          />
+          <div className="bg-white p-3 rounded-2xl shadow-xl shadow-sky-950/15 border border-slate-200 dark:border-slate-800 max-w-[240px] transition-transform hover:scale-102">
+            <img
+              src="/logo-gpon.png"
+              alt="GPON TELECOM S.A. DE C.V."
+              className="h-12 sm:h-14 w-auto object-contain mx-auto"
+            />
+          </div>
         </div>
 
         <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
           GPON TELECOM S.A. DE C.V.
         </h1>
         <p className="mt-1 text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
-          Sistema de Inventario y Mapeo GPON
+          Sistema de Inventario y Mapeo GPON / FTTx
         </p>
         <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
           San José del Rincón, Estado de México
@@ -105,13 +106,13 @@ export const LoginPage: React.FC = () => {
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 py-7 px-6 shadow-xl dark:shadow-2xl rounded-2xl sm:px-9 backdrop-blur transition-colors">
           
           {errorMsg && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-xs text-red-700 dark:text-red-200 rounded-xl animate-fadeIn font-medium">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-xs text-red-700 dark:text-red-200 rounded-xl animate-fadeIn">
               {errorMsg}
             </div>
           )}
 
           {infoMsg && (
-            <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-200 rounded-xl animate-fadeIn font-medium">
+            <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-200 rounded-xl animate-fadeIn">
               {infoMsg}
             </div>
           )}
@@ -200,14 +201,18 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Enlace a Aviso de Privacidad Centrado */}
-          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
+          {/* Aviso Compacto de Protección de Datos */}
+          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+              <span>Entorno Seguro • GPON Telecom</span>
+            </div>
             <button
               type="button"
               onClick={() => setIsDisclaimerOpen(true)}
-              className="text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 text-[11px] font-medium transition-colors hover:underline cursor-pointer"
+              className="text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
             >
-              Aviso de Privacidad y Protección de Datos
+              Aviso de Privacidad
             </button>
           </div>
 
