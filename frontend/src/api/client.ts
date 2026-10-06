@@ -26,19 +26,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor de respuesta para capturar expiración de sesión y auto-recuperar con token maestro
+// Interceptor de respuesta para capturar expiración de sesión
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    // Si la petición es hacia /auth/login o /auth/register, rechazar directamente el error para notificar al usuario
+    if (originalRequest?.url?.includes('/auth/login') || originalRequest?.url?.includes('/auth/register')) {
+      return Promise.reject(error);
+    }
+
     if (error.response && error.response.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
-      console.warn('Sesión expirada o token no válido. Recuperando sesión maestra...');
       localStorage.removeItem('gpon_token');
-      if (originalRequest.headers) {
-        originalRequest.headers.Authorization = 'Bearer demo-jwt-token';
-      }
-      return api(originalRequest);
     }
     return Promise.reject(error);
   }

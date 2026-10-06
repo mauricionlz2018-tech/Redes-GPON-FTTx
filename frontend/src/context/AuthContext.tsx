@@ -32,14 +32,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, [token]);
 
-  const login = async (credencial_acceso: string, password = 'admin123', targetRole?: UserRole): Promise<boolean> => {
+  const login = async (credencial_acceso: string, password?: string): Promise<boolean> => {
+    if (!credencial_acceso?.trim() || !password) {
+      throw new Error('Debes ingresar tu usuario y contraseña.');
+    }
+
     try {
       const response = await api.post('/auth/login', {
-        credencial_acceso,
+        credencial_acceso: credencial_acceso.trim(),
         password
       });
 
-      if (response.data.success) {
+      if (response.data && response.data.success && response.data.data) {
         const { token: newToken, usuario } = response.data.data;
         localStorage.setItem('gpon_token', newToken);
         localStorage.setItem('gpon_user', JSON.stringify(usuario));
@@ -47,38 +51,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(usuario);
         return true;
       }
-      return false;
-    } catch (error) {
-      console.warn('Backend no disponible, iniciando sesión con rol automático detectado...');
-      // Fallback Inteligente: auto-determinar el rol a partir del usuario ingresado sin necesidad de seleccionarlo
-      const normalized = credencial_acceso.trim().toLowerCase();
-      let rol: UserRole = targetRole || 'Tecnico';
-      let nombre = 'Juan Pérez (Técnico)';
-
-      if (normalized.includes('admin') || normalized.includes('carlos') || normalized.includes('director') || normalized.includes('gerente')) {
-        rol = 'Admin';
-        nombre = 'Ing. Carlos Mendoza (Admin)';
-      } else if (normalized.includes('soporte') || normalized.includes('sofia') || normalized.includes('oscar') || normalized.includes('mendoza')) {
-        rol = 'Soporte';
-        nombre = 'L.I.A. Oscar Isaac Mendoza (Soporte)';
-      } else if (normalized.includes('tecnico') || normalized.includes('juan') || normalized.includes('campo') || normalized.includes('cuadrilla')) {
-        rol = 'Tecnico';
-        nombre = 'Juan Pérez (Técnico)';
+      throw new Error(response.data?.message || 'Usuario o contraseña incorrectos.');
+    } catch (error: any) {
+      console.error('Error en autenticación:', error);
+      // Si el servidor respondió con un mensaje específico (ej: Usuario o contraseña incorrectos)
+      const serverMessage = error.response?.data?.message;
+      if (serverMessage) {
+        throw new Error(serverMessage);
       }
-
-      const demoUser: User = {
-        id_usuario: 'demo-user-1',
-        nombre_completo: nombre,
-        credencial_acceso: credencial_acceso || `${rol.toLowerCase()}@gpon.com`,
-        rol
-      };
-
-      const demoToken = 'demo-jwt-token';
-      localStorage.setItem('gpon_token', demoToken);
-      localStorage.setItem('gpon_user', JSON.stringify(demoUser));
-      setToken(demoToken);
-      setUser(demoUser);
-      return true;
+      if (error.response?.status === 401 || error.response?.status === 400) {
+        throw new Error('Usuario o contraseña incorrectos.');
+      }
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        throw new Error('Tiempo de espera agotado al conectar con el servidor.');
+      }
+      throw new Error(error.message || 'Error al conectar con el servidor de autenticación.');
     }
   };
 
@@ -97,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       Tecnico: 'tecnico@gpon.com'
     };
 
-    await login(emailMap[role], 'admin123', role);
+    await login(emailMap[role], 'admin123');
   };
 
   // Actualizar datos del usuario logueado en memoria y localStorage

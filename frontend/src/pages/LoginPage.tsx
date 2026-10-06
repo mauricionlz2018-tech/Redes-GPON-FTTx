@@ -45,23 +45,24 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      if (rememberMe) {
-        localStorage.setItem('gpon_remember_me', 'true');
-        localStorage.setItem('gpon_saved_credencial', credencial.trim());
-        localStorage.setItem('gpon_saved_password', password);
-      } else {
-        localStorage.removeItem('gpon_remember_me');
-        localStorage.removeItem('gpon_saved_credencial');
-        localStorage.removeItem('gpon_saved_password');
-      }
-
-      // El sistema auto-detecta el rol según la cuenta en la base de datos o credencial
       const success = await login(credencial.trim(), password);
       if (success) {
+        if (rememberMe) {
+          localStorage.setItem('gpon_remember_me', 'true');
+          localStorage.setItem('gpon_saved_credencial', credencial.trim());
+          localStorage.setItem('gpon_saved_password', password);
+        } else {
+          localStorage.removeItem('gpon_remember_me');
+          localStorage.removeItem('gpon_saved_credencial');
+          localStorage.removeItem('gpon_saved_password');
+        }
         navigate('/mapa');
       } else {
-        setErrorMsg('Credenciales inválidas. Verifica tu usuario/correo y contraseña.');
+        setErrorMsg('Usuario o contraseña incorrectos. Verifica tus credenciales.');
       }
+    } catch (err: any) {
+      console.error('Error al iniciar sesión:', err);
+      setErrorMsg(err.message || 'Usuario o contraseña incorrectos. Verifica tus credenciales.');
     } finally {
       setLoading(false);
     }
@@ -104,13 +105,13 @@ export const LoginPage: React.FC = () => {
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 py-7 px-6 shadow-xl dark:shadow-2xl rounded-2xl sm:px-9 backdrop-blur transition-colors">
           
           {errorMsg && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-xs text-red-700 dark:text-red-200 rounded-xl animate-fadeIn">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-xs text-red-700 dark:text-red-200 rounded-xl animate-fadeIn font-medium">
               {errorMsg}
             </div>
           )}
 
           {infoMsg && (
-            <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-200 rounded-xl animate-fadeIn">
+            <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-200 rounded-xl animate-fadeIn font-medium">
               {infoMsg}
             </div>
           )}
@@ -199,7 +200,7 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Enlace a Aviso de Privacidad */}
+          {/* Enlace a Aviso de Privacidad Centrado */}
           <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
             <button
               type="button"
