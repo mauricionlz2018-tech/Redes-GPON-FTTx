@@ -170,8 +170,8 @@ export const AssistantChatbot: React.FC = () => {
 
   return (
     <>
-      {/* Botón Flotante en la esquina inferior derecha: Elevado en móvil (bottom-[82px]) para NO tapar los botones de navegación (Reportes / Personal) */}
-      <div className="fixed bottom-[82px] sm:bottom-6 right-3 sm:right-6 z-30">
+      {/* Botón Flotante en la esquina inferior derecha: Elevado en móvil (bottom-[74px]) para NO tapar los botones de navegación (Reportes / Personal) */}
+      <div className="fixed bottom-[74px] sm:bottom-6 right-3 sm:right-6 z-30">
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}

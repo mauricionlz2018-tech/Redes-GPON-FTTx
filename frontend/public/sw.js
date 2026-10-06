@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gpon-fttx-v5';
+const CACHE_NAME = 'gpon-telecom-v7';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',

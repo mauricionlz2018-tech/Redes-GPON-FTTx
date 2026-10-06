@@ -138,7 +138,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
                 <ol className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 pl-4 list-decimal">
                   <li>Toca los <strong className="text-slate-900 dark:text-white">tres puntos ⋮</strong> en la esquina superior derecha del navegador Chrome.</li>
                   <li>Selecciona la opción <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">"Instalar aplicación"</strong> o <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">"Agregar a la pantalla principal"</strong>.</li>
-                  <li>¡Listo! El icono de GPON FTTx se agregará a tu cajón de aplicaciones.</li>
+                  <li>¡Listo! El icono de GPON TELECOM se agregará a tu cajón de aplicaciones.</li>
                 </ol>
               </div>
             </div>
@@ -208,7 +208,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
 
         {/* Pie de modal */}
         <div className="px-5 py-3 bg-slate-100 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-shrink-0">
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Versión Móvil 1.0.0 (FTTx)</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">Versión Móvil 1.0.0 (GPON TELECOM)</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-lg text-xs font-semibold transition-colors"
