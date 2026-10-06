@@ -332,8 +332,8 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
 
             <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
               {points.map((pt, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-slate-850 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
-                  <span className="text-[10px] font-bold text-slate-400 w-5 text-center">
+                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 w-5 text-center">
                     #{idx + 1}
                   </span>
                   <div className="flex-1 grid grid-cols-2 gap-2">
@@ -343,7 +343,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                       value={pt[0]}
                       onChange={(e) => handlePointChange(idx, 'lat', e.target.value)}
                       placeholder="Latitud"
-                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono focus:border-sky-500 focus:outline-none"
+                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono text-slate-900 dark:text-slate-100 focus:border-sky-500 focus:outline-none"
                     />
                     <input
                       type="number"
@@ -351,14 +351,14 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                       value={pt[1]}
                       onChange={(e) => handlePointChange(idx, 'lng', e.target.value)}
                       placeholder="Longitud"
-                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono focus:border-sky-500 focus:outline-none"
+                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono text-slate-900 dark:text-slate-100 focus:border-sky-500 focus:outline-none"
                     />
                   </div>
                   {points.length > 2 && (
                     <button
                       type="button"
                       onClick={() => handleRemovePoint(idx)}
-                      className="text-slate-400 hover:text-red-500 p-1 cursor-pointer transition-colors"
+                      className="text-slate-400 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 p-1 cursor-pointer transition-colors"
                       title="Eliminar este punto"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
