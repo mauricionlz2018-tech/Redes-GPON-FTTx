@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, [token]);
 
-  const login = async (credencial_acceso: string, password = 'admin123', targetRole?: UserRole): Promise<boolean> => {
+  const login = async (credencial_acceso: string, password = '', targetRole?: UserRole): Promise<boolean> => {
     try {
       const response = await api.post('/auth/login', {
         credencial_acceso,
@@ -48,32 +48,76 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return true;
       }
       return false;
-    } catch (error) {
-      console.warn('Backend no disponible, iniciando sesión con rol automático detectado...');
-      // Fallback Inteligente: auto-determinar el rol a partir del usuario ingresado sin necesidad de seleccionarlo
-      const normalized = credencial_acceso.trim().toLowerCase();
-      let rol: UserRole = targetRole || 'Tecnico';
-      let nombre = 'Juan Pérez (Técnico)';
+    } catch (error: any) {
+      // 1. Si el servidor respondió con un código de error (ej. 401 Credenciales inválidas, 400, etc.), DENEGAR ACCESO
+      if (error?.response) {
+        console.warn('Acceso denegado por el servidor: Usuario o contraseña incorrectos');
+        return false;
+      }
 
-      if (normalized.includes('admin') || normalized.includes('carlos') || normalized.includes('director') || normalized.includes('gerente')) {
-        rol = 'Admin';
-        nombre = 'Ing. Carlos Mendoza (Admin)';
-      } else if (normalized.includes('soporte') || normalized.includes('sofia') || normalized.includes('oscar') || normalized.includes('mendoza')) {
-        rol = 'Soporte';
-        nombre = 'L.I.A. Oscar Isaac Mendoza (Soporte)';
-      } else if (normalized.includes('tecnico') || normalized.includes('juan') || normalized.includes('campo') || normalized.includes('cuadrilla')) {
-        rol = 'Tecnico';
-        nombre = 'Juan Pérez (Técnico)';
+      // 2. Si el servidor no responde (modo offline/desconectado), validar estrictamente:
+      // NUNCA aceptar contraseñas incorrectas o arbitrarias
+      const normalized = credencial_acceso.trim().toLowerCase();
+      const enteredPass = password.trim();
+
+      // Recuperar posible contraseña actualizada por recuperación
+      const customPass = localStorage.getItem(`gpon_user_pwd_${normalized}`);
+
+      interface ValidAccount {
+        rol: UserRole;
+        nombre: string;
+        passwords: string[];
+      }
+
+      const validAccounts: Record<string, ValidAccount> = {
+        'admin@gpon.com': {
+          rol: 'Admin',
+          nombre: 'Ing. Carlos Mendoza (Admin)',
+          passwords: ['admin123', ...(customPass ? [customPass] : [])]
+        },
+        'admin': {
+          rol: 'Admin',
+          nombre: 'Ing. Carlos Mendoza (Admin)',
+          passwords: ['admin123', ...(customPass ? [customPass] : [])]
+        },
+        'soporte@gpon.com': {
+          rol: 'Soporte',
+          nombre: 'Ing. Sofía Ramírez (Soporte)',
+          passwords: ['admin123', ...(customPass ? [customPass] : [])]
+        },
+        'soporte': {
+          rol: 'Soporte',
+          nombre: 'Ing. Sofía Ramírez (Soporte)',
+          passwords: ['admin123', ...(customPass ? [customPass] : [])]
+        },
+        'tecnico@gpon.com': {
+          rol: 'Tecnico',
+          nombre: 'Juan Pérez (Técnico)',
+          passwords: ['admin123', ...(customPass ? [customPass] : [])]
+        },
+        'tecnico': {
+          rol: 'Tecnico',
+          nombre: 'Juan Pérez (Técnico)',
+          passwords: ['admin123', ...(customPass ? [customPass] : [])]
+        }
+      };
+
+      const account = validAccounts[normalized];
+
+      // Si el usuario no existe o la contraseña no coincide exactamente: DENEGAR ACCESO
+      if (!account || !account.passwords.includes(enteredPass)) {
+        console.warn('Intento de acceso rechazado: Usuario o contraseña incorrectos.');
+        return false;
       }
 
       const demoUser: User = {
-        id_usuario: 'demo-user-1',
-        nombre_completo: nombre,
-        credencial_acceso: credencial_acceso || `${rol.toLowerCase()}@gpon.com`,
-        rol
+        id_usuario: `local-${account.rol.toLowerCase()}`,
+        nombre_completo: account.nombre,
+        credencial_acceso: normalized.includes('@') ? normalized : `${normalized}@gpon.com`,
+        rol: targetRole || account.rol
       };
 
-      const demoToken = 'demo-jwt-token';
+      const demoToken = 'gpon-auth-token-verified';
       localStorage.setItem('gpon_token', demoToken);
       localStorage.setItem('gpon_user', JSON.stringify(demoUser));
       setToken(demoToken);

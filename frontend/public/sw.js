@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gpon-telecom-v7';
+const CACHE_NAME = 'gpon-telecom-v8';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',

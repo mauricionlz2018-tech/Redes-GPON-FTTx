@@ -2,17 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ocultar el icono nativo de ver contraseña en Microsoft Edge y navegadores Windows */
+input::-ms-reveal,
+input::-ms-clear,
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  }
-
-  /* Ocultar el icono nativo de ver contraseña en Microsoft Edge y navegadores Windows */
-  input::-ms-reveal,
-  input::-ms-clear {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
   }
 }
 

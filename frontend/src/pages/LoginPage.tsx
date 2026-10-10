@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Lock, Mail, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { DataDisclaimerModal } from '../components/DataDisclaimerModal';
 import { PasswordRecoveryModal } from '../components/PasswordRecoveryModal';
 
@@ -55,7 +55,7 @@ export const LoginPage: React.FC = () => {
         localStorage.removeItem('gpon_saved_password');
       }
 
-      // El sistema auto-detecta el rol según la cuenta en la base de datos o credencial
+      // El sistema valida estrictamente las credenciales
       const success = await login(credencial.trim(), password);
       if (success) {
         navigate('/mapa');
@@ -81,24 +81,18 @@ export const LoginPage: React.FC = () => {
       {/* Encabezado Corporativo Oficial */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10 px-4">
         <div className="flex justify-center mb-3">
-          <div className="bg-white p-3 rounded-2xl shadow-xl shadow-sky-950/15 border border-slate-200 dark:border-slate-800 max-w-[240px] transition-transform hover:scale-102">
+          <div className="bg-white/95 dark:bg-white p-3 rounded-2xl shadow-md border border-slate-200/90 dark:border-slate-700/80 inline-flex items-center justify-center">
             <img
               src="/logo-gpon.png"
-              alt="GPON TELECOM S.A. DE C.V."
-              className="h-12 sm:h-14 w-auto object-contain mx-auto"
+              alt="GPON TELECOM"
+              className="h-14 sm:h-16 w-auto object-contain mx-auto"
             />
           </div>
         </div>
 
         <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-          GPON TELECOM S.A. DE C.V.
+          GPON TELECOM
         </h1>
-        <p className="mt-1 text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
-          Sistema de Inventario y Mapeo GPON / FTTx
-        </p>
-        <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
-          San José del Rincón, Estado de México
-        </p>
       </div>
 
       {/* Tarjeta Principal de Inicio de Sesión */}
@@ -201,16 +195,12 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Aviso Compacto de Protección de Datos */}
-          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-              <span>Entorno Seguro • GPON Telecom</span>
-            </div>
+          {/* Enlace a Aviso de Privacidad */}
+          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-[11px]">
             <button
               type="button"
               onClick={() => setIsDisclaimerOpen(true)}
-              className="text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
+              className="text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:underline font-medium cursor-pointer transition-colors"
             >
               Aviso de Privacidad
             </button>

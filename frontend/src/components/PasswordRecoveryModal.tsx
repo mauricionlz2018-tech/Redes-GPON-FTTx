@@ -126,6 +126,7 @@ export const PasswordRecoveryModal: React.FC<PasswordRecoveryModalProps> = ({
       });
 
       if (res.data?.success) {
+        localStorage.setItem(`gpon_user_pwd_${cleanEmail.toLowerCase()}`, newPassword);
         setStep('success');
       } else {
         setErrorMsg(res.data?.message || 'Error al restablecer la contraseña.');
