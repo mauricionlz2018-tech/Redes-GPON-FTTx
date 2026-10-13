@@ -21,6 +21,11 @@ input[type="password"]::-ms-clear {
 }
 
 /* Estilos para Leaflet con soporte para Modo Claro y Modo Oscuro */
+.gps-user-google-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100%;

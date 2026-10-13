@@ -425,22 +425,6 @@ const MapEventsAndDropListener: React.FC<{
   return null;
 };
 
-// Controlador para animación de vuelo suave al centrar sobre el GPS del técnico
-const MapGpsFlyHandler: React.FC<{
-  target?: [number, number] | null;
-  trigger: number;
-}> = ({ target, trigger }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (target && trigger > 0) {
-      map.flyTo(target, Math.max(map.getZoom(), 16), {
-        duration: 1.2
-      });
-    }
-  }, [trigger, target, map]);
-  return null;
-};
-
 export const GponMap: React.FC<GponMapProps> = ({
   naps,
   odf,
@@ -487,23 +471,9 @@ export const GponMap: React.FC<GponMapProps> = ({
   const [targetFocus, setTargetFocus] = useState<[number, number] | null>(null);
   const [targetZoom, setTargetZoom] = useState<number>(12);
 
-  // Auto-centrado y acercamiento suave cuando se selecciona o crea una caja NAP
-  // Referencia para distinguir clics directos en marcadores del mapa vs selecciones externas (búsqueda, lista, etc.)
-  const isMapMarkerClickRef = React.useRef(false);
-
-  // Auto-centrado y acercamiento suave cuando se selecciona externamente una caja NAP
+  // Auto-centrado suave cuando se selecciona una caja NAP (One-shot, sin bloquear la navegación del usuario)
   useEffect(() => {
-    if (isMapMarkerClickRef.current) {
-      // Si el usuario hizo clic directamente sobre el marcador en el mapa, no usamos flyTo
-      // para evitar que la animación compita con la apertura del Popup y provoque saltos/tirones.
-      isMapMarkerClickRef.current = false;
-      return;
-    }
-
     if (selectedNap?.coordenadas_gps?.lat && selectedNap?.coordenadas_gps?.lng) {
-      setTargetFocus([selectedNap.coordenadas_gps.lat, selectedNap.coordenadas_gps.lng]);
-      // Offset de latitud ligero (+0.0015) para que el popup (que mide ~300px hacia arriba) quede perfectamente
-      // centrado y visible en pantalla sin cortarse con la barra superior ni provocar autoPan brusco.
       setTargetFocus([selectedNap.coordenadas_gps.lat + 0.0015, selectedNap.coordenadas_gps.lng]);
       setTargetZoom(16);
     }
@@ -549,7 +519,6 @@ export const GponMap: React.FC<GponMapProps> = ({
   } | null>(null);
   const [isGpsActive, setIsGpsActive] = useState<boolean>(false);
   const [isGpsLoading, setIsGpsLoading] = useState<boolean>(false);
-  const [gpsCenterTrigger, setGpsCenterTrigger] = useState<number>(0);
 
   const watchIdRef = React.useRef<number | null>(null);
   const lastCoordsRef = React.useRef<{ lat: number; lng: number } | null>(null);
@@ -600,8 +569,10 @@ export const GponMap: React.FC<GponMapProps> = ({
         setIsGpsActive(true);
         setIsGpsLoading(false);
 
+        // Centrar en el mapa UNA SOLA VEZ cuando el usuario solicita la posición inicial
         if (isFirst && centerMap) {
-          setGpsCenterTrigger((prev) => prev + 1);
+          setTargetFocus([nextLat, nextLng]);
+          setTargetZoom(16);
           isFirst = false;
         }
       },
@@ -616,6 +587,16 @@ export const GponMap: React.FC<GponMapProps> = ({
     );
 
     watchIdRef.current = id;
+  };
+
+  // Centrar manualmente en la ubicación del GPS solo cuando el usuario toca el botón de la mira
+  const handleCenterGps = () => {
+    if (userGpsPosition) {
+      setTargetFocus([userGpsPosition.lat, userGpsPosition.lng]);
+      setTargetZoom(16);
+    } else {
+      fetchGpsLocation(true);
+    }
   };
 
   const handleTurnOffGps = () => {
@@ -1278,10 +1259,6 @@ export const GponMap: React.FC<GponMapProps> = ({
           isDrawingRoute={isDrawingRoute}
           onAddRoutePoint={onAddRoutePoint}
         />
-        <MapGpsFlyHandler
-          target={userGpsPosition ? [userGpsPosition.lat, userGpsPosition.lng] : null}
-          trigger={gpsCenterTrigger}
-        />
 
         {/* 1. Capa de Calles (OpenStreetMap - 100% Libre y Legal) */}
         {mapLayer === 'streets' && (
@@ -1642,11 +1619,11 @@ export const GponMap: React.FC<GponMapProps> = ({
                 icon={icon}
                 eventHandlers={{
                   click: () => {
-                    isMapMarkerClickRef.current = true;
                     onSelectNap(nap);
-                    setTimeout(() => {
-                      isMapMarkerClickRef.current = false;
-                    }, 100);
+                    if (nap.coordenadas_gps?.lat && nap.coordenadas_gps?.lng) {
+                      setTargetFocus([nap.coordenadas_gps.lat + 0.0015, nap.coordenadas_gps.lng]);
+                      setTargetZoom(16);
+                    }
                   }
                 }}
               >
@@ -1987,7 +1964,7 @@ export const GponMap: React.FC<GponMapProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setGpsCenterTrigger((prev) => prev + 1)}
+              onClick={handleCenterGps}
               className="p-1.5 rounded-lg font-bold text-[11px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-xs transition-colors cursor-pointer"
               title="Centrar mapa en mi ubicación GPS"
             >
