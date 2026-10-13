@@ -256,7 +256,7 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
               >
                 <option value={8}>8 Puertos (Splitter 1:8)</option>
-                <option value={16}>16 Puertos (Estándar FTTx 1:16)</option>
+                <option value={16}>16 Puertos (Estándar 1:16)</option>
                 <option value={24}>24 Puertos</option>
               </select>
             </div>

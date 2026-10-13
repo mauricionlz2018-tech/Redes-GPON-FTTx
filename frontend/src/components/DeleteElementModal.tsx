@@ -60,7 +60,7 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
                 {title || `Eliminar ${getTypeLabel()}`}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Baja de elemento en red FTTx
+                Baja de elemento en red
               </p>
             </div>
           </div>

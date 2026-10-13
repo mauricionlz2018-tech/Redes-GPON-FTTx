@@ -49,7 +49,7 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
                 Eliminar Caja NAP de la Red
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Baja técnica de infraestructura pasiva FTTx
+                Baja técnica de infraestructura pasiva
               </p>
             </div>
           </div>

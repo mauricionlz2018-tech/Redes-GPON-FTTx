@@ -94,7 +94,7 @@ export const RouteNavigationCard: React.FC<RouteNavigationCardProps> = ({
           </div>
           <div>
             <h4 className="font-bold text-xs leading-tight">Ruta de Navegacion a Caja</h4>
-            <span className="text-[10px] text-sky-100 font-medium">Modo de Pruebas FTTx</span>
+            <span className="text-[10px] text-sky-100 font-medium">Modo de Pruebas</span>
           </div>
         </div>
         <button

@@ -76,7 +76,7 @@ export const DataDisclaimerModal: React.FC<DataDisclaimerModalProps> = ({ isOpen
             <Info className="w-5 h-5 text-sky-600 dark:text-sky-400 flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-semibold text-sky-900 dark:text-sky-200">
-                Bienvenido al Sistema de Gestión de Red GPON / FTTx
+                Bienvenido al Sistema de Inventario y Mapeo Lógico de Red GPON/FTTx
               </p>
               <p className="text-xs text-sky-800/90 dark:text-sky-300 leading-relaxed">
                 Este software se encuentra configurado para fines demostrativos, de evaluación técnica y auditoría operativa de infraestructura óptica.

@@ -318,7 +318,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
       {/* Matriz física de 16 puertos en 2 filas de 8 */}
       <div className="space-y-2 mb-4">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 px-1">
-          <span>Matriz de Distribución FTTx ({ports.length} Puertos)</span>
+          <span>Matriz de Distribución ({ports.length} Puertos)</span>
           <span className="text-[11px] text-slate-400 dark:text-slate-500">Toca un puerto para gestionar</span>
         </div>
 
