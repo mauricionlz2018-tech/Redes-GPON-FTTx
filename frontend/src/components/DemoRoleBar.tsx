@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Shield, ShieldAlert, Wrench, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { UserRole } from '../types';
@@ -8,33 +9,43 @@ interface DemoRoleBarProps {
 }
 
 export const DemoRoleBar: React.FC<DemoRoleBarProps> = () => {
-  const { user, switchRole } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) return null;
 
-  const roles: { role: UserRole; label: string; icon: any; color: string; desc: string }[] = [
+  const roles: { role: UserRole; label: string; icon: any; color: string; desc: string; email: string }[] = [
     {
       role: 'Admin',
       label: 'Administrador',
       icon: Shield,
       color: 'bg-indigo-600 text-white',
-      desc: 'Acceso total a ODF, NAPs, Clientes y Reportes'
+      desc: 'Acceso total a ODF, NAPs, Clientes y Reportes',
+      email: 'admin@gpon.com'
     },
     {
       role: 'Soporte',
       label: 'Soporte Técnico',
       icon: ShieldAlert,
       color: 'bg-emerald-600 text-white',
-      desc: 'Gestión de infraestructura y corrección/liberación de puertos'
+      desc: 'Gestión de infraestructura y corrección/liberación de puertos',
+      email: 'soporte@gpon.com'
     },
     {
       role: 'Tecnico',
       label: 'Técnico de Campo',
       icon: Wrench,
       color: 'bg-amber-600 text-white',
-      desc: 'Lectura y asignación inicial (Edición/Liberación restringida 403)'
+      desc: 'Lectura y asignación inicial (Edición/Liberación restringida 403)',
+      email: 'tecnico@gpon.com'
     }
   ];
+
+  const handleRoleChange = (roleEmail: string) => {
+    // Al cambiar de rol, cerrar sesión y mostrar la pantalla de login para autenticación
+    logout();
+    navigate(`/login?credencial=${encodeURIComponent(roleEmail)}`);
+  };
 
   return (
     <aside aria-label="Selector de rol" className="bg-slate-100 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 px-2 sm:px-4 py-1 sm:py-1.5 text-xs w-full overflow-hidden transition-colors">
@@ -51,8 +62,8 @@ export const DemoRoleBar: React.FC<DemoRoleBarProps> = () => {
             return (
               <button
                 key={r.role}
-                onClick={() => switchRole(r.role)}
-                title={r.desc}
+                onClick={() => handleRoleChange(r.email)}
+                title={`Cambiar a rol ${r.label} (Requiere iniciar sesión)`}
                 className={`flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
                     ? `${r.color} shadow-sm ring-1 sm:ring-2 ring-indigo-500/30 dark:ring-white/20`

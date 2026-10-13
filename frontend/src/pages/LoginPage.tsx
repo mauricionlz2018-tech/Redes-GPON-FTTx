@@ -19,9 +19,19 @@ export const LoginPage: React.FC = () => {
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
 
-  // Cargar credenciales recordadas al montar el componente
+  // Cargar credenciales desde URL (cambio de rol) o credenciales recordadas
   useEffect(() => {
     try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const credParam = urlParams.get('credencial');
+      if (credParam) {
+        setCredencial(credParam);
+        setPassword('');
+        setRememberMe(false);
+        setInfoMsg(`Autentícate para acceder con la cuenta ${credParam}`);
+        return;
+      }
+
       const savedRemember = localStorage.getItem('gpon_remember_me');
       const savedCredencial = localStorage.getItem('gpon_saved_credencial');
       const savedPassword = localStorage.getItem('gpon_saved_password');

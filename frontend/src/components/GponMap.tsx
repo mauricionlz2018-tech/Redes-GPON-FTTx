@@ -203,17 +203,55 @@ const MapBoundsAdjuster: React.FC<{ coordinates?: [number, number][] }> = ({ coo
   return null;
 };
 
-// Controlador para centrar en una ubicación específica con animación fluida
-const MapCenterController: React.FC<{ targetCenter?: [number, number] | null; zoom?: number }> = ({ targetCenter, zoom }) => {
+// Helper para calcular distancia precisa en metros entre dos coordenadas GPS
+function calculateGpsDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Controlador para centrar en una ubicación específica con animación fluida (One-shot, sin bloquear la navegación del usuario)
+const MapCenterController: React.FC<{
+  targetCenter?: [number, number] | null;
+  zoom?: number;
+  onCentered?: () => void;
+}> = ({ targetCenter, zoom, onCentered }) => {
   const map = useMap();
+  const lastTargetKeyRef = React.useRef<string | null>(null);
+
   useEffect(() => {
     if (targetCenter) {
-      map.flyTo(targetCenter, zoom || 13, {
-        duration: 0.8,
-        easeLinearity: 0.25
-      });
+      const key = `${targetCenter[0].toFixed(5)},${targetCenter[1].toFixed(5)},${zoom || 13}`;
+      if (lastTargetKeyRef.current !== key) {
+        lastTargetKeyRef.current = key;
+        map.flyTo(targetCenter, zoom || 13, {
+          duration: 0.7,
+          easeLinearity: 0.25
+        });
+        if (onCentered) {
+          onCentered();
+        }
+      }
     }
-  }, [targetCenter, zoom, map]);
+  }, [targetCenter, zoom, map, onCentered]);
+
+  return null;
+};
+
+// Listener para detectar cuando el usuario arrastra o hace zoom manualmente y liberar cualquier foco
+const MapUserInteractionListener: React.FC<{ onUserInteract: () => void }> = ({ onUserInteract }) => {
+  useMapEvents({
+    dragstart: onUserInteract,
+    zoomstart: onUserInteract
+  });
   return null;
 };
 
@@ -232,18 +270,18 @@ const MapStreetViewClickListener: React.FC<{
   return null;
 };
 
-// Icono animado de Baliza Satelital para la ubicación GPS del usuario en tiempo real
+// Icono oficial estilo Google Maps para la ubicación GPS del usuario: estático, nítido y sin vibraciones
 const createGpsUserBeaconIcon = () => {
   return L.divIcon({
-    className: 'gps-user-beacon-wrapper',
+    className: 'gps-user-google-marker',
     html: `
-      <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
-        <span style="position: absolute; width: 30px; height: 30px; border-radius: 9999px; background: rgba(14, 165, 233, 0.45); animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-        <span style="position: relative; width: 14px; height: 14px; border-radius: 9999px; background: #0284c7; border: 2.5px solid #ffffff; box-shadow: 0 0 12px rgba(2, 132, 199, 0.95), 0 2px 4px rgba(0,0,0,0.35);"></span>
+      <div style="position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+        <div style="position: absolute; width: 26px; height: 26px; border-radius: 9999px; background: rgba(66, 133, 244, 0.22);"></div>
+        <div style="position: relative; width: 15px; height: 15px; border-radius: 9999px; background: #1a73e8; border: 2.5px solid #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.45);"></div>
       </div>
     `,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17]
+    iconSize: [28, 28],
+    iconAnchor: [14, 14]
   });
 };
 
@@ -502,7 +540,7 @@ export const GponMap: React.FC<GponMapProps> = ({
     return calculatePointsDistance(routeDraftPoints || []);
   }, [routeDraftPoints]);
 
-  // Estados para Geolocalización GPS a Demanda (No intrusivo, con control total de encendido/apagado)
+  // Estados para Geolocalización GPS en Tiempo Real estilo Google Maps (watchPosition con filtro anti-jitter)
   const [userGpsPosition, setUserGpsPosition] = useState<{
     lat: number;
     lng: number;
@@ -513,40 +551,91 @@ export const GponMap: React.FC<GponMapProps> = ({
   const [isGpsLoading, setIsGpsLoading] = useState<boolean>(false);
   const [gpsCenterTrigger, setGpsCenterTrigger] = useState<number>(0);
 
+  const watchIdRef = React.useRef<number | null>(null);
+  const lastCoordsRef = React.useRef<{ lat: number; lng: number } | null>(null);
+
   const fetchGpsLocation = (centerMap: boolean = false) => {
     if (!('geolocation' in navigator)) {
       alert('Tu dispositivo o navegador no soporta geolocalización GPS.');
       return;
     }
     setIsGpsLoading(true);
-    navigator.geolocation.getCurrentPosition(
+
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
+    let isFirst = true;
+
+    const id = navigator.geolocation.watchPosition(
       (pos) => {
-        const nextPos = {
-          lat: Number(pos.coords.latitude.toFixed(6)),
-          lng: Number(pos.coords.longitude.toFixed(6)),
-          accuracy: Math.round(pos.coords.accuracy),
+        const nextLat = Number(pos.coords.latitude.toFixed(6));
+        const nextLng = Number(pos.coords.longitude.toFixed(6));
+        const accuracy = Math.round(pos.coords.accuracy);
+
+        // Filtro anti-vibración estilo Google Maps:
+        // Si el desplazamiento es menor a 2.5 metros, mantener estático sin saltos ni bailes
+        if (lastCoordsRef.current && !isFirst) {
+          const dist = calculateGpsDistanceMeters(
+            lastCoordsRef.current.lat,
+            lastCoordsRef.current.lng,
+            nextLat,
+            nextLng
+          );
+          if (dist < 2.5) {
+            setIsGpsLoading(false);
+            return;
+          }
+        }
+
+        lastCoordsRef.current = { lat: nextLat, lng: nextLng };
+
+        setUserGpsPosition({
+          lat: nextLat,
+          lng: nextLng,
+          accuracy,
           heading: pos.coords.heading
-        };
-        setUserGpsPosition(nextPos);
+        });
         setIsGpsActive(true);
         setIsGpsLoading(false);
-        if (centerMap) {
+
+        if (isFirst && centerMap) {
           setGpsCenterTrigger((prev) => prev + 1);
+          isFirst = false;
         }
       },
       (err) => {
         console.warn('GPS no disponible:', err.message);
-        alert('No se pudo obtener la señal GPS: ' + err.message);
+        if (isFirst) {
+          alert('No se pudo obtener la señal GPS: ' + err.message);
+        }
         setIsGpsLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 1000 }
     );
+
+    watchIdRef.current = id;
   };
 
   const handleTurnOffGps = () => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    lastCoordsRef.current = null;
     setIsGpsActive(false);
     setUserGpsPosition(null);
   };
+
+  // Limpiar watcher de geolocalización al desmontar
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
 
 
 
@@ -1172,7 +1261,12 @@ export const GponMap: React.FC<GponMapProps> = ({
       >
         <MapResizeController />
         <MapBoundsAdjuster coordinates={activeRoute?.coordinates} />
-        <MapCenterController targetCenter={targetFocus} zoom={targetZoom} />
+        <MapCenterController
+          targetCenter={targetFocus}
+          zoom={targetZoom}
+          onCentered={() => setTargetFocus(null)}
+        />
+        <MapUserInteractionListener onUserInteract={() => setTargetFocus(null)} />
         <ViewportListener onViewportChange={handleViewportChange} />
         <MapStreetViewClickListener
           isActive={isStreetViewActive}
@@ -1557,9 +1651,8 @@ export const GponMap: React.FC<GponMapProps> = ({
                 }}
               >
                 <Popup
-                  autoPanPaddingTopLeft={L.point(20, 90)}
-                  autoPanPaddingBottomRight={L.point(20, 20)}
-                  autoPan={true}
+                  autoPan={false}
+                  keepInView={false}
                 >
                   <div className="p-1 min-w-[220px] text-slate-800 dark:text-slate-100">
                     <div className="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 mb-2">
@@ -1683,11 +1776,11 @@ export const GponMap: React.FC<GponMapProps> = ({
               center={[userGpsPosition.lat, userGpsPosition.lng]}
               radius={Math.max(userGpsPosition.accuracy, 5)}
               pathOptions={{
-                color: '#0284c7',
-                fillColor: '#38bdf8',
-                fillOpacity: 0.18,
-                weight: 1.5,
-                dashArray: '4, 4'
+                color: '#4285F4',
+                fillColor: '#4285F4',
+                fillOpacity: 0.12,
+                weight: 1,
+                opacity: 0.4
               }}
             />
             <Marker
