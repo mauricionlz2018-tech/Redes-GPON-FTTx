@@ -32,6 +32,14 @@ import {
 
 const router = Router();
 
+router.get('/health', (req, res) => {
+  res.json({
+    status: 'online',
+    servicio: 'GPON TELECOM Inventory & Mapping API v1',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // ============================
 // Rutas de Autenticación y Gestión de Personal (RBAC)
 // ============================

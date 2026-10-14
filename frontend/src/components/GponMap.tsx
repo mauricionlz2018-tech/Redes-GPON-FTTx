@@ -1108,7 +1108,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   Postes Propuestos ({allPostesPropuestos.length})
                   {showPostesPropuestos && (
                     <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-medium">
-                      {visiblePostesPropuestos.length} en pantalla (fluido)
+                      {visiblePostesPropuestos.length} en pantalla
                     </span>
                   )}
                 </span>
@@ -1135,7 +1135,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                         </span>
                       ) : (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                          {visiblePostesCfe.length} en pantalla (fluido)
+                          {visiblePostesCfe.length} en pantalla
                         </span>
                       )}
                     </span>
@@ -1238,6 +1238,7 @@ export const GponMap: React.FC<GponMapProps> = ({
         center={defaultCenter}
         zoom={12}
         scrollWheelZoom={true}
+        preferCanvas={true}
         className="w-full h-full"
       >
         <MapResizeController />

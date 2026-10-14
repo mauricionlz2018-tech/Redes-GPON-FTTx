@@ -202,42 +202,52 @@ export const createGasaReservaIcon = (gasa?: GasaReserva) => {
   });
 };
 
-/**
- * 6. Poste Propuesto (Círculo rojo estándar del plano de diseño)
- */
+const postePropuestoIconCache = new Map<string, L.DivIcon>();
 export const createPostePropuestoIcon = (codigo?: string) => {
-  return L.divIcon({
-    className: 'custom-poste-propuesto-marker',
-    html: `
-      <div class="relative flex items-center justify-center p-1 cursor-pointer hover:scale-135 active:scale-95 transition-transform" title="Poste Propuesto ${codigo || ''}">
-        <div class="w-4 h-4 rounded-full bg-red-600 border-2 border-white shadow-md ring-2 ring-red-500/80 flex items-center justify-center">
-          <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-        </div>
-      </div>
-    `,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -12]
-  });
+  const key = codigo || 'default';
+  if (!postePropuestoIconCache.has(key)) {
+    postePropuestoIconCache.set(
+      key,
+      L.divIcon({
+        className: 'custom-poste-propuesto-marker',
+        html: `
+          <div class="relative flex items-center justify-center p-1 cursor-pointer hover:scale-135 active:scale-95 transition-transform" title="Poste Propuesto ${codigo || ''}">
+            <div class="w-4 h-4 rounded-full bg-red-600 border-2 border-white shadow-md ring-2 ring-red-500/80 flex items-center justify-center">
+              <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            </div>
+          </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+        popupAnchor: [0, -12]
+      })
+    );
+  }
+  return postePropuestoIconCache.get(key)!;
 };
 
-/**
- * 7. Poste CFE Existente (Punto grisáceo con cruz central o círculo)
- */
+const posteCfeIconCache = new Map<string, L.DivIcon>();
 export const createPosteCfeIcon = (codigo?: string) => {
-  return L.divIcon({
-    className: 'custom-poste-cfe-marker',
-    html: `
-      <div class="relative flex items-center justify-center p-1 cursor-pointer hover:scale-135 active:scale-95 transition-transform" title="Poste CFE Existente ${codigo || ''}">
-        <div class="w-4 h-4 rounded-full bg-slate-700 border-2 border-white shadow-md ring-2 ring-slate-400/80 flex items-center justify-center text-[9px] text-white font-black leading-none">
-          +
-        </div>
-      </div>
-    `,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -12]
-  });
+  const key = codigo || 'default';
+  if (!posteCfeIconCache.has(key)) {
+    posteCfeIconCache.set(
+      key,
+      L.divIcon({
+        className: 'custom-poste-cfe-marker',
+        html: `
+          <div class="relative flex items-center justify-center p-1 cursor-pointer hover:scale-135 active:scale-95 transition-transform" title="Poste CFE Existente ${codigo || ''}">
+            <div class="w-4 h-4 rounded-full bg-slate-700 border-2 border-white shadow-md ring-2 ring-slate-400/80 flex items-center justify-center text-[9px] text-white font-black leading-none">
+              +
+            </div>
+          </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+        popupAnchor: [0, -12]
+      })
+    );
+  }
+  return posteCfeIconCache.get(key)!;
 };
 
 /**

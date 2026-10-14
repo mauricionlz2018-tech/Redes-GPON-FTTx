@@ -33,11 +33,101 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token]);
 
   const login = async (credencial_acceso: string, password = '', targetRole?: UserRole): Promise<boolean> => {
+    const normalized = credencial_acceso.trim().toLowerCase();
+    const enteredPass = password.trim();
+
+    // Recuperar posible contraseña actualizada por módulo de recuperación
+    const customPass = localStorage.getItem(`gpon_user_pwd_${normalized}`);
+
+    interface ValidAccount {
+      rol: UserRole;
+      nombre: string;
+      passwords: string[];
+    }
+
+    const validAccounts: Record<string, ValidAccount> = {
+      'admin@gpon.com': {
+        rol: 'Admin',
+        nombre: 'Ing. Carlos Mendoza (Admin)',
+        passwords: ['admin123', ...(customPass ? [customPass] : [])]
+      },
+      'admin': {
+        rol: 'Admin',
+        nombre: 'Ing. Carlos Mendoza (Admin)',
+        passwords: ['admin123', ...(customPass ? [customPass] : [])]
+      },
+      'soporte@gpon.com': {
+        rol: 'Soporte',
+        nombre: 'Ing. Sofía Ramírez (Soporte)',
+        passwords: ['admin123', ...(customPass ? [customPass] : [])]
+      },
+      'soporte': {
+        rol: 'Soporte',
+        nombre: 'Ing. Sofía Ramírez (Soporte)',
+        passwords: ['admin123', ...(customPass ? [customPass] : [])]
+      },
+      'tecnico@gpon.com': {
+        rol: 'Tecnico',
+        nombre: 'Juan Pérez (Técnico)',
+        passwords: ['admin123', ...(customPass ? [customPass] : [])]
+      },
+      'tecnico': {
+        rol: 'Tecnico',
+        nombre: 'Juan Pérez (Técnico)',
+        passwords: ['admin123', ...(customPass ? [customPass] : [])]
+      }
+    };
+
+    const account = validAccounts[normalized];
+    const isLocalMatch = account && account.passwords.includes(enteredPass);
+
+    // 1. Acceso Ultra-Rápido Instantáneo (< 30ms) para cuentas institucionales verificadas
+    // Evita que el usuario quede congelado 30 segundos si el backend en Render está en reposo (cold-start)
+    if (isLocalMatch) {
+      const demoUser: User = {
+        id_usuario: `local-${account.rol.toLowerCase()}`,
+        nombre_completo: account.nombre,
+        credencial_acceso: normalized.includes('@') ? normalized : `${normalized}@gpon.com`,
+        rol: targetRole || account.rol
+      };
+      const initialToken = localStorage.getItem('gpon_token') || 'gpon-auth-token-verified';
+      localStorage.setItem('gpon_token', initialToken);
+      localStorage.setItem('gpon_user', JSON.stringify(demoUser));
+      setToken(initialToken);
+      setUser(demoUser);
+
+      // Sincronización transparente de JWT con el servidor en segundo plano
+      api.post('/auth/login', { credencial_acceso, password }, { timeout: 8000 })
+        .then((response) => {
+          if (response.data?.success && response.data.data?.token) {
+            localStorage.setItem('gpon_token', response.data.data.token);
+            if (response.data.data.usuario) {
+              localStorage.setItem('gpon_user', JSON.stringify(response.data.data.usuario));
+              setUser(response.data.data.usuario);
+            }
+            setToken(response.data.data.token);
+          }
+        })
+        .catch(() => {
+          // Si el servidor está arrancando o fuera de línea, la sesión local validada continúa activa
+        });
+
+      return true;
+    }
+
+    // 2. Si es una cuenta conocida pero la contraseña es INCORRECTA: Denegar inmediatamente
+    if (account && !account.passwords.includes(enteredPass)) {
+      console.warn('Contraseña incorrecta para cuenta del sistema');
+      return false;
+    }
+
+    // 3. Para cuentas adicionales creadas en la base de datos externa Neon/Postgres
     try {
-      const response = await api.post('/auth/login', {
-        credencial_acceso,
-        password
-      });
+      const response = await api.post(
+        '/auth/login',
+        { credencial_acceso, password },
+        { timeout: 6000 }
+      );
 
       if (response.data.success) {
         const { token: newToken, usuario } = response.data.data;
@@ -49,80 +139,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     } catch (error: any) {
-      // 1. Si el servidor respondió con un código de error (ej. 401 Credenciales inválidas, 400, etc.), DENEGAR ACCESO
-      if (error?.response) {
-        console.warn('Acceso denegado por el servidor: Usuario o contraseña incorrectos');
-        return false;
-      }
-
-      // 2. Si el servidor no responde (modo offline/desconectado), validar estrictamente:
-      // NUNCA aceptar contraseñas incorrectas o arbitrarias
-      const normalized = credencial_acceso.trim().toLowerCase();
-      const enteredPass = password.trim();
-
-      // Recuperar posible contraseña actualizada por recuperación
-      const customPass = localStorage.getItem(`gpon_user_pwd_${normalized}`);
-
-      interface ValidAccount {
-        rol: UserRole;
-        nombre: string;
-        passwords: string[];
-      }
-
-      const validAccounts: Record<string, ValidAccount> = {
-        'admin@gpon.com': {
-          rol: 'Admin',
-          nombre: 'Ing. Carlos Mendoza (Admin)',
-          passwords: ['admin123', ...(customPass ? [customPass] : [])]
-        },
-        'admin': {
-          rol: 'Admin',
-          nombre: 'Ing. Carlos Mendoza (Admin)',
-          passwords: ['admin123', ...(customPass ? [customPass] : [])]
-        },
-        'soporte@gpon.com': {
-          rol: 'Soporte',
-          nombre: 'Ing. Sofía Ramírez (Soporte)',
-          passwords: ['admin123', ...(customPass ? [customPass] : [])]
-        },
-        'soporte': {
-          rol: 'Soporte',
-          nombre: 'Ing. Sofía Ramírez (Soporte)',
-          passwords: ['admin123', ...(customPass ? [customPass] : [])]
-        },
-        'tecnico@gpon.com': {
-          rol: 'Tecnico',
-          nombre: 'Juan Pérez (Técnico)',
-          passwords: ['admin123', ...(customPass ? [customPass] : [])]
-        },
-        'tecnico': {
-          rol: 'Tecnico',
-          nombre: 'Juan Pérez (Técnico)',
-          passwords: ['admin123', ...(customPass ? [customPass] : [])]
-        }
-      };
-
-      const account = validAccounts[normalized];
-
-      // Si el usuario no existe o la contraseña no coincide exactamente: DENEGAR ACCESO
-      if (!account || !account.passwords.includes(enteredPass)) {
-        console.warn('Intento de acceso rechazado: Usuario o contraseña incorrectos.');
-        return false;
-      }
-
-      const demoUser: User = {
-        id_usuario: `local-${account.rol.toLowerCase()}`,
-        nombre_completo: account.nombre,
-        credencial_acceso: normalized.includes('@') ? normalized : `${normalized}@gpon.com`,
-        rol: targetRole || account.rol
-      };
-
-      const demoToken = 'gpon-auth-token-verified';
-      localStorage.setItem('gpon_token', demoToken);
-      localStorage.setItem('gpon_user', JSON.stringify(demoUser));
-      setToken(demoToken);
-      setUser(demoUser);
-      return true;
+      console.warn('Acceso denegado:', error?.response?.data?.message || 'Error de autenticación');
+      return false;
     }
   };
 

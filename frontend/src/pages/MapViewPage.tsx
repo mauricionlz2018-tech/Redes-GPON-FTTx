@@ -434,6 +434,15 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     fetchData(false);
   };
 
+  // Comparador de datos liviano para evitar re-renderizados innecesarios y pausas de recolección de basura
+  const haveItemsChanged = <T extends Record<string, any>>(prev: T[], next: T[], idKey: string): boolean => {
+    if (prev.length !== next.length) return true;
+    for (let i = 0; i < prev.length; i++) {
+      if (prev[i][idKey] !== next[i][idKey]) return true;
+    }
+    return false;
+  };
+
   // Cargar NAPs, ODF e Infraestructura (Postes, Mufas, Rutas) sincronizada
   const fetchData = useCallback(async (isInitial = false) => {
     try {
@@ -464,18 +473,16 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       ]);
 
       if (napsRes.data?.success && Array.isArray(napsRes.data.data) && napsRes.data.data.length > 0) {
-        setNaps(napsRes.data.data);
+        setNaps((prev) => {
+          if (!haveItemsChanged(prev, napsRes.data.data, 'id_nap')) return prev;
+          offlineDb.cached_naps.clear().then(() => offlineDb.cached_naps.bulkAdd(napsRes.data.data)).catch(() => {});
+          return napsRes.data.data;
+        });
         setIsDemoMode(false);
-        try {
-          await offlineDb.cached_naps.clear();
-          await offlineDb.cached_naps.bulkAdd(napsRes.data.data);
-        } catch (dbErr) {
-          console.warn('Error guardando en Dexie cache:', dbErr);
-        }
       } else {
         const cached = await offlineDb.cached_naps.toArray().catch(() => []);
         if (cached.length > 0) {
-          setNaps(cached);
+          setNaps((prev) => (haveItemsChanged(prev, cached, 'id_nap') ? cached : prev));
         }
       }
 
@@ -523,10 +530,13 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           ...unsyncedPostes
         ];
 
-        setCustomPostes(mergedPostes);
-        try {
-          localStorage.setItem('gpon_custom_postes', JSON.stringify(mergedPostes));
-        } catch {}
+        setCustomPostes((prev) => {
+          if (!haveItemsChanged(prev, mergedPostes, 'id_poste')) return prev;
+          try {
+            localStorage.setItem('gpon_custom_postes', JSON.stringify(mergedPostes));
+          } catch {}
+          return mergedPostes;
+        });
       }
 
       // 2. Sincronización Bidireccional de Mufas con Neon DB
@@ -567,10 +577,13 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           ...unsyncedMufas
         ];
 
-        setCustomEmpalmes(mergedMufas);
-        try {
-          localStorage.setItem('gpon_custom_empalmes', JSON.stringify(mergedMufas));
-        } catch {}
+        setCustomEmpalmes((prev) => {
+          if (!haveItemsChanged(prev, mergedMufas, 'id_empalme')) return prev;
+          try {
+            localStorage.setItem('gpon_custom_empalmes', JSON.stringify(mergedMufas));
+          } catch {}
+          return mergedMufas;
+        });
       }
 
       // 3. Sincronización Bidireccional de Rutas Troncales con Neon DB
@@ -611,10 +624,13 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           ...unsyncedRoutes
         ];
 
-        setCustomRoutes(mergedRoutes);
-        try {
-          localStorage.setItem('gpon_custom_routes', JSON.stringify(mergedRoutes));
-        } catch {}
+        setCustomRoutes((prev) => {
+          if (!haveItemsChanged(prev, mergedRoutes, 'id_ruta')) return prev;
+          try {
+            localStorage.setItem('gpon_custom_routes', JSON.stringify(mergedRoutes));
+          } catch {}
+          return mergedRoutes;
+        });
       }
     } catch (err) {
       console.warn('Sincronización con backend parcial o en caché offline:', err);
@@ -623,12 +639,14 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     }
   }, [deletedRouteIds, deletedMufaIds, deletedPosteIds]);
 
-  // Polling automático cada 8 segundos para sincronización multi-dispositivo en tiempo real
+  // Polling optimizado cada 25 segundos para sincronización multi-dispositivo sin trabar la interfaz
   useEffect(() => {
     fetchData(true);
     const syncTimer = setInterval(() => {
-      fetchData(false);
-    }, 8000);
+      if (document.visibilityState === 'visible') {
+        fetchData(false);
+      }
+    }, 25000);
 
     return () => clearInterval(syncTimer);
   }, [fetchData]);
@@ -1112,37 +1130,134 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               : 'lg:col-span-7 xl:col-span-8 h-[550px] lg:h-[680px]'
           }`}
         >
-          {/* Botón flotante para Salir de Pantalla Completa (Modo Expandido) */}
+          {/* Barra Superior Flotante en Modo Expandido (Restaurar Pantalla + Opciones Rápidas) */}
           {isMapExpanded && (
-            <div className="absolute top-3 left-3 z-[450] flex items-center gap-2">
+            <div className="absolute top-2.5 left-14 sm:left-16 right-28 sm:right-36 z-[450] flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 pointer-events-auto">
               <button
                 onClick={() => {
                   setIsMapExpanded(false);
                   setIsExpandedDrawerOpen(false);
                 }}
-                className="bg-white/95 dark:bg-slate-900/95 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 px-3.5 py-2 rounded-xl shadow-2xl border border-slate-300 dark:border-slate-700 flex items-center gap-2 text-xs font-bold transition-all backdrop-blur cursor-pointer active:scale-95"
+                className="bg-slate-900/95 hover:bg-slate-800 text-white px-3 py-1.5 rounded-xl shadow-xl border border-slate-700/80 flex items-center gap-1.5 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
                 title="Volver a la vista normal con paneles"
               >
-                <Minimize2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <Minimize2 className="w-3.5 h-3.5 text-sky-400" />
                 <span className="hidden sm:inline">Restaurar Pantalla</span>
                 <span className="sm:hidden">Salir</span>
               </button>
+
+              <div className="h-5 w-px bg-slate-700/70 shrink-0 mx-0.5" />
+
+              <button
+                onClick={() => setIsLegendModalOpen(true)}
+                className="flex items-center gap-1 bg-slate-900/90 hover:bg-slate-800 text-sky-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-slate-700/80 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                title="Ver norma de simbología y metrajes"
+              >
+                <Layers className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                <span className="hidden md:inline">Simbología</span>
+              </button>
+
+              <button
+                draggable={true}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', 'troncal');
+                  e.dataTransfer.setData('application/gpon-element', 'troncal');
+                }}
+                onClick={() => setIsDrawingRoute(!isDrawingRoute)}
+                className={`flex items-center gap-1 bg-slate-900/90 hover:bg-purple-950/80 text-purple-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-purple-500/50 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                  isDrawingRoute ? 'ring-2 ring-purple-400 bg-purple-900/60' : ''
+                }`}
+                title="Trazar ruta troncal o ramal"
+              >
+                <Ruler className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal'}</span>
+              </button>
+
+              <button
+                draggable={true}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', 'mufa');
+                  e.dataTransfer.setData('application/gpon-element', 'mufa');
+                }}
+                onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
+                className={`flex items-center gap-1 bg-slate-900/90 hover:bg-amber-950/80 text-amber-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-500/50 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                  placementMode === 'mufa' ? 'ring-2 ring-amber-400 bg-amber-900/60' : ''
+                }`}
+                title="Ubicar mufa torpedo"
+              >
+                <GitCommit className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>+ Mufa</span>
+              </button>
+
+              <button
+                draggable={true}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', 'poste');
+                  e.dataTransfer.setData('application/gpon-element', 'poste');
+                }}
+                onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
+                className={`flex items-center gap-1 bg-slate-900/90 hover:bg-rose-950/80 text-rose-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-rose-500/50 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                  placementMode === 'poste' ? 'ring-2 ring-rose-400 bg-rose-900/60' : ''
+                }`}
+                title="Ubicar poste"
+              >
+                <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <span>+ Poste</span>
+              </button>
+
+              {user?.rol !== 'Tecnico' && (
+                <button
+                  draggable={true}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', 'nap');
+                    e.dataTransfer.setData('application/gpon-element', 'nap');
+                  }}
+                  onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
+                  className={`flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded-xl border border-sky-400/60 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                    placementMode === 'nap' ? 'ring-2 ring-white bg-sky-500' : ''
+                  }`}
+                  title="Ubicar nueva caja NAP"
+                >
+                  <Plus className="w-3.5 h-3.5 shrink-0" />
+                  <span>+ Caja NAP</span>
+                </button>
+              )}
+
+              {selectedNap && (
+                <button
+                  onClick={() => {
+                    if (isRouteActive) {
+                      handleClearRoute();
+                    } else {
+                      handleRequestRoute(selectedNap);
+                    }
+                  }}
+                  className={`flex items-center gap-1 font-bold text-xs px-2.5 py-1.5 rounded-xl border shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                    isRouteActive
+                      ? 'bg-indigo-600 text-white border-indigo-400'
+                      : 'bg-slate-900/90 hover:bg-indigo-950/80 text-indigo-300 border-indigo-500/50'
+                  }`}
+                  title="Calcular ruta a la caja seleccionada"
+                >
+                  <Navigation className="w-3.5 h-3.5 shrink-0" />
+                  <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja'}</span>
+                </button>
+              )}
             </div>
           )}
 
-          {/* Pestaña flotante lateral deslizable para abrir opciones y puertos en Pantalla Completa */}
+          {/* Pestaña lateral flotante centrada verticalmente para evitar solapamientos */}
           {isMapExpanded && (
             <button
               onClick={() => setIsExpandedDrawerOpen(!isExpandedDrawerOpen)}
-              className={`absolute top-20 right-0 z-[450] bg-white/95 dark:bg-slate-900/95 hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 px-3 py-2.5 rounded-l-2xl shadow-2xl border-y border-l border-slate-300 dark:border-slate-700 flex items-center gap-2 text-xs font-bold transition-transform duration-300 backdrop-blur cursor-pointer ${
-                isExpandedDrawerOpen ? 'translate-x-full' : 'translate-x-0'
+              className={`absolute top-1/2 -translate-y-1/2 right-0 z-[450] bg-slate-900/95 hover:bg-slate-800 text-white pl-3 pr-2.5 py-3 rounded-l-2xl shadow-2xl border-y border-l border-slate-700/80 flex items-center gap-2 text-xs font-bold transition-all duration-300 backdrop-blur cursor-pointer hover:border-sky-500 ${
+                isExpandedDrawerOpen ? 'translate-x-full opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'
               }`}
-              title={isExpandedDrawerOpen ? 'Ocultar opciones' : 'Deslizar panel de opciones y puertos'}
+              title={isExpandedDrawerOpen ? 'Ocultar panel' : 'Deslizar panel de opciones y puertos'}
             >
-              <ChevronLeft className="w-4 h-4 text-sky-600 dark:text-sky-400 animate-pulse" />
-              <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-              <span className="hidden sm:inline">Opciones y Puertos</span>
-              <span className="sm:hidden">Opciones</span>
+              <ChevronLeft className="w-4 h-4 text-sky-400 animate-pulse" />
+              <Layers className="w-4 h-4 text-sky-400" />
+              <span className="hidden sm:inline font-bold">Opciones y Puertos</span>
             </button>
           )}
 

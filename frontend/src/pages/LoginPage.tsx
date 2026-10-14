@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { DataDisclaimerModal } from '../components/DataDisclaimerModal';
 import { PasswordRecoveryModal } from '../components/PasswordRecoveryModal';
@@ -21,6 +22,9 @@ export const LoginPage: React.FC = () => {
 
   // Cargar credenciales desde URL (cambio de rol) o credenciales recordadas
   useEffect(() => {
+    // Pre-calentar backend silenciosamente para eliminar tiempos de arranque en frío
+    api.get('/health', { timeout: 3500 }).catch(() => {});
+
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const credParam = urlParams.get('credencial');
