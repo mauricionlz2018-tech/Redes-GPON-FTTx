@@ -74,12 +74,21 @@ export const MapViewPage: React.FC = () => {
   const [isMapExpanded, setIsMapExpanded] = useState<boolean>(false);
   const [isExpandedDrawerOpen, setIsExpandedDrawerOpen] = useState<boolean>(false);
 
-  // Redimensionar Leaflet al alternar pantalla completa o drawer
+  // Redimensionar Leaflet al alternar pantalla completa o drawer y ocultar barras externas
   useEffect(() => {
+    if (isMapExpanded) {
+      document.body.classList.add('gpon-fullscreen-active');
+    } else {
+      document.body.classList.remove('gpon-fullscreen-active');
+    }
+
     const timer = setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
     }, 150);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      document.body.classList.remove('gpon-fullscreen-active');
+    };
   }, [isMapExpanded, isExpandedDrawerOpen]);
 
   // Referencia para scroll suave al panel de puertos
@@ -1118,7 +1127,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       <div
         className={`transition-all duration-300 ${
           isMapExpanded
-            ? 'fixed inset-0 z-50 bg-slate-950 w-screen h-screen overflow-hidden'
+            ? 'fixed inset-0 z-[9990] bg-slate-100 dark:bg-slate-950 w-screen h-screen overflow-hidden'
             : 'grid grid-cols-1 lg:grid-cols-12 gap-4 items-start'
         }`}
       >
@@ -1130,134 +1139,149 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               : 'lg:col-span-7 xl:col-span-8 h-[550px] lg:h-[680px]'
           }`}
         >
-          {/* Barra Superior Flotante en Modo Expandido (Restaurar Pantalla + Opciones Rápidas) */}
+          {/* Barra Superior Flotante en Modo Expandido (Restaurar Pantalla + Opciones en Modo Claro) */}
           {isMapExpanded && (
             <div className="absolute top-2.5 left-14 sm:left-16 right-28 sm:right-36 z-[450] flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 pointer-events-auto">
+              {/* Botón Salir / Restaurar Pantalla (Modo Claro) */}
               <button
                 onClick={() => {
                   setIsMapExpanded(false);
                   setIsExpandedDrawerOpen(false);
                 }}
-                className="bg-slate-900/95 hover:bg-slate-800 text-white px-3 py-1.5 rounded-xl shadow-xl border border-slate-700/80 flex items-center gap-1.5 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                className="bg-white/95 hover:bg-slate-50 text-slate-800 px-3 py-1.5 rounded-xl shadow-md border border-slate-300 flex items-center gap-1.5 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
                 title="Volver a la vista normal con paneles"
               >
-                <Minimize2 className="w-3.5 h-3.5 text-sky-400" />
+                <Minimize2 className="w-3.5 h-3.5 text-sky-600" />
                 <span className="hidden sm:inline">Restaurar Pantalla</span>
                 <span className="sm:hidden">Salir</span>
               </button>
 
-              <div className="h-5 w-px bg-slate-700/70 shrink-0 mx-0.5" />
-
+              {/* En teléfonos (< sm): Botón directo para abrir Herramientas sin abarrotar la pantalla */}
               <button
-                onClick={() => setIsLegendModalOpen(true)}
-                className="flex items-center gap-1 bg-slate-900/90 hover:bg-slate-800 text-sky-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-slate-700/80 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95"
-                title="Ver norma de simbología y metrajes"
+                onClick={() => setIsExpandedDrawerOpen(true)}
+                className="sm:hidden bg-white/95 hover:bg-sky-50 text-sky-700 px-2.5 py-1.5 rounded-xl shadow-md border border-sky-300 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                title="Abrir menú de herramientas de red"
               >
-                <Layers className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                <span className="hidden md:inline">Simbología</span>
+                <Layers className="w-3.5 h-3.5 text-sky-600" />
+                <span>Herramientas</span>
               </button>
 
-              <button
-                draggable={true}
-                onDragStart={(e) => {
-                  e.dataTransfer.setData('text/plain', 'troncal');
-                  e.dataTransfer.setData('application/gpon-element', 'troncal');
-                }}
-                onClick={() => setIsDrawingRoute(!isDrawingRoute)}
-                className={`flex items-center gap-1 bg-slate-900/90 hover:bg-purple-950/80 text-purple-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-purple-500/50 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                  isDrawingRoute ? 'ring-2 ring-purple-400 bg-purple-900/60' : ''
-                }`}
-                title="Trazar ruta troncal o ramal"
-              >
-                <Ruler className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal'}</span>
-              </button>
+              <div className="hidden sm:block h-5 w-px bg-slate-300/80 shrink-0 mx-0.5" />
 
-              <button
-                draggable={true}
-                onDragStart={(e) => {
-                  e.dataTransfer.setData('text/plain', 'mufa');
-                  e.dataTransfer.setData('application/gpon-element', 'mufa');
-                }}
-                onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
-                className={`flex items-center gap-1 bg-slate-900/90 hover:bg-amber-950/80 text-amber-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-500/50 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                  placementMode === 'mufa' ? 'ring-2 ring-amber-400 bg-amber-900/60' : ''
-                }`}
-                title="Ubicar mufa torpedo"
-              >
-                <GitCommit className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>+ Mufa</span>
-              </button>
+              {/* Botones de herramientas completas para tablets y PC (Modo Claro Oficial) */}
+              <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <button
+                  onClick={() => setIsLegendModalOpen(true)}
+                  className="flex items-center gap-1 bg-white/95 hover:bg-sky-50 text-sky-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-sky-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                  title="Ver norma de simbología y metrajes"
+                >
+                  <Layers className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                  <span>Simbología</span>
+                </button>
 
-              <button
-                draggable={true}
-                onDragStart={(e) => {
-                  e.dataTransfer.setData('text/plain', 'poste');
-                  e.dataTransfer.setData('application/gpon-element', 'poste');
-                }}
-                onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
-                className={`flex items-center gap-1 bg-slate-900/90 hover:bg-rose-950/80 text-rose-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-rose-500/50 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                  placementMode === 'poste' ? 'ring-2 ring-rose-400 bg-rose-900/60' : ''
-                }`}
-                title="Ubicar poste"
-              >
-                <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                <span>+ Poste</span>
-              </button>
-
-              {user?.rol !== 'Tecnico' && (
                 <button
                   draggable={true}
                   onDragStart={(e) => {
-                    e.dataTransfer.setData('text/plain', 'nap');
-                    e.dataTransfer.setData('application/gpon-element', 'nap');
+                    e.dataTransfer.setData('text/plain', 'troncal');
+                    e.dataTransfer.setData('application/gpon-element', 'troncal');
                   }}
-                  onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
-                  className={`flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded-xl border border-sky-400/60 shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                    placementMode === 'nap' ? 'ring-2 ring-white bg-sky-500' : ''
+                  onClick={() => setIsDrawingRoute(!isDrawingRoute)}
+                  className={`flex items-center gap-1 bg-white/95 hover:bg-purple-50 text-purple-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-purple-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                    isDrawingRoute ? 'ring-2 ring-purple-500 bg-purple-50' : ''
                   }`}
-                  title="Ubicar nueva caja NAP"
+                  title="Trazar ruta troncal o ramal"
                 >
-                  <Plus className="w-3.5 h-3.5 shrink-0" />
-                  <span>+ Caja NAP</span>
+                  <Ruler className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                  <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal'}</span>
                 </button>
-              )}
 
-              {selectedNap && (
                 <button
-                  onClick={() => {
-                    if (isRouteActive) {
-                      handleClearRoute();
-                    } else {
-                      handleRequestRoute(selectedNap);
-                    }
+                  draggable={true}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', 'mufa');
+                    e.dataTransfer.setData('application/gpon-element', 'mufa');
                   }}
-                  className={`flex items-center gap-1 font-bold text-xs px-2.5 py-1.5 rounded-xl border shadow-md backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                    isRouteActive
-                      ? 'bg-indigo-600 text-white border-indigo-400'
-                      : 'bg-slate-900/90 hover:bg-indigo-950/80 text-indigo-300 border-indigo-500/50'
+                  onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
+                  className={`flex items-center gap-1 bg-white/95 hover:bg-amber-50 text-amber-800 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                    placementMode === 'mufa' ? 'ring-2 ring-amber-500 bg-amber-50' : ''
                   }`}
-                  title="Calcular ruta a la caja seleccionada"
+                  title="Ubicar mufa torpedo"
                 >
-                  <Navigation className="w-3.5 h-3.5 shrink-0" />
-                  <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja'}</span>
+                  <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span>+ Mufa</span>
                 </button>
-              )}
+
+                <button
+                  draggable={true}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', 'poste');
+                    e.dataTransfer.setData('application/gpon-element', 'poste');
+                  }}
+                  onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
+                  className={`flex items-center gap-1 bg-white/95 hover:bg-rose-50 text-rose-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-rose-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                    placementMode === 'poste' ? 'ring-2 ring-rose-500 bg-rose-50' : ''
+                  }`}
+                  title="Ubicar poste"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <span>+ Poste</span>
+                </button>
+
+                {user?.rol !== 'Tecnico' && (
+                  <button
+                    draggable={true}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', 'nap');
+                      e.dataTransfer.setData('application/gpon-element', 'nap');
+                    }}
+                    onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
+                    className={`flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded-xl border border-sky-600 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                      placementMode === 'nap' ? 'ring-2 ring-sky-300 ring-offset-1' : ''
+                    }`}
+                    title="Ubicar nueva caja NAP"
+                  >
+                    <Plus className="w-3.5 h-3.5 shrink-0" />
+                    <span>+ Caja NAP</span>
+                  </button>
+                )}
+
+                {selectedNap && (
+                  <button
+                    onClick={() => {
+                      if (isRouteActive) {
+                        handleClearRoute();
+                      } else {
+                        handleRequestRoute(selectedNap);
+                      }
+                    }}
+                    className={`flex items-center gap-1 font-bold text-xs px-2.5 py-1.5 rounded-xl border shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                      isRouteActive
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white/95 hover:bg-indigo-50 text-indigo-700 border-indigo-300'
+                    }`}
+                    title="Calcular ruta a la caja seleccionada"
+                  >
+                    <Navigation className="w-3.5 h-3.5 shrink-0" />
+                    <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja'}</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Pestaña lateral flotante centrada verticalmente para evitar solapamientos */}
+          {/* Pestaña lateral flotante centrada verticalmente (Modo Claro) */}
           {isMapExpanded && (
             <button
               onClick={() => setIsExpandedDrawerOpen(!isExpandedDrawerOpen)}
-              className={`absolute top-1/2 -translate-y-1/2 right-0 z-[450] bg-slate-900/95 hover:bg-slate-800 text-white pl-3 pr-2.5 py-3 rounded-l-2xl shadow-2xl border-y border-l border-slate-700/80 flex items-center gap-2 text-xs font-bold transition-all duration-300 backdrop-blur cursor-pointer hover:border-sky-500 ${
+              className={`absolute top-1/2 -translate-y-1/2 right-0 z-[450] bg-white/95 hover:bg-slate-50 text-slate-800 pl-3 pr-2.5 py-3 rounded-l-2xl shadow-xl border-y border-l border-slate-300 flex items-center gap-2 text-xs font-bold transition-all duration-300 backdrop-blur cursor-pointer hover:border-sky-400 ${
                 isExpandedDrawerOpen ? 'translate-x-full opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'
               }`}
               title={isExpandedDrawerOpen ? 'Ocultar panel' : 'Deslizar panel de opciones y puertos'}
             >
-              <ChevronLeft className="w-4 h-4 text-sky-400 animate-pulse" />
-              <Layers className="w-4 h-4 text-sky-400" />
+              <ChevronLeft className="w-4 h-4 text-sky-600 animate-pulse" />
+              <Layers className="w-4 h-4 text-sky-600" />
               <span className="hidden sm:inline font-bold">Opciones y Puertos</span>
+              <span className="sm:hidden font-bold">Menú</span>
             </button>
           )}
 
@@ -1351,16 +1375,16 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               : 'lg:col-span-5 xl:col-span-4 space-y-4 scroll-mt-24'
           }
         >
-          {/* Cabecera del Cajón en Modo Expandido */}
+          {/* Cabecera del Cajón en Modo Expandido (Modo Claro) */}
           {isMapExpanded && (
-            <div className="p-3.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
+            <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                <span className="font-bold text-xs text-slate-900 dark:text-white">Panel de Cajas y Puertos</span>
+                <Layers className="w-4 h-4 text-sky-600" />
+                <span className="font-bold text-xs text-slate-800">Panel de Herramientas y Puertos</span>
               </div>
               <button
                 onClick={() => setIsExpandedDrawerOpen(false)}
-                className="px-2 py-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                className="px-2.5 py-1 rounded-lg hover:bg-slate-200 text-slate-700 hover:text-slate-900 transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
                 title="Ocultar y ver mapa completo"
               >
                 <span>Ocultar</span>
@@ -1369,7 +1393,73 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             </div>
           )}
 
-          <div className={isMapExpanded ? 'flex-1 overflow-y-auto p-3 sm:p-4 space-y-4' : 'space-y-4'}>
+          <div className={isMapExpanded ? 'flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 bg-white' : 'space-y-4'}>
+            {/* Sección de Herramientas de Red para Móvil y Escritorio (Modo Claro) */}
+            {isMapExpanded && (
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 shadow-2xs">
+                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+                  Herramientas Rápidas de Red
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => {
+                      setIsLegendModalOpen(true);
+                      setIsExpandedDrawerOpen(false);
+                    }}
+                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-sky-50 text-sky-700 rounded-lg border border-slate-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                  >
+                    <Layers className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                    <span>Simbología</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsDrawingRoute(!isDrawingRoute);
+                      setIsExpandedDrawerOpen(false);
+                    }}
+                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-purple-50 text-purple-700 rounded-lg border border-purple-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                  >
+                    <Ruler className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setPlacementMode(placementMode === 'mufa' ? null : 'mufa');
+                      setIsExpandedDrawerOpen(false);
+                    }}
+                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-amber-50 text-amber-800 rounded-lg border border-amber-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                  >
+                    <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>+ Mufa</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setPlacementMode(placementMode === 'poste' ? null : 'poste');
+                      setIsExpandedDrawerOpen(false);
+                    }}
+                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-rose-50 text-rose-700 rounded-lg border border-rose-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                    <span>+ Poste</span>
+                  </button>
+
+                  {user?.rol !== 'Tecnico' && (
+                    <button
+                      onClick={() => {
+                        setPlacementMode(placementMode === 'nap' ? null : 'nap');
+                        setIsExpandedDrawerOpen(false);
+                      }}
+                      className="col-span-2 flex items-center justify-center gap-1.5 p-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg border border-sky-600 text-xs font-bold shadow-sm cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4 shrink-0" />
+                      <span>+ Nueva Caja NAP</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             {/* Tarjeta de Navegación cuando está activa la ruta */}
             {isRouteActive && selectedNap && (
               <RouteNavigationCard

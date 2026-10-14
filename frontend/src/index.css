@@ -139,3 +139,18 @@ input[type="password"]::-ms-clear {
   box-shadow: none !important;
 }
 
+/* Ocultar encabezados, barras de rol y navegación inferior cuando el mapa está en pantalla completa */
+body.gpon-fullscreen-active header,
+body.gpon-fullscreen-active aside,
+body.gpon-fullscreen-active nav,
+body.gpon-fullscreen-active #chatbot-trigger,
+body.gpon-fullscreen-active .assistant-chatbot-widget {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body.gpon-fullscreen-active {
+  overflow: hidden !important;
+}
+
