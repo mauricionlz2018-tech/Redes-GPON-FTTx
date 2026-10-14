@@ -35,7 +35,11 @@ import {
   MapPin,
   X,
   GripVertical,
-  Download
+  Download,
+  Maximize2,
+  Minimize2,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 
 import {
@@ -65,6 +69,18 @@ export const MapViewPage: React.FC = () => {
   const [isRouteLoading, setIsRouteLoading] = useState<boolean>(false);
   const [originType, setOriginType] = useState<'odf' | 'user'>('odf');
   const [userCoordinates, setUserCoordinates] = useState<Coordinates | null>(null);
+
+  // Estados para Modo Pantalla Completa / Expandido con Pestaña Deslizable
+  const [isMapExpanded, setIsMapExpanded] = useState<boolean>(false);
+  const [isExpandedDrawerOpen, setIsExpandedDrawerOpen] = useState<boolean>(false);
+
+  // Redimensionar Leaflet al alternar pantalla completa o drawer
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isMapExpanded, isExpandedDrawerOpen]);
 
   // Referencia para scroll suave al panel de puertos
   const portsPanelRef = useRef<HTMLDivElement>(null);
@@ -916,8 +932,20 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             </div>
           </div>
 
-          {/* Botones Descargar KMZ y Actualizar a la derecha */}
+          {/* Botones Descargar KMZ, Expandir Mapa y Actualizar a la derecha */}
           <div className="flex items-center justify-end shrink-0 gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => {
+                setIsMapExpanded(true);
+                setIsExpandedDrawerOpen(false);
+              }}
+              className="flex items-center justify-center gap-1.5 h-9 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 rounded-lg border border-sky-500 transition-all shadow-xs active:scale-95 cursor-pointer flex-1 sm:flex-initial"
+              title="Expandir el mapa a pantalla completa y ocultar paneles"
+            >
+              <Maximize2 className="w-3.5 h-3.5 shrink-0" />
+              <span>Expandir Mapa</span>
+            </button>
+
             <button
               onClick={handleExportKmz}
               disabled={isExportingKmz}
@@ -1068,10 +1096,56 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         </div>
       </div>
 
-      {/* Grid: Mapa + Panel de NAP y 16 Puertos */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      {/* Grid: Mapa + Panel de NAP y 16 Puertos con Soporte para Modo Expandido Pantalla Completa */}
+      <div
+        className={`transition-all duration-300 ${
+          isMapExpanded
+            ? 'fixed inset-0 z-50 bg-slate-950 w-screen h-screen overflow-hidden'
+            : 'grid grid-cols-1 lg:grid-cols-12 gap-4 items-start'
+        }`}
+      >
         {/* Mapa Leaflet interactivo */}
-        <div className="lg:col-span-7 xl:col-span-8 h-[550px] lg:h-[680px]">
+        <div
+          className={`relative ${
+            isMapExpanded
+              ? 'w-full h-full'
+              : 'lg:col-span-7 xl:col-span-8 h-[550px] lg:h-[680px]'
+          }`}
+        >
+          {/* Botón flotante para Salir de Pantalla Completa (Modo Expandido) */}
+          {isMapExpanded && (
+            <div className="absolute top-3 left-3 z-[450] flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setIsMapExpanded(false);
+                  setIsExpandedDrawerOpen(false);
+                }}
+                className="bg-white/95 dark:bg-slate-900/95 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 px-3.5 py-2 rounded-xl shadow-2xl border border-slate-300 dark:border-slate-700 flex items-center gap-2 text-xs font-bold transition-all backdrop-blur cursor-pointer active:scale-95"
+                title="Volver a la vista normal con paneles"
+              >
+                <Minimize2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <span className="hidden sm:inline">Restaurar Pantalla</span>
+                <span className="sm:hidden">Salir</span>
+              </button>
+            </div>
+          )}
+
+          {/* Pestaña flotante lateral deslizable para abrir opciones y puertos en Pantalla Completa */}
+          {isMapExpanded && (
+            <button
+              onClick={() => setIsExpandedDrawerOpen(!isExpandedDrawerOpen)}
+              className={`absolute top-20 right-0 z-[450] bg-white/95 dark:bg-slate-900/95 hover:bg-sky-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 px-3 py-2.5 rounded-l-2xl shadow-2xl border-y border-l border-slate-300 dark:border-slate-700 flex items-center gap-2 text-xs font-bold transition-transform duration-300 backdrop-blur cursor-pointer ${
+                isExpandedDrawerOpen ? 'translate-x-full' : 'translate-x-0'
+              }`}
+              title={isExpandedDrawerOpen ? 'Ocultar opciones' : 'Deslizar panel de opciones y puertos'}
+            >
+              <ChevronLeft className="w-4 h-4 text-sky-600 dark:text-sky-400 animate-pulse" />
+              <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+              <span className="hidden sm:inline">Opciones y Puertos</span>
+              <span className="sm:hidden">Opciones</span>
+            </button>
+          )}
+
           <GponMap
             naps={filteredNaps}
             odf={odf}
@@ -1084,7 +1158,11 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             }}
             onViewPorts={(nap) => {
               setSelectedNap(nap);
-              scrollToPortsPanel();
+              if (isMapExpanded) {
+                setIsExpandedDrawerOpen(true);
+              } else {
+                scrollToPortsPanel();
+              }
             }}
             onOpenGpsModal={(nap) => setGpsModalNap(nap)}
             activeRoute={isRouteActive ? routeResult : null}
@@ -1138,80 +1216,117 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           />
         </div>
 
-        {/* Panel lateral: Tarjeta de Navegación + Selección de NAP y Matriz de 16 Puertos */}
+        {/* Overlay para cerrar en móvil cuando el cajón está abierto */}
+        {isMapExpanded && isExpandedDrawerOpen && (
+          <div
+            onClick={() => setIsExpandedDrawerOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[490] lg:hidden"
+          />
+        )}
+
+        {/* Panel lateral normal O Cajón Deslizable en Modo Pantalla Completa */}
         <div
           id="panel-puertos-nap"
           ref={portsPanelRef}
-          className="lg:col-span-5 xl:col-span-4 space-y-4 scroll-mt-24"
+          className={
+            isMapExpanded
+              ? `fixed top-0 right-0 bottom-0 w-full sm:w-[420px] md:w-[480px] max-w-[95vw] bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-300 dark:border-slate-800 z-[500] flex flex-col transition-transform duration-300 ease-out overflow-hidden ${
+                  isExpandedDrawerOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'
+                }`
+              : 'lg:col-span-5 xl:col-span-4 space-y-4 scroll-mt-24'
+          }
         >
-          {/* Tarjeta de Navegación cuando está activa la ruta */}
-          {isRouteActive && selectedNap && (
-            <RouteNavigationCard
-              nap={selectedNap}
-              odf={odf}
-              routeResult={routeResult}
-              isLoading={isRouteLoading}
-              originType={originType}
-              userCoordinates={userCoordinates}
-              onOriginChange={handleOriginChange}
-              onClose={handleClearRoute}
-              
-            />
-          )}
-
-          {selectedNap ? (
-            <NapPortMatrix
-              nap={selectedNap}
-              onPortSelectToAssign={(port) => setAssigningPort(port)}
-              onRefreshNap={refreshSelectedNap}
-              onScrollToMap={scrollToMap}
-              onRequestRoute={handleRequestRoute}
-              onDeleteNapRequest={(nap) => setDeletingNap(nap)}
-            />
-          ) : (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center space-y-3 shadow-sm dark:shadow-xl transition-colors">
-              <div className="w-12 h-12 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 rounded-2xl flex items-center justify-center mx-auto">
-                <Radio className="w-6 h-6 animate-pulse" />
+          {/* Cabecera del Cajón en Modo Expandido */}
+          {isMapExpanded && (
+            <div className="p-3.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <span className="font-bold text-xs text-slate-900 dark:text-white">Panel de Cajas y Puertos</span>
               </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Selecciona una Caja NAP</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
-                Haz clic en cualquier marcador del mapa cartográfico o elije una caja de la lista rápida a continuación para inspeccionar su panel de 16 puertos.
-              </p>
-
-              {/* Lista rápida de NAPs para acceso inmediato */}
-              <div className="pt-2 text-left space-y-2">
-                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">
-                  Cajas NAP Disponibles ({filteredNaps.length}):
-                </span>
-                {filteredNaps.map((n) => (
-                  <button
-                    key={n.id_nap}
-                    onClick={() => {
-                      setSelectedNap(n);
-                      scrollToPortsPanel();
-                    }}
-                    className="w-full text-left bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 flex items-center justify-between transition-colors cursor-pointer"
-                  >
-                    <div>
-                      <span className="font-bold text-xs text-sky-600 dark:text-sky-400 block">
-                        {n.identificador}
-                      </span>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400">{n.zona}</span>
-                    </div>
-                    <span
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded ${
-                        (n.metricas?.porcentajeSaturacion ?? 0) >= 80
-                          ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
-                          : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-                      }`}
-                    >
-                      {n.metricas?.porcentajeSaturacion ?? 0}%
-                    </span>
-                  </button>
-                ))}
-              </div>
+              <button
+                onClick={() => setIsExpandedDrawerOpen(false)}
+                className="px-2 py-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                title="Ocultar y ver mapa completo"
+              >
+                <span>Ocultar</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           )}
+
+          <div className={isMapExpanded ? 'flex-1 overflow-y-auto p-3 sm:p-4 space-y-4' : 'space-y-4'}>
+            {/* Tarjeta de Navegación cuando está activa la ruta */}
+            {isRouteActive && selectedNap && (
+              <RouteNavigationCard
+                nap={selectedNap}
+                odf={odf}
+                routeResult={routeResult}
+                isLoading={isRouteLoading}
+                originType={originType}
+                userCoordinates={userCoordinates}
+                onOriginChange={handleOriginChange}
+                onClose={handleClearRoute}
+              />
+            )}
+
+            {selectedNap ? (
+              <NapPortMatrix
+                nap={selectedNap}
+                onPortSelectToAssign={(port) => setAssigningPort(port)}
+                onRefreshNap={refreshSelectedNap}
+                onScrollToMap={scrollToMap}
+                onRequestRoute={handleRequestRoute}
+                onDeleteNapRequest={(nap) => setDeletingNap(nap)}
+              />
+            ) : (
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center space-y-3 shadow-sm dark:shadow-xl transition-colors">
+                <div className="w-12 h-12 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 rounded-2xl flex items-center justify-center mx-auto">
+                  <Radio className="w-6 h-6 animate-pulse" />
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Selecciona una Caja NAP</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                  Haz clic en cualquier marcador del mapa cartográfico o elije una caja de la lista rápida a continuación para inspeccionar su panel de 16 puertos.
+                </p>
+
+                {/* Lista rápida de NAPs para acceso inmediato */}
+                <div className="pt-2 text-left space-y-2">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">
+                    Cajas NAP Disponibles ({filteredNaps.length}):
+                  </span>
+                  {filteredNaps.map((n) => (
+                    <button
+                      key={n.id_nap}
+                      onClick={() => {
+                        setSelectedNap(n);
+                        if (isMapExpanded) {
+                          setIsExpandedDrawerOpen(true);
+                        } else {
+                          scrollToPortsPanel();
+                        }
+                      }}
+                      className="w-full text-left bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 flex items-center justify-between transition-colors cursor-pointer"
+                    >
+                      <div>
+                        <span className="font-bold text-xs text-sky-600 dark:text-sky-400 block">
+                          {n.identificador}
+                        </span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">{n.zona}</span>
+                      </div>
+                      <span
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                          (n.metricas?.porcentajeSaturacion ?? 0) >= 80
+                            ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                            : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                        }`}
+                      >
+                        {n.metricas?.porcentajeSaturacion ?? 0}%
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
