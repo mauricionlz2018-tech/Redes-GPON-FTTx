@@ -6,6 +6,8 @@ import { User } from '../models';
 import { sequelize } from '../config/database';
 import { sendPasswordRecoveryEmail } from '../services/mailService';
 
+import { logSecurityEvent } from '../middlewares/security';
+
 const loginSchema = z.object({
   credencial_acceso: z.string().min(3),
   password: z.string().min(4)
@@ -15,6 +17,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const parseResult = loginSchema.safeParse(req.body);
     if (!parseResult.success) {
+      logSecurityEvent('LOGIN_INVALID_PAYLOAD', req);
       res.status(400).json({
         success: false,
         message: 'Credenciales inválidas o incompletas',
@@ -26,8 +29,8 @@ export const login = async (req: Request, res: Response) => {
     const { credencial_acceso, password } = parseResult.data;
     const cleanCredencial = credencial_acceso.trim().toLowerCase();
 
-    // Búsqueda flexible insensible a mayúsculas
-    let user = await User.findOne({
+    // Búsqueda flexible insensible a mayúsculas con scope withPassword
+    let user = await User.scope('withPassword').findOne({
       where: sequelize.where(
         sequelize.fn('LOWER', sequelize.col('credencial_acceso')),
         cleanCredencial
@@ -36,7 +39,7 @@ export const login = async (req: Request, res: Response) => {
 
     // Si el usuario escribió sólo "tecnico", "admin" o "soporte", probar con @gpon.com
     if (!user && !cleanCredencial.includes('@')) {
-      user = await User.findOne({
+      user = await User.scope('withPassword').findOne({
         where: sequelize.where(
           sequelize.fn('LOWER', sequelize.col('credencial_acceso')),
           `${cleanCredencial}@gpon.com`
@@ -45,6 +48,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     if (!user) {
+      logSecurityEvent('LOGIN_FAILED_USER_NOT_FOUND', req, { credencial: cleanCredencial });
       res.status(401).json({
         success: false,
         message: 'Usuario o contraseña incorrectos'
@@ -54,12 +58,15 @@ export const login = async (req: Request, res: Response) => {
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
+      logSecurityEvent('LOGIN_FAILED_WRONG_PASSWORD', req, { credencial: cleanCredencial, userId: user.id_usuario });
       res.status(401).json({
         success: false,
         message: 'Usuario o contraseña incorrectos'
       });
       return;
     }
+
+    logSecurityEvent('LOGIN_SUCCESS', req, { userId: user.id_usuario, rol: user.rol, credencial: user.credencial_acceso });
 
     const secret = process.env.JWT_SECRET || 'super_secret_gpon_telecom_jwt_key_2026_fttx';
     const payload = {
@@ -357,6 +364,7 @@ interface RecoveryEntry {
   expiresAt: number;
   userId: string;
   email: string;
+  attempts?: number;
 }
 const recoveryTokens = new Map<string, RecoveryEntry>();
 
@@ -504,9 +512,19 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
 
     if (entry.code !== inputCode) {
+      entry.attempts = (entry.attempts || 0) + 1;
+      if (entry.attempts >= 4) {
+        recoveryTokens.delete(user.id_usuario);
+        logSecurityEvent('BRUTE_FORCE_RECOVERY_CODE_BLOCKED', req, { target, userId: user.id_usuario });
+        res.status(400).json({
+          success: false,
+          message: 'Demasiados intentos erróneos. Por seguridad de la cuenta, este código ha sido invalidado. Solicita uno nuevo a tu correo.'
+        });
+        return;
+      }
       res.status(400).json({
         success: false,
-        message: 'El código ingresado es incorrecto. Verifica los 6 dígitos recibidos en tu correo.'
+        message: `El código ingresado es incorrecto. Intentos restantes: ${4 - entry.attempts}.`
       });
       return;
     }
@@ -515,6 +533,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     const password_hash = await bcrypt.hash(newPassword, 10);
     await user.update({ password_hash });
     recoveryTokens.delete(user.id_usuario);
+    logSecurityEvent('PASSWORD_RESET_SUCCESS', req, { userId: user.id_usuario });
 
     res.json({
       success: true,

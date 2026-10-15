@@ -4,25 +4,49 @@ import dotenv from 'dotenv';
 import { sequelize } from './models';
 import apiRouter from './routes/api';
 
+import helmet from 'helmet';
+import { corsOptions, apiLimiter, sanitizeInputs } from './middlewares/security';
+
 dotenv.config();
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
 
-// Middlewares
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// ==========================================
+// CAPAS DE SEGURIDAD DEFENSIVA INSTITUCIONAL
+// ==========================================
 
-app.use(express.json());
+// 1. Ocultar huella del servidor web (Previene escaneo de vulnerabilidades específicas de Express)
+app.disable('x-powered-by');
+
+// 2. Encabezados HTTP Seguros (HSTS, X-Content-Type-Options, X-Frame-Options, NoSniff)
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Permitir carga de teselas cartográficas de OpenStreetMap/Esri
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
+  })
+);
+
+// 3. Política Estricta de Orígenes Cruzados (CORS)
+app.use(cors(corsOptions));
+
+// 4. Límite de Tamaño de Carga Útil (Protección Anti-Agotamiento de Memoria y Ataques DoS)
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// 5. Sanitización Automática de Entradas (Filtro contra Inyecciones XSS, Null-Byte y Parameter Pollution)
+app.use(sanitizeInputs);
+
+// 6. Limitador Global de Tráfico (Rate Limiting contra Scraping y Bombardeo de Peticiones)
+app.use('/api', apiLimiter);
 
 // Endpoint de salud del backend
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     servicio: 'GPON TELECOM Inventory & Mapping API',
+    seguridad: 'Cifrado TLS/SSL + RateLimit + RBAC Activo',
     timestamp: new Date().toISOString()
   });
 });

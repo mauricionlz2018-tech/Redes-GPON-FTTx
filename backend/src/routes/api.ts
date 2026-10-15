@@ -30,30 +30,33 @@ import {
   deleteRoute
 } from '../controllers/infrastructureController';
 
+import { authLimiter, writeLimiter } from '../middlewares/security';
+
 const router = Router();
 
 router.get('/health', (req, res) => {
   res.json({
     status: 'online',
     servicio: 'GPON TELECOM Inventory & Mapping API v1',
+    seguridad: 'Cifrado TLS/SSL + RateLimit + RBAC Activo',
     timestamp: new Date().toISOString()
   });
 });
 
 // ============================
-// Rutas de Autenticación y Gestión de Personal (RBAC)
+// Rutas de Autenticación y Gestión de Personal (RBAC + Anti Fuerza Bruta)
 // ============================
-router.post('/auth/login', login);
-router.post('/auth/recuperar-password', forgotPassword);
-router.post('/auth/reset-password', resetPassword);
+router.post('/auth/login', authLimiter, login);
+router.post('/auth/recuperar-password', authLimiter, forgotPassword);
+router.post('/auth/reset-password', authLimiter, resetPassword);
 router.get('/auth/me', authenticateToken, getProfile);
-router.put('/auth/perfil', authenticateToken, updateProfile);
+router.put('/auth/perfil', authenticateToken, writeLimiter, updateProfile);
 
-// Gestión exclusiva para rol Administrador
+// Gestión exclusiva para rol Administrador (Auditoría y Límite de Escritura)
 router.get('/auth/usuarios', authenticateToken, requireRoles(['Admin']), listUsers);
-router.post('/auth/usuarios', authenticateToken, requireRoles(['Admin']), createUser);
-router.put('/auth/usuarios/:id', authenticateToken, requireRoles(['Admin']), updateUser);
-router.delete('/auth/usuarios/:id', authenticateToken, requireRoles(['Admin']), deleteUser);
+router.post('/auth/usuarios', authenticateToken, requireRoles(['Admin']), writeLimiter, createUser);
+router.put('/auth/usuarios/:id', authenticateToken, requireRoles(['Admin']), writeLimiter, updateUser);
+router.delete('/auth/usuarios/:id', authenticateToken, requireRoles(['Admin']), writeLimiter, deleteUser);
 
 // ============================
 // Rutas de ODF Central
@@ -65,33 +68,31 @@ router.get('/odf/:id', authenticateToken, getOdfById);
 // Rutas de Cajas NAP
 // ============================
 router.get('/naps', authenticateToken, listNaps);
-router.post('/naps', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createNap);
+router.post('/naps', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createNap);
 router.get('/naps/:id', authenticateToken, getNapById);
-router.delete('/naps/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), deleteNap);
+router.delete('/naps/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, deleteNap);
 // Actualizar GPS en campo: Permitido para todos los roles de campo
-router.patch('/naps/:id/gps', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), updateGpsCoordinates);
+router.patch('/naps/:id/gps', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, updateGpsCoordinates);
 
 // ============================
 // Rutas de Puertos NAP (ACID y RBAC)
 // ============================
 // Asignar cliente inicial a puerto: Permitido para Técnico, Soporte y Admin
-router.post('/puertos/asignar', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), assignPort);
+router.post('/puertos/asignar', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, assignPort);
 
 // Liberar puerto: Permitido para Técnico, Soporte y Admin
-router.delete('/puertos/:id/liberar', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), releasePort);
+router.delete('/puertos/:id/liberar', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, releasePort);
 
 // Modificar estado de puerto (Dañado, En Mantenimiento, etc.): PROHIBIDO para Técnico (403 Forbidden)
-router.patch('/puertos/:id/estado', authenticateToken, requireRoles(['Admin', 'Soporte']), updatePortStatus);
+router.patch('/puertos/:id/estado', authenticateToken, requireRoles(['Admin', 'Soporte']), writeLimiter, updatePortStatus);
 
 // ============================
 // Rutas de Clientes Abonados
 // ============================
 router.get('/clientes', authenticateToken, listClients);
 router.get('/clientes/:id', authenticateToken, getClientById);
-// Edición de abonado: PROHIBIDO para Técnico (403 Forbidden), permitido para Soporte y Admin
-router.put('/clientes/:id', authenticateToken, requireRoles(['Admin', 'Soporte']), updateClient);
-// Edición de abonado: Permitido para Técnico, Soporte y Admin (para corrección de datos en campo)
-router.put('/clientes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), updateClient);
+// Edición de abonado: Permitido para Técnico, Soporte y Admin (para actualización y corrección de datos en campo)
+router.put('/clientes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, updateClient);
 
 // ============================
 // Rutas de Reportes
@@ -102,23 +103,23 @@ router.get('/reportes/saturacion-pdf', authenticateToken, generateSaturationRepo
 // Rutas de Bitácora de Kilometraje de Técnicos
 // ============================
 router.get('/kilometraje', authenticateToken, listMileageLogs);
-router.post('/kilometraje', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createMileageLog);
-router.delete('/kilometraje/:id', authenticateToken, requireRoles(['Admin', 'Soporte']), deleteMileageLog);
+router.post('/kilometraje', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createMileageLog);
+router.delete('/kilometraje/:id', authenticateToken, requireRoles(['Admin', 'Soporte']), writeLimiter, deleteMileageLog);
 
 // ============================
 // Rutas de Infraestructura (Postes, Mufas y Rutas Troncales)
 // ============================
 router.get('/infra/postes', authenticateToken, listPostes);
-router.post('/infra/postes', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createPoste);
-router.delete('/infra/postes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), deletePoste);
+router.post('/infra/postes', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createPoste);
+router.delete('/infra/postes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, deletePoste);
 
 router.get('/infra/mufas', authenticateToken, listMufas);
-router.post('/infra/mufas', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createMufa);
-router.delete('/infra/mufas/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), deleteMufa);
+router.post('/infra/mufas', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createMufa);
+router.delete('/infra/mufas/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, deleteMufa);
 
 router.get('/infra/routes', authenticateToken, listRoutes);
-router.post('/infra/routes', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), createRoute);
-router.delete('/infra/routes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), deleteRoute);
+router.post('/infra/routes', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createRoute);
+router.delete('/infra/routes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, deleteRoute);
 
 export default router;
 
