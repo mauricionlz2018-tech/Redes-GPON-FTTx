@@ -111,7 +111,7 @@ export const createNapStandardIcon = (nap: NapBox, isSelected: boolean, isRouteD
   const metricas = nap.metricas;
   const pct = metricas ? metricas.porcentajeSaturacion : 0;
 
-  // Color del semáforo de saturación
+  // Color del triángulo según el semáforo de saturación
   let triColor = '#10b981'; // Verde (<80%)
   if (pct >= 100) {
     triColor = '#ef4444'; // Rojo (100%)
@@ -129,25 +129,18 @@ export const createNapStandardIcon = (nap: NapBox, isSelected: boolean, isRouteD
     className: 'custom-standard-nap-marker',
     html: `
       <div class="relative flex items-center justify-center cursor-pointer transition-all duration-200 ${ringStyle}" title="${nap.identificador} (${pct}% saturación - Clic para ver detalles)">
-        <!-- Icono tipo cajita NAP FTTx normalizada con semáforo y puertos -->
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Cuerpo de la caja NAP con tapa y borde blanco de alto contraste -->
-          <rect x="3" y="5" width="22" height="18" rx="4" fill="${triColor}" stroke="#ffffff" stroke-width="2" />
-          <!-- Línea de cierre y tapa superior -->
-          <line x1="3" y1="11" x2="25" y2="11" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.9" />
-          <!-- Broche de seguridad central -->
-          <rect x="11.5" y="3" width="5" height="3" rx="1" fill="#ffffff" />
-          <!-- 4 puertos drop ópticos de salida -->
-          <circle cx="7" cy="16.5" r="1.5" fill="#ffffff" />
-          <circle cx="11.5" cy="16.5" r="1.5" fill="#ffffff" />
-          <circle cx="16.5" cy="16.5" r="1.5" fill="#ffffff" />
-          <circle cx="21" cy="16.5" r="1.5" fill="#ffffff" />
+        <!-- Triángulo estándar de ingeniería FTTx -->
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Triángulo orientado con borde blanco -->
+          <polygon points="13,2 24,22 2,22" fill="${triColor}" stroke="#ffffff" stroke-width="2" stroke-linejoin="round" />
+          <!-- Cuadro interior representativo del puerto de acceso -->
+          <rect x="10" y="12" width="6" height="6" rx="1" fill="#ffffff" />
         </svg>
       </div>
     `,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -15]
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+    popupAnchor: [0, -14]
   });
 };
 
