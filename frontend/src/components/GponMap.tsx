@@ -27,7 +27,8 @@ import {
   CheckCircle2,
   RefreshCw,
   Power,
-  Ruler
+  Ruler,
+  Box
 } from 'lucide-react';
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
 import { StreetViewModal } from './StreetViewModal';
@@ -63,6 +64,7 @@ interface GponMapProps {
   fiberRoutes?: FiberRoute[];
   empalmes?: EmpalmeClosure[];
   gasas?: GasaReserva[];
+  customGasas?: GasaReserva[];
   postesPropuestos?: PosteInfraestructura[];
   postesCfe?: PosteInfraestructura[];
   customPostes?: PosteInfraestructura[];
@@ -70,14 +72,16 @@ interface GponMapProps {
   onDeleteRouteRequest?: (route: FiberRoute) => void;
   onDeleteMufaRequest?: (mufa: EmpalmeClosure) => void;
   onDeletePosteRequest?: (poste: PosteInfraestructura) => void;
+  onDeleteGasaRequest?: (gasa: GasaReserva) => void;
   deletedRouteIds?: string[];
   deletedMufaIds?: string[];
   deletedPosteIds?: string[];
+  deletedGasaIds?: string[];
   onOpenMileageCapture?: (nap: NapBox, distanceKm?: number) => void;
-  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | null;
-  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal', latlng: { lat: number; lng: number }) => void;
+  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | null;
+  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa', latlng: { lat: number; lng: number }) => void;
   onCancelPlacement?: () => void;
-  tempPlacementPin?: { type: 'poste' | 'mufa' | 'nap' | 'troncal'; lat: number; lng: number } | null;
+  tempPlacementPin?: { type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa'; lat: number; lng: number } | null;
   onUpdateTempPin?: (latlng: { lat: number; lng: number }) => void;
   isDrawingRoute?: boolean;
   routeDraftPoints?: [number, number][];
@@ -286,7 +290,7 @@ const createGpsUserBeaconIcon = () => {
 };
 
 // Icono animado del Pin Temporal para ajuste fino arrastrable de elementos nuevos
-const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal') => {
+const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa') => {
   const bg =
     type === 'poste'
       ? '#e11d48'
@@ -294,6 +298,8 @@ const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal') 
       ? '#d97706'
       : type === 'troncal'
       ? '#9333ea'
+      : type === 'gasa'
+      ? '#2563eb'
       : '#0284c7';
   const label =
     type === 'poste'
@@ -302,13 +308,15 @@ const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal') 
       ? 'MUFA'
       : type === 'troncal'
       ? 'TRONCAL'
-      : 'NAP';
+      : type === 'gasa'
+      ? 'GASA (∞)'
+      : 'CAJA NAP';
   return L.divIcon({
     className: 'temp-placement-pin-wrapper',
     html: `
       <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.45)); cursor: grab;">
         <div style="background: ${bg}; color: white; font-weight: 900; font-size: 10px; padding: 2px 8px; border-radius: 8px; border: 2px solid white; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 4px;">
-          <span>+ ${label}</span>
+          <span>${type === 'gasa' ? '∞' : type === 'nap' ? '📦' : '+'} ${label}</span>
         </div>
         <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid ${bg}; margin-top: -1px;"></div>
         <div style="width: 6px; height: 6px; border-radius: 50%; background: #0f172a; margin-top: 1px;"></div>
@@ -362,8 +370,8 @@ function calculatePointsDistance(coords: [number, number][]): { metros: number; 
 
 // Controlador de Eventos de Clic y Soltado (Drag & Drop) sobre el Lienzo de Leaflet
 const MapEventsAndDropListener: React.FC<{
-  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | null;
-  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal', latlng: { lat: number; lng: number }) => void;
+  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | null;
+  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa', latlng: { lat: number; lng: number }) => void;
   isDrawingRoute?: boolean;
   onAddRoutePoint?: (latlng: [number, number]) => void;
 }> = ({ placementMode, onPlaceElement, isDrawingRoute, onAddRoutePoint }) => {
@@ -400,12 +408,12 @@ const MapEventsAndDropListener: React.FC<{
     const handleDrop = (e: DragEvent) => {
       e.preventDefault();
       const rawType = e.dataTransfer?.getData('application/gpon-element') || e.dataTransfer?.getData('text/plain');
-      if (rawType === 'poste' || rawType === 'mufa' || rawType === 'nap' || rawType === 'troncal') {
+      if (rawType === 'poste' || rawType === 'mufa' || rawType === 'nap' || rawType === 'troncal' || rawType === 'gasa') {
         const rect = container.getBoundingClientRect();
         const clientPoint = L.point(e.clientX - rect.left, e.clientY - rect.top);
         const latlng = map.containerPointToLatLng(clientPoint);
         if (onPlaceElement) {
-          onPlaceElement(rawType as 'poste' | 'mufa' | 'nap' | 'troncal', {
+          onPlaceElement(rawType as 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa', {
             lat: Number(latlng.lat.toFixed(6)),
             lng: Number(latlng.lng.toFixed(6))
           });
@@ -438,6 +446,7 @@ export const GponMap: React.FC<GponMapProps> = ({
   fiberRoutes = [],
   empalmes = [],
   gasas = troncalGasas,
+  customGasas = [],
   postesPropuestos = troncalPostesPropuestos,
   postesCfe = troncalPostesCfe,
   customPostes = [],
@@ -445,9 +454,11 @@ export const GponMap: React.FC<GponMapProps> = ({
   onDeleteRouteRequest,
   onDeleteMufaRequest,
   onDeletePosteRequest,
+  onDeleteGasaRequest,
   deletedRouteIds = [],
   deletedMufaIds = [],
   deletedPosteIds = [],
+  deletedGasaIds = [],
   onOpenMileageCapture,
   placementMode,
   onPlaceElement,
@@ -463,6 +474,12 @@ export const GponMap: React.FC<GponMapProps> = ({
   onFinishDrawingRoute,
   onCancelDrawingRoute
 }) => {
+  // Detección de dispositivo móvil / táctil para optimización ultra-fluida de recursos
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+  }, []);
+
   // Centro por defecto: Región Ixtlahuaca - Jiquipilco
   const defaultCenter: [number, number] = useMemo(() => {
     return [19.6450, -99.8200];
@@ -488,11 +505,11 @@ export const GponMap: React.FC<GponMapProps> = ({
     setCurrentZoom(zoom);
   }, []);
 
-  // Buffer de 30% alrededor de la pantalla para navegación fluida sin cortes
+  // Buffer alrededor de la pantalla: en móviles usamos margen mínimo (0.05) para no retener cientos de postes fuera de pantalla
   const bufferedBounds = useMemo(() => {
     if (!viewportBounds) return null;
-    return viewportBounds.pad(0.3);
-  }, [viewportBounds]);
+    return viewportBounds.pad(isMobile ? 0.05 : 0.25);
+  }, [viewportBounds, isMobile]);
 
   // Estados de visibilidad de capas
   const [showFiberRoutes, setShowFiberRoutes] = useState(true);
@@ -746,7 +763,27 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
   }, [postesCfe, customPostes, deletedPosteIds]);
 
-  // Virtualización por Vista (Viewport Culling): renderizar de forma óptima a 60 FPS
+  // Combinar gasas KMZ con gasas personalizadas creadas por el usuario (Filtrando eliminadas)
+  const allGasas = useMemo(() => {
+    const combined: GasaReserva[] = [];
+    (customGasas || []).forEach((cg) => {
+      if (!combined.some((g) => g.id_gasa === cg.id_gasa)) {
+        combined.push(cg);
+      }
+    });
+    (gasas || troncalGasas || []).forEach((g) => {
+      if (!combined.some((cg) => cg.id_gasa === g.id_gasa)) {
+        combined.push(g);
+      }
+    });
+    return combined.filter((g) => {
+      if (deletedGasaIds.includes(g.id_gasa)) return false;
+      if (!g.coordenadas_gps || typeof g.coordenadas_gps.lat !== 'number' || typeof g.coordenadas_gps.lng !== 'number') return false;
+      return !isNaN(g.coordenadas_gps.lat) && !isNaN(g.coordenadas_gps.lng);
+    });
+  }, [customGasas, gasas, deletedGasaIds]);
+
+  // Virtualización por Vista (Viewport Culling): renderizar de forma óptima a 60 FPS sin tirones en móvil
   const visiblePostesPropuestos = useMemo(() => {
     if (!showPostesPropuestos) return [];
 
@@ -757,14 +794,23 @@ export const GponMap: React.FC<GponMapProps> = ({
       return bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng]);
     });
 
-    // 2. Postes propuestos masivos del KMZ
-    if (!bufferedBounds) return customInView.length > 0 ? customInView : postesPropuestos.slice(0, 80);
+    // En móviles: no saturar la pantalla en zoom alejado (< 14)
+    // En escritorio: a partir de zoom 13
+    const minZoom = isMobile ? 14 : 13;
+    if (currentZoom < minZoom || !bufferedBounds) {
+      return customInView;
+    }
 
     const kmzInView = postesPropuestos.filter((p) =>
       bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng])
     );
-    return [...customInView, ...kmzInView];
-  }, [showPostesPropuestos, customPostes, postesPropuestos, bufferedBounds]);
+
+    // Presupuesto de postes en DOM para mantener 60 FPS estables sin saturar el hilo en teléfonos
+    const budget = isMobile ? 45 : 120;
+    const cappedKmz = kmzInView.length > budget ? kmzInView.slice(0, budget) : kmzInView;
+
+    return [...customInView, ...cappedKmz];
+  }, [showPostesPropuestos, customPostes, postesPropuestos, bufferedBounds, currentZoom, isMobile]);
 
   const visiblePostesCfe = useMemo(() => {
     if (!showPostesCfe) return [];
@@ -776,16 +822,24 @@ export const GponMap: React.FC<GponMapProps> = ({
       return bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng]);
     });
 
-    // 2. Postes CFE masivos del KMZ (803 pines): nivel de detalle a partir de zoom 13
-    if (currentZoom < 13 || !bufferedBounds) {
+    // 2. Postes CFE masivos del KMZ (803 pines):
+    // En móviles: activar a partir de zoom 15 (nivel calle real) con presupuesto estricto
+    // En escritorio: activar a partir de zoom 14
+    const minZoom = isMobile ? 15 : 14;
+    if (currentZoom < minZoom || !bufferedBounds) {
       return customInView;
     }
 
     const kmzInView = postesCfe.filter((p) =>
       bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng])
     );
-    return [...customInView, ...kmzInView];
-  }, [showPostesCfe, customPostes, postesCfe, bufferedBounds, currentZoom]);
+
+    // Presupuesto estricto en el teléfono para evitar que se congele el hilo de renderizado
+    const budget = isMobile ? 50 : 130;
+    const cappedKmz = kmzInView.length > budget ? kmzInView.slice(0, budget) : kmzInView;
+
+    return [...customInView, ...cappedKmz];
+  }, [showPostesCfe, customPostes, postesCfe, bufferedBounds, currentZoom, isMobile]);
 
   // Total de kilómetros y ML calculados
   const totalNetworkDistance = useMemo(() => {
@@ -1092,7 +1146,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <span className="font-bold text-blue-600 shrink-0">∞</span>
-                <span className="flex-1">Gasas de Reserva ({gasas.length})</span>
+                <span className="flex-1">Gasas de Reserva ({allGasas.length})</span>
               </label>
 
               {/* Postes Propuestos (Rojos) */}
@@ -1129,13 +1183,13 @@ export const GponMap: React.FC<GponMapProps> = ({
                   Postes CFE ({allPostesCfe.length})
                   {showPostesCfe && (
                     <span className="text-[10px] block">
-                      {currentZoom < 13 ? (
+                      {currentZoom < (isMobile ? 15 : 14) ? (
                         <span className="text-amber-600 dark:text-amber-400 font-medium">
-                          Acércate (zoom) para activar
+                          Acércate a la calle (zoom {isMobile ? 15 : 14}+)
                         </span>
                       ) : (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                          {visiblePostesCfe.length} en pantalla
+                          {visiblePostesCfe.length} en pantalla (optimizado)
                         </span>
                       )}
                     </span>
@@ -1151,7 +1205,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   onChange={(e) => setShowNaps(e.target.checked)}
                   className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
-                <Network className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <Box className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span className="flex-1">Cajas NAP ({naps.length})</span>
               </label>
             </div>
@@ -1413,7 +1467,7 @@ export const GponMap: React.FC<GponMapProps> = ({
 
         {/* 6. Marcadores de Gasas de Reserva Técnica (∞) */}
         {showGasas &&
-          gasas.map((gasa) => {
+          allGasas.map((gasa) => {
             const icon = createGasaReservaIcon(gasa);
             const metraje = gasa.longitud_metros || gasa.metros_reserva || 30;
             return (
@@ -1435,6 +1489,32 @@ export const GponMap: React.FC<GponMapProps> = ({
                     <div className="text-[10px] text-slate-400 font-mono mt-1">
                       {gasa.coordenadas_gps.lat.toFixed(5)}, {gasa.coordenadas_gps.lng.toFixed(5)}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setStreetViewData({
+                          isOpen: true,
+                          coordinates: gasa.coordenadas_gps,
+                          title: gasa.nombre,
+                          subtitle: `Gasa de Reserva (${metraje}m) - Inspección en calle`
+                        })
+                      }
+                      className="mt-2 w-full bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/70 dark:hover:bg-amber-900 text-amber-950 dark:text-amber-200 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-amber-400 dark:border-amber-700 font-bold cursor-pointer"
+                    >
+                      <Camera className="w-3 h-3 text-amber-800 dark:text-amber-400" />
+                      <span>Ver en Street View</span>
+                    </button>
+                    {onDeleteGasaRequest && (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteGasaRequest(gasa)}
+                        className="mt-1.5 w-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-red-200 dark:border-red-800 font-semibold cursor-pointer"
+                        title="Eliminar esta gasa de reserva técnica"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Eliminar Gasa</span>
+                      </button>
+                    )}
                   </div>
                 </Popup>
               </Marker>

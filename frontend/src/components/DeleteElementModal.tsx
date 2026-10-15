@@ -7,7 +7,7 @@ interface DeleteElementModalProps {
   onConfirm: () => Promise<void>;
   title: string;
   elementName: string;
-  elementType: 'troncal' | 'mufa' | 'poste';
+  elementType: 'troncal' | 'mufa' | 'poste' | 'gasa';
   details?: string;
   isDeleting: boolean;
 }
@@ -32,6 +32,8 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
         return <GitCommit className="w-5 h-5 text-amber-600 dark:text-amber-400" />;
       case 'poste':
         return <MapPin className="w-5 h-5 text-rose-600 dark:text-rose-400" />;
+      case 'gasa':
+        return <span className="font-bold text-blue-600 text-lg leading-none">∞</span>;
     }
   };
 
@@ -43,6 +45,8 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
         return 'Cierre de Empalme (Mufa)';
       case 'poste':
         return 'Poste de Infraestructura';
+      case 'gasa':
+        return 'Gasa de Reserva Técnica';
     }
   };
 

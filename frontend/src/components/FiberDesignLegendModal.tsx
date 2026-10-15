@@ -352,9 +352,15 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
                 {/* 3. Caja NAP */}
                 <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
                   <div className="w-10 h-8 flex items-center justify-center shrink-0">
-                    <div className="bg-slate-900 border border-white rounded px-1.5 py-0.5 text-[10px] font-bold text-white shadow-xs">
-                      NAP
-                    </div>
+                    <svg width="28" height="24" viewBox="0 0 28 24" fill="none">
+                      <rect x="3" y="3" width="22" height="18" rx="4" fill="#10b981" stroke="#ffffff" strokeWidth="1.8" />
+                      <line x1="3" y1="9" x2="25" y2="9" stroke="#ffffff" strokeWidth="1.2" strokeOpacity="0.9" />
+                      <rect x="11.5" y="1" width="5" height="3" rx="1" fill="#ffffff" />
+                      <circle cx="7" cy="14.5" r="1.3" fill="#ffffff" />
+                      <circle cx="11.5" cy="14.5" r="1.3" fill="#ffffff" />
+                      <circle cx="16.5" cy="14.5" r="1.3" fill="#ffffff" />
+                      <circle cx="21" cy="14.5" r="1.3" fill="#ffffff" />
+                    </svg>
                   </div>
                   <div>
                     <div className="font-bold text-slate-900 dark:text-white">Caja Terminal NAP (8 / 16 Puertos)</div>

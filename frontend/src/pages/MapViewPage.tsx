@@ -10,9 +10,10 @@ import { FiberDesignLegendModal } from '../components/FiberDesignLegendModal';
 import { CreateRouteModal } from '../components/CreateRouteModal';
 import { CreateMufaModal } from '../components/CreateMufaModal';
 import { CreatePosteModal } from '../components/CreatePosteModal';
+import { CreateGasaModal } from '../components/CreateGasaModal';
 import { DeleteElementModal } from '../components/DeleteElementModal';
 import { useAuth } from '../context/AuthContext';
-import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure, PosteInfraestructura } from '../types';
+import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
 import { offlineDb } from '../db/offlineDb';
 import api from '../api/client';
 import {
@@ -27,6 +28,7 @@ import {
   Filter,
   Compass,
   Plus,
+  Box,
   Navigation,
   Gauge,
   Layers,
@@ -145,17 +147,18 @@ export const MapViewPage: React.FC = () => {
     distanceKm?: number;
   }>({ isOpen: false });
 
-  // Estados de Planta Externa: Simbología, Metrajes y Creación de Rutas/Mufas
+  // Estados de Planta Externa: Simbología, Metrajes y Creación de Rutas/Mufas/Gasas/Postes
   const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
   const [isCreateRouteOpen, setIsCreateRouteOpen] = useState(false);
   const [isCreateMufaOpen, setIsCreateMufaOpen] = useState(false);
   const [isCreatePosteOpen, setIsCreatePosteOpen] = useState(false);
+  const [isCreateGasaOpen, setIsCreateGasaOpen] = useState(false);
 
   // Estados para Drag & Drop y Colocación Interactiva de Elementos
-  const [placementMode, setPlacementMode] = useState<'poste' | 'mufa' | 'nap' | 'troncal' | null>(null);
+  const [placementMode, setPlacementMode] = useState<'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | null>(null);
   const [droppedCoordinates, setDroppedCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [tempPlacementPin, setTempPlacementPin] = useState<{
-    type: 'poste' | 'mufa' | 'nap' | 'troncal';
+    type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa';
     lat: number;
     lng: number;
   } | null>(null);
@@ -190,7 +193,7 @@ export const MapViewPage: React.FC = () => {
     setRouteDraftPoints([]);
   };
 
-  const handlePlaceElement = (type: 'poste' | 'mufa' | 'nap' | 'troncal', latlng: { lat: number; lng: number }) => {
+  const handlePlaceElement = (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa', latlng: { lat: number; lng: number }) => {
     setDroppedCoordinates(latlng);
     setPlacementMode(null);
     if (type === 'poste') {
@@ -202,6 +205,9 @@ export const MapViewPage: React.FC = () => {
     } else if (type === 'nap') {
       setTempPlacementPin({ type, ...latlng });
       setIsCreateNapOpen(true);
+    } else if (type === 'gasa') {
+      setTempPlacementPin({ type, ...latlng });
+      setIsCreateGasaOpen(true);
     } else if (type === 'troncal') {
       setTempPlacementPin(null);
       setIsDrawingRoute(true);
@@ -235,6 +241,14 @@ export const MapViewPage: React.FC = () => {
       return [];
     }
   });
+  const [customGasas, setCustomGasas] = useState<GasaReserva[]>(() => {
+    try {
+      const saved = localStorage.getItem('gpon_custom_gasas');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [customPostes, setCustomPostes] = useState<PosteInfraestructura[]>(() => {
     try {
       const saved = localStorage.getItem('gpon_custom_postes');
@@ -244,9 +258,9 @@ export const MapViewPage: React.FC = () => {
     }
   });
 
-  // Estados de control para eliminación de elementos (Troncales, Mufas, Postes)
+  // Estados de control para eliminación de elementos (Troncales, Mufas, Postes, Gasas)
   const [deletingElement, setDeletingElement] = useState<{
-    type: 'troncal' | 'mufa' | 'poste';
+    type: 'troncal' | 'mufa' | 'poste' | 'gasa';
     id: string;
     name: string;
     details?: string;
@@ -266,6 +280,15 @@ export const MapViewPage: React.FC = () => {
   const [deletedMufaIds, setDeletedMufaIds] = useState<string[]>(() => {
     try {
       const s = localStorage.getItem('gpon_deleted_mufa_ids');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [deletedGasaIds, setDeletedGasaIds] = useState<string[]>(() => {
+    try {
+      const s = localStorage.getItem('gpon_deleted_gasa_ids');
       return s ? JSON.parse(s) : [];
     } catch {
       return [];
@@ -438,6 +461,37 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     setFeedbackNotice({
       type: 'success',
       message: `Poste "${newPoste.nombre}" (${newPoste.tipo === 'poste_propuesto' ? 'Propuesto' : 'CFE'}) registrado y sincronizado en todos los dispositivos.`
+    });
+    setTimeout(() => setFeedbackNotice(null), 6000);
+    fetchData(false);
+  };
+
+  const handleSaveGasa = async (newGasa: GasaReserva) => {
+    setCustomGasas((prev) => {
+      const updated = [newGasa, ...prev.filter((g) => g.id_gasa !== newGasa.id_gasa)];
+      try {
+        localStorage.setItem('gpon_custom_gasas', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setDeletedGasaIds((prev) => {
+      const updated = prev.filter((id) => id !== newGasa.id_gasa);
+      try {
+        localStorage.setItem('gpon_deleted_gasa_ids', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    try {
+      await api.post('/infra/gasas', newGasa);
+      const known = getKnownServerIds('gpon_known_server_gasa_ids');
+      known.add(newGasa.id_gasa);
+      saveKnownServerIds('gpon_known_server_gasa_ids', known);
+    } catch (e) {
+      console.warn('Gasa guardada localmente; se sincronizará automáticamente:', e);
+    }
+    setFeedbackNotice({
+      type: 'success',
+      message: `Gasa de reserva técnica "${newGasa.nombre}" (${newGasa.longitud_metros || newGasa.metros_reserva || 30}m) registrada exitosamente.`
     });
     setTimeout(() => setFeedbackNotice(null), 6000);
     fetchData(false);
@@ -868,6 +922,26 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           type: 'success',
           message: `Poste de infraestructura "${name}" eliminado correctamente.`
         });
+      } else if (type === 'gasa') {
+        try {
+          await api.delete(`/infra/gasas/${id}`);
+        } catch (e) {
+          console.warn('Error eliminando gasa en backend:', e);
+        }
+        setDeletedGasaIds((prev) => {
+          const next = Array.from(new Set([...prev, id]));
+          localStorage.setItem('gpon_deleted_gasa_ids', JSON.stringify(next));
+          return next;
+        });
+        setCustomGasas((prev) => {
+          const next = prev.filter((g) => g.id_gasa !== id);
+          localStorage.setItem('gpon_custom_gasas', JSON.stringify(next));
+          return next;
+        });
+        setFeedbackNotice({
+          type: 'success',
+          message: `Gasa de reserva técnica "${name}" eliminada correctamente.`
+        });
       }
 
       setDeletingElement(null);
@@ -1079,7 +1153,25 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             <span>+ Poste</span>
           </button>
 
-          {/* Botón para registrar nueva caja NAP */}
+          {/* Botón para registrar nueva gasa de reserva (Arrastrable hacia el mapa) */}
+          <button
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData('text/plain', 'gasa');
+              e.dataTransfer.setData('application/gpon-element', 'gasa');
+            }}
+            onClick={() => setPlacementMode(placementMode === 'gasa' ? null : 'gasa')}
+            className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-blue-950/40 text-blue-700 dark:text-blue-300 font-bold text-xs px-3 rounded-lg border border-blue-300 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
+              placementMode === 'gasa' ? 'ring-2 ring-blue-500 shadow-md ring-offset-1 animate-pulse' : ''
+            }`}
+            title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva gasa de reserva técnica"
+          >
+            <GripVertical className="w-3 h-3 text-blue-500/70 shrink-0" />
+            <span className="font-bold text-blue-600 dark:text-blue-400 text-sm leading-none shrink-0">∞</span>
+            <span>+ Gasa</span>
+          </button>
+
+          {/* Botón para registrar nueva caja NAP con icono de cajita */}
           {user?.rol !== 'Tecnico' && (
             <button
               draggable={true}
@@ -1094,8 +1186,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva caja NAP"
             >
               <GripVertical className="w-3 h-3 text-white/70 shrink-0" />
-              <Plus className="w-3.5 h-3.5 shrink-0" />
-              <span>Nueva Caja NAP</span>
+              <Box className="w-3.5 h-3.5 shrink-0" />
+              <span>+ Caja NAP</span>
             </button>
           )}
 
@@ -1227,6 +1319,22 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                   <span>+ Poste</span>
                 </button>
 
+                <button
+                  draggable={true}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', 'gasa');
+                    e.dataTransfer.setData('application/gpon-element', 'gasa');
+                  }}
+                  onClick={() => setPlacementMode(placementMode === 'gasa' ? null : 'gasa')}
+                  className={`flex items-center gap-1 bg-white/95 hover:bg-blue-50 text-blue-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-blue-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                    placementMode === 'gasa' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                  }`}
+                  title="Ubicar gasa de reserva técnica"
+                >
+                  <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>
+                  <span>+ Gasa</span>
+                </button>
+
                 {user?.rol !== 'Tecnico' && (
                   <button
                     draggable={true}
@@ -1240,7 +1348,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                     }`}
                     title="Ubicar nueva caja NAP"
                   >
-                    <Plus className="w-3.5 h-3.5 shrink-0" />
+                    <Box className="w-3.5 h-3.5 shrink-0" />
                     <span>+ Caja NAP</span>
                   </button>
                 )}
@@ -1310,6 +1418,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             fiberRoutes={customRoutes}
             empalmes={customEmpalmes}
             customPostes={customPostes}
+            customGasas={customGasas}
             onDeleteNapRequest={(nap) => setDeletingNap(nap)}
             onDeleteRouteRequest={(route) =>
               setDeletingElement({
@@ -1335,9 +1444,18 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                 details: `${poste.tipo === 'poste_propuesto' ? 'Poste Propuesto' : 'Poste CFE'} (${poste.codigo || 'Sin código'})`
               })
             }
+            onDeleteGasaRequest={(gasa) =>
+              setDeletingElement({
+                type: 'gasa',
+                id: gasa.id_gasa,
+                name: gasa.nombre,
+                details: `Reserva técnica: ${gasa.longitud_metros || gasa.metros_reserva || 30} metros.`
+              })
+            }
             deletedRouteIds={deletedRouteIds}
             deletedMufaIds={deletedMufaIds}
             deletedPosteIds={deletedPosteIds}
+            deletedGasaIds={deletedGasaIds}
             
             placementMode={placementMode}
             onPlaceElement={handlePlaceElement}
@@ -1445,6 +1563,17 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                     <span>+ Poste</span>
                   </button>
 
+                  <button
+                    onClick={() => {
+                      setPlacementMode(placementMode === 'gasa' ? null : 'gasa');
+                      setIsExpandedDrawerOpen(false);
+                    }}
+                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                  >
+                    <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>
+                    <span>+ Gasa</span>
+                  </button>
+
                   {user?.rol !== 'Tecnico' && (
                     <button
                       onClick={() => {
@@ -1453,8 +1582,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       }}
                       className="col-span-2 flex items-center justify-center gap-1.5 p-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg border border-sky-600 text-xs font-bold shadow-sm cursor-pointer"
                     >
-                      <Plus className="w-4 h-4 shrink-0" />
-                      <span>+ Nueva Caja NAP</span>
+                      <Box className="w-4 h-4 shrink-0" />
+                      <span>+ Caja NAP</span>
                     </button>
                   )}
                 </div>
@@ -1610,6 +1739,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               ? 'Línea de Fibra'
               : deletingElement.type === 'mufa'
               ? 'Cierre de Empalme'
+              : deletingElement.type === 'gasa'
+              ? 'Gasa de Reserva'
               : 'Poste'
           }`}
           elementName={deletingElement.name}
@@ -1709,6 +1840,32 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             : [19.645, -99.82]
         }
         existingPostesCount={144 + customPostes.length}
+      />
+
+      {/* Modal para Crear y Registrar Nueva Gasa de Reserva Técnica */}
+      <CreateGasaModal
+        isOpen={isCreateGasaOpen}
+        onClose={() => {
+          setIsCreateGasaOpen(false);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
+        onSaveGasa={(gasa) => {
+          handleSaveGasa(gasa);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
+        defaultCoordinates={
+          droppedCoordinates
+            ? [droppedCoordinates.lat, droppedCoordinates.lng]
+            : selectedNap?.coordenadas_gps
+            ? [
+                Number((selectedNap.coordenadas_gps.lat + 0.0015).toFixed(6)),
+                Number((selectedNap.coordenadas_gps.lng + 0.0015).toFixed(6))
+              ]
+            : [19.645, -99.82]
+        }
+        existingGasasCount={troncalGasas.length + customGasas.length}
       />
     </div>
   );
