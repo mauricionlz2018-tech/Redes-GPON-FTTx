@@ -1034,27 +1034,29 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           </div>
 
           {/* Botones Descargar KMZ, Expandir Mapa y Actualizar a la derecha */}
-          <div className="flex items-center justify-end shrink-0 gap-2 w-full sm:w-auto">
+          <div className="flex items-center justify-end shrink-0 gap-1.5 sm:gap-2 w-full sm:w-auto">
             <button
               onClick={() => {
                 setIsMapExpanded(true);
                 setIsExpandedDrawerOpen(false);
               }}
-              className="flex items-center justify-center gap-1.5 h-9 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 rounded-lg border border-sky-500 transition-all shadow-xs active:scale-95 cursor-pointer flex-1 sm:flex-initial"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-2.5 sm:px-3 rounded-lg border border-sky-500 transition-all shadow-xs active:scale-95 cursor-pointer flex-1 sm:flex-initial whitespace-nowrap"
               title="Expandir el mapa a pantalla completa y ocultar paneles"
             >
               <Maximize2 className="w-3.5 h-3.5 shrink-0" />
-              <span>Expandir Mapa</span>
+              <span className="hidden sm:inline">Expandir Mapa</span>
+              <span className="sm:hidden">Expandir</span>
             </button>
 
             <button
               onClick={handleExportKmz}
               disabled={isExportingKmz}
-              className="flex items-center justify-center gap-1.5 h-9 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 rounded-lg border border-emerald-500 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-2 sm:px-3 rounded-lg border border-emerald-500 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial whitespace-nowrap"
               title="Descargar toda la infraestructura geográfica de la red (cajas NAP, fibra óptica, mufas y postes) en archivo KMZ para Google Earth"
             >
               <Download className={`w-3.5 h-3.5 shrink-0 ${isExportingKmz ? 'animate-bounce' : ''}`} />
-              <span>{isExportingKmz ? 'Generando...' : 'Descargar KMZ'}</span>
+              <span className="hidden sm:inline">{isExportingKmz ? 'Generando...' : 'Descargar KMZ'}</span>
+              <span className="sm:hidden">{isExportingKmz ? 'KMZ...' : 'KMZ'}</span>
             </button>
 
             <button
@@ -1072,7 +1074,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                 setTimeout(() => setFeedbackNotice(null), 4000);
               }}
               disabled={loading}
-              className="flex items-center justify-center gap-1.5 h-9 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-2 sm:px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial whitespace-nowrap"
               title="Actualizar datos de la red y comprobar nueva versión"
             >
               <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
@@ -1260,120 +1262,136 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
               <div className="hidden sm:block h-5 w-px bg-slate-300/80 shrink-0 mx-0.5" />
 
-              {/* Botones de herramientas completas para tablets y PC (Modo Claro Oficial) */}
-              <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 shrink-0">
-                <button
-                  onClick={() => setIsLegendModalOpen(true)}
-                  className="flex items-center gap-1 bg-white/95 hover:bg-sky-50 text-sky-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-sky-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
-                  title="Ver norma de simbología y metrajes"
-                >
-                  <Layers className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                  <span>Simbología</span>
-                </button>
+              {/* Cuando se está trazando troncal, mostrar barra limpia y enfocada para máxima visibilidad */}
+              {isDrawingRoute ? (
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 px-3 py-1.5 rounded-xl border border-purple-300 dark:border-purple-800 font-bold text-xs shadow-xs animate-pulse">
+                    <Ruler className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <span>Trazando Línea Troncal</span>
+                  </div>
+                  <button
+                    onClick={handleCancelDrawingRoute}
+                    className="bg-white/95 hover:bg-red-50 text-red-600 px-2.5 py-1.5 rounded-xl shadow-xs border border-red-200 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    title="Cancelar trazado de fibra"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancelar</span>
+                  </button>
+                </div>
+              ) : (
+                /* Botones de herramientas completas para tablets y PC (Modo Claro Oficial) */
+                <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  <button
+                    onClick={() => setIsLegendModalOpen(true)}
+                    className="flex items-center gap-1 bg-white/95 hover:bg-sky-50 text-sky-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-sky-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    title="Ver norma de simbología y metrajes"
+                  >
+                    <Layers className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                    <span>Simbología</span>
+                  </button>
 
-                <button
-                  draggable={true}
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('text/plain', 'troncal');
-                    e.dataTransfer.setData('application/gpon-element', 'troncal');
-                  }}
-                  onClick={() => setIsDrawingRoute(!isDrawingRoute)}
-                  className={`flex items-center gap-1 bg-white/95 hover:bg-purple-50 text-purple-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-purple-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                    isDrawingRoute ? 'ring-2 ring-purple-500 bg-purple-50' : ''
-                  }`}
-                  title="Trazar ruta troncal o ramal"
-                >
-                  <Ruler className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                  <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal'}</span>
-                </button>
-
-                <button
-                  draggable={true}
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('text/plain', 'mufa');
-                    e.dataTransfer.setData('application/gpon-element', 'mufa');
-                  }}
-                  onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
-                  className={`flex items-center gap-1 bg-white/95 hover:bg-amber-50 text-amber-800 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                    placementMode === 'mufa' ? 'ring-2 ring-amber-500 bg-amber-50' : ''
-                  }`}
-                  title="Ubicar mufa torpedo"
-                >
-                  <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                  <span>+ Mufa</span>
-                </button>
-
-                <button
-                  draggable={true}
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('text/plain', 'poste');
-                    e.dataTransfer.setData('application/gpon-element', 'poste');
-                  }}
-                  onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
-                  className={`flex items-center gap-1 bg-white/95 hover:bg-rose-50 text-rose-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-rose-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                    placementMode === 'poste' ? 'ring-2 ring-rose-500 bg-rose-50' : ''
-                  }`}
-                  title="Ubicar poste"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                  <span>+ Poste</span>
-                </button>
-
-                <button
-                  draggable={true}
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('text/plain', 'gasa');
-                    e.dataTransfer.setData('application/gpon-element', 'gasa');
-                  }}
-                  onClick={() => setPlacementMode(placementMode === 'gasa' ? null : 'gasa')}
-                  className={`flex items-center gap-1 bg-white/95 hover:bg-blue-50 text-blue-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-blue-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                    placementMode === 'gasa' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-                  }`}
-                  title="Ubicar gasa de reserva técnica"
-                >
-                  <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>
-                  <span>+ Gasa</span>
-                </button>
-
-                {user?.rol !== 'Tecnico' && (
                   <button
                     draggable={true}
                     onDragStart={(e) => {
-                      e.dataTransfer.setData('text/plain', 'nap');
-                      e.dataTransfer.setData('application/gpon-element', 'nap');
+                      e.dataTransfer.setData('text/plain', 'troncal');
+                      e.dataTransfer.setData('application/gpon-element', 'troncal');
                     }}
-                    onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
-                    className={`flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded-xl border border-sky-600 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                      placementMode === 'nap' ? 'ring-2 ring-sky-300 ring-offset-1' : ''
-                    }`}
-                    title="Ubicar nueva caja NAP"
+                    onClick={() => setIsDrawingRoute(true)}
+                    className="flex items-center gap-1 bg-white/95 hover:bg-purple-50 text-purple-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-purple-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    title="Trazar ruta troncal o ramal"
                   >
-                    <Box className="w-3.5 h-3.5 shrink-0" />
-                    <span>+ Caja NAP</span>
+                    <Ruler className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <span>+ Troncal</span>
                   </button>
-                )}
 
-                {selectedNap && (
                   <button
-                    onClick={() => {
-                      if (isRouteActive) {
-                        handleClearRoute();
-                      } else {
-                        handleRequestRoute(selectedNap);
-                      }
+                    draggable={true}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', 'mufa');
+                      e.dataTransfer.setData('application/gpon-element', 'mufa');
                     }}
-                    className={`flex items-center gap-1 font-bold text-xs px-2.5 py-1.5 rounded-xl border shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                      isRouteActive
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white/95 hover:bg-indigo-50 text-indigo-700 border-indigo-300'
+                    onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
+                    className={`flex items-center gap-1 bg-white/95 hover:bg-amber-50 text-amber-800 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                      placementMode === 'mufa' ? 'ring-2 ring-amber-500 bg-amber-50' : ''
                     }`}
-                    title="Calcular ruta a la caja seleccionada"
+                    title="Ubicar mufa torpedo"
                   >
-                    <Navigation className="w-3.5 h-3.5 shrink-0" />
-                    <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja'}</span>
+                    <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>+ Mufa</span>
                   </button>
-                )}
-              </div>
+
+                  <button
+                    draggable={true}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', 'poste');
+                      e.dataTransfer.setData('application/gpon-element', 'poste');
+                    }}
+                    onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
+                    className={`flex items-center gap-1 bg-white/95 hover:bg-rose-50 text-rose-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-rose-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                      placementMode === 'poste' ? 'ring-2 ring-rose-500 bg-rose-50' : ''
+                    }`}
+                    title="Ubicar poste"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                    <span>+ Poste</span>
+                  </button>
+
+                  <button
+                    draggable={true}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', 'gasa');
+                      e.dataTransfer.setData('application/gpon-element', 'gasa');
+                    }}
+                    onClick={() => setPlacementMode(placementMode === 'gasa' ? null : 'gasa')}
+                    className={`flex items-center gap-1 bg-white/95 hover:bg-blue-50 text-blue-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-blue-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                      placementMode === 'gasa' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                    }`}
+                    title="Ubicar gasa de reserva técnica"
+                  >
+                    <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>
+                    <span>+ Gasa</span>
+                  </button>
+
+                  {user?.rol !== 'Tecnico' && (
+                    <button
+                      draggable={true}
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', 'nap');
+                        e.dataTransfer.setData('application/gpon-element', 'nap');
+                      }}
+                      onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
+                      className={`flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded-xl border border-sky-600 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                        placementMode === 'nap' ? 'ring-2 ring-sky-300 ring-offset-1' : ''
+                      }`}
+                      title="Ubicar nueva caja NAP"
+                    >
+                      <Box className="w-3.5 h-3.5 shrink-0" />
+                      <span>+ Caja NAP</span>
+                    </button>
+                  )}
+
+                  {selectedNap && (
+                    <button
+                      onClick={() => {
+                        if (isRouteActive) {
+                          handleClearRoute();
+                        } else {
+                          handleRequestRoute(selectedNap);
+                        }
+                      }}
+                      className={`flex items-center gap-1 font-bold text-xs px-2.5 py-1.5 rounded-xl border shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                        isRouteActive
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-white/95 hover:bg-indigo-50 text-indigo-700 border-indigo-300'
+                      }`}
+                      title="Calcular ruta a la caja seleccionada"
+                    >
+                      <Navigation className="w-3.5 h-3.5 shrink-0" />
+                      <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja'}</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
