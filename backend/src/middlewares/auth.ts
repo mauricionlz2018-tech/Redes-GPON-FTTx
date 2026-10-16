@@ -21,7 +21,12 @@ import { logSecurityEvent } from './security';
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  let token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+  // Permitir token vía query param para conexiones EventSource/SSE desde navegadores
+  if (!token && req.query.token && typeof req.query.token === 'string') {
+    token = req.query.token;
+  }
 
   if (!token) {
     logSecurityEvent('UNAUTHENTICATED_ACCESS_ATTEMPT', req, {

@@ -1,5 +1,16 @@
 import { Request, Response } from 'express';
-import { InfrastructurePoste, InfrastructureMufa, InfrastructureRoute, InfrastructureGasa } from '../models';
+import {
+  InfrastructurePoste,
+  InfrastructureMufa,
+  InfrastructureRoute,
+  InfrastructureGasa,
+  NapBox,
+  NapPort,
+  Client,
+  PonPort,
+  OdfPanel
+} from '../models';
+import { broadcastNetworkChange } from '../services/sseService';
 
 // ============================
 // Controladores de Postes
@@ -54,6 +65,8 @@ export const createPoste = async (req: Request, res: Response) => {
       material: material || 'Concreto 12m'
     });
 
+    broadcastNetworkChange('POSTE_CHANGED', { action: 'create', poste: newPoste });
+
     res.status(201).json({
       success: true,
       message: `Poste ${codigo} guardado exitosamente en base de datos central.`,
@@ -71,6 +84,7 @@ export const deletePoste = async (req: Request, res: Response) => {
     const deletedCount = await InfrastructurePoste.destroy({
       where: { id_poste: id }
     });
+    broadcastNetworkChange('POSTE_CHANGED', { action: 'delete', id });
     res.json({
       success: true,
       message: deletedCount > 0 ? 'Poste eliminado exitosamente.' : 'Poste no encontrado.'
@@ -107,6 +121,7 @@ export const createMufa = async (req: Request, res: Response) => {
     const existing = await InfrastructureMufa.findByPk(mufaId);
     if (existing) {
       await existing.update({ nombre, tipo_cierre, capacidad_hilos, estado, coordenadas_gps });
+      broadcastNetworkChange('MUFA_CHANGED', { action: 'update', mufa: existing });
       res.status(200).json({ success: true, data: existing });
       return;
     }
@@ -120,6 +135,8 @@ export const createMufa = async (req: Request, res: Response) => {
       coordenadas_gps
     });
 
+    broadcastNetworkChange('MUFA_CHANGED', { action: 'create', mufa: newMufa });
+
     res.status(201).json({ success: true, data: newMufa });
   } catch (error: any) {
     console.error('Error al crear mufa:', error);
@@ -131,6 +148,7 @@ export const deleteMufa = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await InfrastructureMufa.destroy({ where: { id_empalme: id } });
+    broadcastNetworkChange('MUFA_CHANGED', { action: 'delete', id });
     res.json({ success: true, message: 'Mufa eliminada' });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -179,6 +197,7 @@ export const createRoute = async (req: Request, res: Response) => {
       estado: estado || 'operativa'
     });
 
+    broadcastNetworkChange('ROUTE_CHANGED', { action: 'create', route: newRoute });
     res.status(201).json({ success: true, data: newRoute });
   } catch (error: any) {
     console.error('Error al crear ruta:', error);
@@ -190,6 +209,7 @@ export const deleteRoute = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await InfrastructureRoute.destroy({ where: { id_ruta: id } });
+    broadcastNetworkChange('ROUTE_CHANGED', { action: 'delete', id });
     res.json({ success: true, message: 'Ruta eliminada' });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -229,6 +249,7 @@ export const createGasa = async (req: Request, res: Response) => {
         tipo_cable: tipo_cable || 'Cable Troncal 48H',
         coordenadas_gps
       });
+      broadcastNetworkChange('GASA_CHANGED', { action: 'update', gasa: existing });
       res.status(200).json({ success: true, data: existing });
       return;
     }
@@ -242,6 +263,7 @@ export const createGasa = async (req: Request, res: Response) => {
       coordenadas_gps
     });
 
+    broadcastNetworkChange('GASA_CHANGED', { action: 'create', gasa: newGasa });
     res.status(201).json({ success: true, data: newGasa });
   } catch (error: any) {
     console.error('Error al crear gasa:', error);
@@ -253,8 +275,96 @@ export const deleteGasa = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await InfrastructureGasa.destroy({ where: { id_gasa: id } });
+    broadcastNetworkChange('GASA_CHANGED', { action: 'delete', id });
     res.json({ success: true, message: 'Gasa de reserva técnica eliminada' });
   } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==============================================================
+// SINCRONIZACIÓN GLOBAL UNIFICADA (Una sola petición HTTP ultrarrápida)
+// ==============================================================
+export const getNetworkSync = async (req: Request, res: Response) => {
+  try {
+    const [naps, odfs, postes, mufas, routes, gasas] = await Promise.all([
+      NapBox.findAll({
+        include: [
+          {
+            model: NapPort,
+            as: 'puertos',
+            attributes: ['id_puerto', 'indice_puerto', 'estado'],
+            include: [
+              {
+                model: Client,
+                as: 'cliente',
+                attributes: ['id_cliente', 'numero_cliente', 'nombre_completo', 'marca_ont', 'ont_mac', 'direccion', 'potencia_rx_estimada']
+              }
+            ]
+          },
+          {
+            model: PonPort,
+            as: 'puerto_pon',
+            attributes: ['id_puerto_pon', 'numero_slot', 'numero_puerto', 'potencia_tx_dbm'],
+            include: [
+              {
+                model: OdfPanel,
+                as: 'odf',
+                attributes: ['id_odf', 'nombre', 'ubicacion_central', 'coordenadas_gps']
+              }
+            ]
+          }
+        ],
+        order: [['identificador', 'ASC']]
+      }),
+      OdfPanel.findAll(),
+      InfrastructurePoste.findAll({ order: [['createdAt', 'DESC']] }),
+      InfrastructureMufa.findAll({ order: [['createdAt', 'DESC']] }),
+      InfrastructureRoute.findAll({ order: [['createdAt', 'DESC']] }),
+      InfrastructureGasa.findAll({ order: [['createdAt', 'DESC']] })
+    ]);
+
+    const enrichedNaps = naps.map((nap) => {
+      const ports = (nap.puertos || []) as any[];
+      const total = nap.total_puertos || 16;
+      const libres = ports.filter((p: any) => p.estado === 'Libre').length;
+      const ocupados = ports.filter((p: any) => p.estado === 'Ocupado').length;
+      const danados = ports.filter((p: any) => p.estado === 'Dañado').length;
+      const reservados = ports.filter((p: any) => p.estado === 'Reservado' || p.estado === 'En Mantenimiento').length;
+      const porcentajeSaturacion = Math.round((ocupados / total) * 100);
+
+      let estadoSaturacion: 'disponible' | 'alerta' | 'saturada' = 'disponible';
+      if (porcentajeSaturacion >= 100) estadoSaturacion = 'saturada';
+      else if (porcentajeSaturacion >= 80) estadoSaturacion = 'alerta';
+
+      return {
+        ...nap.toJSON(),
+        metricas: {
+          total,
+          libres,
+          ocupados,
+          danados,
+          reservados,
+          porcentajeSaturacion,
+          estadoSaturacion
+        }
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        naps: enrichedNaps,
+        odf: odfs[0] || null,
+        postes,
+        mufas,
+        routes,
+        gasas,
+        timestamp: Date.now()
+      }
+    });
+  } catch (error: any) {
+    console.error('Error en sync global de red:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

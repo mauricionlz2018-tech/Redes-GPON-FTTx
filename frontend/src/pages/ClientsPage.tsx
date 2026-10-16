@@ -62,10 +62,12 @@ export const ClientsPage: React.FC = () => {
     fetchClients(false);
   }, [fetchClients]);
 
-  // Suscripción a eventos en tiempo real (cuando se asigna o edita un cliente en cualquier pestaña)
+  // Suscripción a eventos en tiempo real (cuando se asigna o edita un cliente en cualquier pestaña o dispositivo)
   useEffect(() => {
     const unsubscribe = subscribeToRealtime((event) => {
-      if (event.type === 'CLIENT_ASSIGNED') {
+      if (event.type === 'DATA_REFRESH_REQUESTED') {
+        fetchClients(false);
+      } else if (event.type === 'CLIENT_ASSIGNED') {
         setClients((prev) => {
           const updated = [event.client, ...prev.filter((c) => c.id_cliente !== event.client.id_cliente)];
           saveCachedClients(updated);

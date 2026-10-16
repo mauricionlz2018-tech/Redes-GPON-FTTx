@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Transaction } from 'sequelize';
 import { z } from 'zod';
 import { sequelize, NapPort, Client, NapBox } from '../models';
+import { broadcastNetworkChange } from '../services/sseService';
 
 const assignPortSchema = z.object({
   id_puerto: z.string().uuid(),
@@ -104,6 +105,8 @@ export const assignPort = async (req: Request, res: Response) => {
     // Confirmar transacción
     await t.commit();
 
+    broadcastNetworkChange('PORT_CHANGED', { action: 'assign', id_puerto: port.id_puerto, id_nap: port.id_nap, client });
+
     res.status(201).json({
       success: true,
       message: `Abonado '${client.nombre_completo}' asignado exitosamente al puerto #${port.indice_puerto}`,
@@ -153,6 +156,8 @@ export const releasePort = async (req: Request, res: Response) => {
     await port.save({ transaction: t });
 
     await t.commit();
+
+    broadcastNetworkChange('PORT_CHANGED', { action: 'release', id_puerto: port.id_puerto, id_nap: port.id_nap });
 
     res.json({
       success: true,

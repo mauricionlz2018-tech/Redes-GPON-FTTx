@@ -25,11 +25,13 @@ export const authLimiter = rateLimit({
 });
 
 // Límite general para la API pública (Protección contra Scrapers y Denegación de Servicio)
+// Ajustado a 5,000 req/15min para permitir monitoreo en tiempo real multi-dispositivo sin bloqueos (HTTP 429)
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 450, // Máximo 450 peticiones por IP
+  max: 5000, // 5000 peticiones por IP
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path === '/health' || req.path === '/v1/events',
   message: {
     success: false,
     message: 'Límite de solicitudes de API alcanzado. Por favor espera unos minutos antes de reintentar.'
@@ -40,7 +42,7 @@ export const apiLimiter = rateLimit({
 // Previene inyecciones masivas automatizadas y manipulación de inventario
 export const writeLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 80, // Máximo 80 escrituras por minuto
+  max: 200, // Máximo 200 escrituras por minuto
   standardHeaders: true,
   legacyHeaders: false,
   message: {

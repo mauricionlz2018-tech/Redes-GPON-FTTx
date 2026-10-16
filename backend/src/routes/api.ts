@@ -30,9 +30,10 @@ import {
   deleteRoute,
   listGasas,
   createGasa,
-  deleteGasa
+  deleteGasa,
+  getNetworkSync
 } from '../controllers/infrastructureController';
-
+import { registerSseClient } from '../services/sseService';
 
 import { authLimiter, writeLimiter } from '../middlewares/security';
 
@@ -46,6 +47,21 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// ==============================================================
+// Canales de Sincronización en Tiempo Real (SSE) y Red Unificada
+// ==============================================================
+router.get('/events', authenticateToken, (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no'
+  });
+  registerSseClient(res);
+});
+
+router.get('/network-sync', authenticateToken, getNetworkSync);
 
 // ============================
 // Rutas de Autenticación y Gestión de Personal (RBAC + Anti Fuerza Bruta)

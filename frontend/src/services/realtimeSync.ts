@@ -232,3 +232,61 @@ export const haveDeepItemsChanged = <T extends Record<string, any>>(
   return false;
 };
 
+// ==============================================================
+// CONEXIÓN SSE MULTI-DISPOSITIVO (Mac <-> Windows <-> Móvil)
+// ==============================================================
+let sseSource: EventSource | null = null;
+let sseReconnectTimer: any = null;
+
+export const initMultiDeviceSse = () => {
+  if (typeof window === 'undefined' || typeof EventSource === 'undefined') return;
+  if (sseSource && sseSource.readyState !== EventSource.CLOSED) return;
+
+  const token = localStorage.getItem('gpon_token') || 'demo-jwt-token';
+  const defaultApiUrl = import.meta.env.DEV ? '' : 'https://redes-gpon-fttx.onrender.com';
+  const apiUrl = import.meta.env.VITE_API_URL || defaultApiUrl;
+  const baseUrl = apiUrl ? `${apiUrl.replace(/\/+$/, '')}/api/v1` : '/api/v1';
+
+  try {
+    const sseUrl = `${baseUrl}/events?token=${encodeURIComponent(token)}`;
+    const source = new EventSource(sseUrl);
+    sseSource = source;
+
+    source.onopen = () => {
+      console.log('⚡ [SSE GPON] Conectado en tiempo real con el servidor central');
+    };
+
+    source.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload.type && payload.type !== 'CONNECTED') {
+          console.log(`⚡ [SSE Evento Remoto recibido]: ${payload.type}`, payload);
+          // Notificar inmediatamente a la aplicación para actualizar mapa y datos sin espera
+          broadcastRealtimeEvent({ type: 'DATA_REFRESH_REQUESTED' });
+        }
+      } catch (err) {}
+    };
+
+    source.onerror = () => {
+      source.close();
+      if (sseSource === source) {
+        sseSource = null;
+      }
+      clearTimeout(sseReconnectTimer);
+      sseReconnectTimer = setTimeout(() => {
+        initMultiDeviceSse();
+      }, 7000);
+    };
+  } catch (e) {
+    console.warn('No se pudo inicializar EventSource SSE:', e);
+  }
+};
+
+// Auto-iniciar SSE al cargar la aplicación
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    initMultiDeviceSse();
+  }, 1000);
+}
+
+

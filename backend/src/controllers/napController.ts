@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { NapBox, NapPort, Client, PonPort, OdfPanel } from '../models';
+import { broadcastNetworkChange } from '../services/sseService';
 
 export const listNaps = async (req: Request, res: Response) => {
   try {
@@ -174,6 +175,7 @@ export const updateGpsCoordinates = async (req: Request, res: Response) => {
     };
 
     await nap.save();
+    broadcastNetworkChange('NAP_CHANGED', { action: 'update_gps', nap });
 
     res.json({
       success: true,
@@ -266,21 +268,25 @@ export const createNap = async (req: Request, res: Response) => {
 
     await t.commit();
 
+    const createdData = {
+      ...newNap.toJSON(),
+      puertos: createdPorts,
+      metricas: {
+        total: total_puertos,
+        libres: total_puertos,
+        ocupados: 0,
+        danados: 0,
+        porcentajeSaturacion: 0,
+        estadoSaturacion: 'disponible'
+      }
+    };
+
+    broadcastNetworkChange('NAP_CHANGED', { action: 'create', nap: createdData });
+
     res.status(201).json({
       success: true,
       message: `Caja ${identificador} creada exitosamente con ${total_puertos} puertos listos para asignación.`,
-      data: {
-        ...newNap.toJSON(),
-        puertos: createdPorts,
-        metricas: {
-          total: total_puertos,
-          libres: total_puertos,
-          ocupados: 0,
-          danados: 0,
-          porcentajeSaturacion: 0,
-          estadoSaturacion: 'disponible'
-        }
-      }
+      data: createdData
     });
   } catch (error: any) {
     await t.rollback();
@@ -351,6 +357,8 @@ export const deleteNap = async (req: Request, res: Response) => {
     await nap.destroy({ transaction: t });
 
     await t.commit();
+
+    broadcastNetworkChange('NAP_CHANGED', { action: 'delete', id: nap.id_nap, identificador: nap.identificador });
 
     res.json({
       success: true,

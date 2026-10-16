@@ -12,6 +12,9 @@ dotenv.config();
 const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
 
+// Habilitar confianza en proxys inversos (Render, Cloudflare, Vercel) para IP real del cliente
+app.set('trust proxy', 1);
+
 // ==========================================
 // CAPAS DE SEGURIDAD DEFENSIVA INSTITUCIONAL
 // ==========================================

@@ -537,33 +537,55 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     try {
       if (isInitial) setLoading(true);
 
-      // Peticiones aisladas e individuales para que la falla de una no bloquee a las demás
-      const [napsRes, odfRes, postesRes, mufasRes, routesRes, gasasRes] = await Promise.all([
-        api.get('/naps').catch((err) => {
-          console.warn('Fallo al obtener NAPs:', err);
-          return { data: { success: false, data: [] } };
-        }),
-        api.get('/odf').catch((err) => {
-          console.warn('Fallo al obtener ODF:', err);
-          return { data: { success: false, data: [] } };
-        }),
-        api.get('/infra/postes').catch((err) => {
-          console.warn('Fallo al obtener postes:', err);
-          return { data: { success: false, data: [] } };
-        }),
-        api.get('/infra/mufas').catch((err) => {
-          console.warn('Fallo al obtener mufas:', err);
-          return { data: { success: false, data: [] } };
-        }),
-        api.get('/infra/routes').catch((err) => {
-          console.warn('Fallo al obtener rutas:', err);
-          return { data: { success: false, data: [] } };
-        }),
-        api.get('/infra/gasas').catch((err) => {
-          console.warn('Fallo al obtener gasas:', err);
-          return { data: { success: false, data: [] } };
-        })
-      ]);
+      let napsRes: any, odfRes: any, postesRes: any, mufasRes: any, routesRes: any, gasasRes: any;
+
+      // 1. Intentar sincronización global unificada en 1 sola petición HTTP (ultrarrápida < 200ms)
+      let networkData: any = null;
+      try {
+        const syncRes = await api.get('/network-sync');
+        if (syncRes.data?.success && syncRes.data.data) {
+          networkData = syncRes.data.data;
+        }
+      } catch (e) {
+        // Fallback a peticiones individuales si /network-sync no está disponible
+      }
+
+      if (networkData) {
+        napsRes = { data: { success: true, data: networkData.naps || [] } };
+        odfRes = { data: { success: true, data: networkData.odf ? [networkData.odf] : [] } };
+        postesRes = { data: { success: true, data: networkData.postes || [] } };
+        mufasRes = { data: { success: true, data: networkData.mufas || [] } };
+        routesRes = { data: { success: true, data: networkData.routes || [] } };
+        gasasRes = { data: { success: true, data: networkData.gasas || [] } };
+      } else {
+        // Peticiones aisladas e individuales como fallback de resiliencia
+        [napsRes, odfRes, postesRes, mufasRes, routesRes, gasasRes] = await Promise.all([
+          api.get('/naps').catch((err) => {
+            console.warn('Fallo al obtener NAPs:', err);
+            return { data: { success: false, data: [] } };
+          }),
+          api.get('/odf').catch((err) => {
+            console.warn('Fallo al obtener ODF:', err);
+            return { data: { success: false, data: [] } };
+          }),
+          api.get('/infra/postes').catch((err) => {
+            console.warn('Fallo al obtener postes:', err);
+            return { data: { success: false, data: [] } };
+          }),
+          api.get('/infra/mufas').catch((err) => {
+            console.warn('Fallo al obtener mufas:', err);
+            return { data: { success: false, data: [] } };
+          }),
+          api.get('/infra/routes').catch((err) => {
+            console.warn('Fallo al obtener rutas:', err);
+            return { data: { success: false, data: [] } };
+          }),
+          api.get('/infra/gasas').catch((err) => {
+            console.warn('Fallo al obtener gasas:', err);
+            return { data: { success: false, data: [] } };
+          })
+        ]);
+      }
 
       if (napsRes.data?.success && Array.isArray(napsRes.data.data) && napsRes.data.data.length > 0) {
         setNaps((prev) => {
@@ -789,9 +811,12 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
   useEffect(() => {
     fetchData(false);
 
-    // 1. Suscripción instantánea a eventos emitidos en cualquier ventana/pestaña
+    // 1. Suscripción instantánea a eventos emitidos en cualquier ventana/pestaña o vía SSE multi-dispositivo
     const unsubscribe = subscribeToRealtime((event) => {
-      if (event.type === 'NAP_CREATED') {
+      if (event.type === 'DATA_REFRESH_REQUESTED') {
+        // Notificación SSE remota de Mac u otro dispositivo -> actualizar mapa inmediatamente (<200ms)
+        fetchData(false);
+      } else if (event.type === 'NAP_CREATED') {
         setNaps((prev) => {
           const updated = [event.nap, ...prev.filter((n) => n.id_nap !== event.nap.id_nap)];
           saveCachedNaps(updated);
@@ -804,6 +829,13 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           return updated;
         });
         setSelectedNap((curr) => (curr?.id_nap === event.nap.id_nap ? event.nap : curr));
+      } else if (event.type === 'NAP_DELETED') {
+        setNaps((prev) => {
+          const updated = prev.filter((n) => n.id_nap !== event.id_nap);
+          saveCachedNaps(updated);
+          return updated;
+        });
+        setSelectedNap((curr) => (curr?.id_nap === event.id_nap ? null : curr));
       } else if (event.type === 'CLIENT_ASSIGNED') {
         if (event.nap) {
           setNaps((prev) => {
@@ -865,12 +897,12 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     };
     window.addEventListener('focus', handleFocus);
 
-    // 3. Polling activo a 10s cuando la pestaña está visible
+    // 3. Polling activo a 4s cuando la pestaña está visible (utiliza endpoint unificado ultrarrápido)
     const syncTimer = setInterval(() => {
       if (document.visibilityState === 'visible') {
         fetchData(false);
       }
-    }, 10000);
+    }, 4000);
 
     return () => {
       unsubscribe();
