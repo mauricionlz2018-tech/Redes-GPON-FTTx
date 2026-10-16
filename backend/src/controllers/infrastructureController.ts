@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { InfrastructurePoste, InfrastructureMufa, InfrastructureRoute } from '../models';
+import { InfrastructurePoste, InfrastructureMufa, InfrastructureRoute, InfrastructureGasa } from '../models';
 
 // ============================
 // Controladores de Postes
@@ -195,4 +195,68 @@ export const deleteRoute = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// ============================
+// Controladores de Gasas de Reserva Técnica
+// ============================
+export const listGasas = async (req: Request, res: Response) => {
+  try {
+    const gasas = await InfrastructureGasa.findAll({
+      order: [['createdAt', 'DESC']]
+    });
+    res.json({
+      success: true,
+      data: gasas
+    });
+  } catch (error: any) {
+    console.error('Error al listar gasas:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createGasa = async (req: Request, res: Response) => {
+  try {
+    const { id_gasa, nombre, metros_reserva, longitud_metros, tipo_cable, coordenadas_gps } = req.body;
+    const gasaId = id_gasa || `gasa-custom-${Date.now()}`;
+    const meters = Number(metros_reserva || longitud_metros) || 30;
+
+    const existing = await InfrastructureGasa.findByPk(gasaId);
+    if (existing) {
+      await existing.update({
+        nombre,
+        metros_reserva: meters,
+        longitud_metros: meters,
+        tipo_cable: tipo_cable || 'Cable Troncal 48H',
+        coordenadas_gps
+      });
+      res.status(200).json({ success: true, data: existing });
+      return;
+    }
+
+    const newGasa = await InfrastructureGasa.create({
+      id_gasa: gasaId,
+      nombre,
+      metros_reserva: meters,
+      longitud_metros: meters,
+      tipo_cable: tipo_cable || 'Cable Troncal 48H',
+      coordenadas_gps
+    });
+
+    res.status(201).json({ success: true, data: newGasa });
+  } catch (error: any) {
+    console.error('Error al crear gasa:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteGasa = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await InfrastructureGasa.destroy({ where: { id_gasa: id } });
+    res.json({ success: true, message: 'Gasa de reserva técnica eliminada' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 

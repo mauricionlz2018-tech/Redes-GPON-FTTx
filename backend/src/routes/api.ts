@@ -27,8 +27,12 @@ import {
   deleteMufa,
   listRoutes,
   createRoute,
-  deleteRoute
+  deleteRoute,
+  listGasas,
+  createGasa,
+  deleteGasa
 } from '../controllers/infrastructureController';
+
 
 import { authLimiter, writeLimiter } from '../middlewares/security';
 
@@ -121,5 +125,10 @@ router.get('/infra/routes', authenticateToken, listRoutes);
 router.post('/infra/routes', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createRoute);
 router.delete('/infra/routes/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, deleteRoute);
 
+router.get('/infra/gasas', authenticateToken, listGasas);
+router.post('/infra/gasas', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createGasa);
+router.delete('/infra/gasas/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, deleteGasa);
+
 export default router;
+
 

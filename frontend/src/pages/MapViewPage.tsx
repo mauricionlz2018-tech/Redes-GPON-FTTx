@@ -344,17 +344,22 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         ...troncalPostesCfe,
         ...customPostes.filter((p) => p.tipo === 'poste_cfe')
       ].filter((p) => !deletedPosteIds.includes(p.id_poste));
+      const activeGasas = [
+        ...troncalGasas,
+        ...customGasas
+      ].filter((g) => !deletedGasaIds.includes(g.id_gasa));
 
       await exportGponNetworkToKmz({
         naps,
         odf,
         fiberRoutes: activeRoutes,
         empalmes: activeEmpalmes,
-        gasas: troncalGasas,
+        gasas: activeGasas,
         postesPropuestos: activePostesPropuestos,
         postesCfe: activePostesCfe,
         filename: 'Red_GPON_San_Jose_del_Rincon.kmz'
       });
+
 
       setFeedbackNotice({
         type: 'success',
@@ -512,7 +517,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       if (isInitial) setLoading(true);
 
       // Peticiones aisladas e individuales para que la falla de una no bloquee a las demás
-      const [napsRes, odfRes, postesRes, mufasRes, routesRes] = await Promise.all([
+      const [napsRes, odfRes, postesRes, mufasRes, routesRes, gasasRes] = await Promise.all([
         api.get('/naps').catch((err) => {
           console.warn('Fallo al obtener NAPs:', err);
           return { data: { success: false, data: [] } };
@@ -532,8 +537,13 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         api.get('/infra/routes').catch((err) => {
           console.warn('Fallo al obtener rutas:', err);
           return { data: { success: false, data: [] } };
+        }),
+        api.get('/infra/gasas').catch((err) => {
+          console.warn('Fallo al obtener gasas:', err);
+          return { data: { success: false, data: [] } };
         })
       ]);
+
 
       if (napsRes.data?.success && Array.isArray(napsRes.data.data) && napsRes.data.data.length > 0) {
         setNaps((prev) => {
@@ -695,12 +705,60 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           return mergedRoutes;
         });
       }
+
+      // 4. Sincronización Bidireccional de Gasas de Reserva Técnica con Neon DB
+      const localGasas: GasaReserva[] = (() => {
+        try {
+          const s = localStorage.getItem('gpon_custom_gasas');
+          return s ? JSON.parse(s) : [];
+        } catch {
+          return [];
+        }
+      })();
+
+      if (gasasRes.data?.success && Array.isArray(gasasRes.data.data)) {
+        const serverGasas: GasaReserva[] = gasasRes.data.data;
+        const serverIds = new Set(serverGasas.map((g) => g.id_gasa));
+        const knownGasaIds = getKnownServerIds('gpon_known_server_gasa_ids');
+
+        const unsyncedGasas = localGasas.filter(
+          (loc) => !serverIds.has(loc.id_gasa) && !knownGasaIds.has(loc.id_gasa) && !deletedGasaIds.includes(loc.id_gasa)
+        );
+
+        if (unsyncedGasas.length > 0) {
+          for (const unsynced of unsyncedGasas) {
+            api.post('/infra/gasas', unsynced)
+              .then(() => {
+                knownGasaIds.add(unsynced.id_gasa);
+                saveKnownServerIds('gpon_known_server_gasa_ids', knownGasaIds);
+              })
+              .catch((e) => console.warn('Error subiendo gasa local:', e));
+          }
+        }
+
+        serverGasas.forEach((g) => knownGasaIds.add(g.id_gasa));
+        saveKnownServerIds('gpon_known_server_gasa_ids', knownGasaIds);
+
+        const mergedGasas = [
+          ...serverGasas.filter((g) => !deletedGasaIds.includes(g.id_gasa)),
+          ...unsyncedGasas
+        ];
+
+        setCustomGasas((prev) => {
+          if (!haveItemsChanged(prev, mergedGasas, 'id_gasa')) return prev;
+          try {
+            localStorage.setItem('gpon_custom_gasas', JSON.stringify(mergedGasas));
+          } catch {}
+          return mergedGasas;
+        });
+      }
     } catch (err) {
       console.warn('Sincronización con backend parcial o en caché offline:', err);
     } finally {
       if (isInitial) setLoading(false);
     }
-  }, [deletedRouteIds, deletedMufaIds, deletedPosteIds]);
+  }, [deletedRouteIds, deletedMufaIds, deletedPosteIds, deletedGasaIds]);
+
 
   // Polling optimizado cada 25 segundos para sincronización multi-dispositivo sin trabar la interfaz
   useEffect(() => {

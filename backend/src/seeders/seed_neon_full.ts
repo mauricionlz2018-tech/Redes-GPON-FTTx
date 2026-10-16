@@ -7,15 +7,18 @@ import {
   InfrastructurePoste,
   InfrastructureMufa,
   InfrastructureRoute,
+  InfrastructureGasa,
   MileageLog
 } from '../models';
 
 import {
   troncalIxtJocRoutes,
   troncalMufas,
+  troncalGasas,
   troncalPostesPropuestos,
   troncalPostesCfe
 } from '../../../frontend/src/data/troncalIxtJocData';
+
 
 import {
   realFiberRoutes,
@@ -181,8 +184,23 @@ export async function populateNeonDatabase() {
   const posteCount = await InfrastructurePoste.count();
   console.log(`\n✔ Postes totales en Neon DB: ${posteCount} postes registrados.`);
 
-  // 5. POBLAR BITÁCORAS DE KILOMETRAJE (mileage_logs)
-  console.log('\n--- 5. Sincronizando Bitácora de Desplazamientos y Kilometraje ---');
+  // 5. POBLAR GASAS DE RESERVA TÉCNICA
+  console.log('\n--- 5. Sincronizando Gasas de Reserva Técnica (Loops de Mantenimiento) ---');
+  for (const gasa of troncalGasas) {
+    await InfrastructureGasa.upsert({
+      id_gasa: gasa.id_gasa,
+      nombre: gasa.nombre,
+      metros_reserva: gasa.metros_reserva || (gasa as any).longitud_metros || 30,
+      longitud_metros: (gasa as any).longitud_metros || gasa.metros_reserva || 30,
+      tipo_cable: gasa.tipo_cable || 'Cable Troncal 48H',
+      coordenadas_gps: gasa.coordenadas_gps
+    });
+  }
+  const gasaCount = await InfrastructureGasa.count();
+  console.log(`✔ Gasas de Reserva en Neon DB: ${gasaCount} registradas.`);
+
+  // 6. POBLAR BITÁCORAS DE KILOMETRAJE (mileage_logs)
+  console.log('\n--- 6. Sincronizando Bitácora de Desplazamientos y Kilometraje ---');
   const sampleMileage = [
     {
       tecnico_nombre: 'Juan Pérez (Técnico Cuadrilla 1)',
@@ -255,8 +273,10 @@ export async function populateNeonDatabase() {
   console.log(`- Líneas Troncales / Ramales: ${routeCount}`);
   console.log(`- Mufas Torpedo: ${mufaCount}`);
   console.log(`- Postes CFE y Propuestos: ${posteCount}`);
+  console.log(`- Gasas de Reserva: ${gasaCount}`);
   console.log(`- Registros de Kilometraje: ${mileageCount}`);
   console.log('========================================\n');
+
 }
 
 if (require.main === module) {
