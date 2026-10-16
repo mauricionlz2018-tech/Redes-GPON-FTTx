@@ -75,8 +75,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         rol: 'Tecnico',
         nombre: 'Juan Pérez (Técnico)',
         passwords: ['admin123', ...(customPass ? [customPass] : [])]
+      },
+      'mauricio.tecnico@gpon.com': {
+        rol: 'Tecnico',
+        nombre: 'Mauricio Nolazco (Técnico Cuadrilla 2)',
+        passwords: ['admin123', ...(customPass ? [customPass] : [])]
+      },
+      'daniel.soporte@gpon.com': {
+        rol: 'Soporte',
+        nombre: 'Ing. Daniel Benítez (Monitoreo NOC)',
+        passwords: ['admin123', ...(customPass ? [customPass] : [])]
       }
     };
+
 
     const account = validAccounts[normalized];
     const isLocalMatch = account && account.passwords.includes(enteredPass);
