@@ -46,6 +46,20 @@ const defaultFallbackUsers: User[] = [
     credencial_acceso: 'tecnico@gpon.com',
     rol: 'Tecnico',
     createdAt: '2026-09-10T11:15:00.000Z'
+  },
+  {
+    id_usuario: 'user-tecnico-2',
+    nombre_completo: 'Mauricio Nolazco (Técnico Cuadrilla 2)',
+    credencial_acceso: 'mauricio.tecnico@gpon.com',
+    rol: 'Tecnico',
+    createdAt: '2026-09-12T10:00:00.000Z'
+  },
+  {
+    id_usuario: 'user-soporte-2',
+    nombre_completo: 'Ing. Daniel Benítez (Monitoreo NOC)',
+    credencial_acceso: 'daniel.soporte@gpon.com',
+    rol: 'Soporte',
+    createdAt: '2026-09-14T14:20:00.000Z'
   }
 ];
 
