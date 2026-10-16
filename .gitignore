@@ -30,3 +30,8 @@ Thumbs.db
 gpon_pgdata/
 docker_gpon_pgdata/
 
+# Scratch & Temporary files
+scratch/
+~$*
+
+

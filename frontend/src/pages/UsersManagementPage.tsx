@@ -63,11 +63,23 @@ const defaultFallbackUsers: User[] = [
   }
 ];
 
+import { subscribeToRealtime } from '../services/realtimeSync';
+
 export const UsersManagementPage: React.FC = () => {
   const { user: currentUser } = useAuth();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Carga instantánea de usuarios desde caché en 0ms
+  const [users, setUsers] = useState<User[]>(() => {
+    try {
+      const saved = localStorage.getItem('gpon_managed_users');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return defaultFallbackUsers;
+  });
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<'Todos' | UserRole>('Todos');
 
@@ -86,8 +98,8 @@ export const UsersManagementPage: React.FC = () => {
     setTimeout(() => setNotice(null), 5000);
   };
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
+  const fetchUsers = useCallback(async (isManual = false) => {
+    if (isManual) setLoading(true);
     try {
       const res = await api.get('/auth/usuarios');
       if (res.data.success && Array.isArray(res.data.data)) {
@@ -95,49 +107,89 @@ export const UsersManagementPage: React.FC = () => {
         try {
           localStorage.setItem('gpon_managed_users', JSON.stringify(res.data.data));
         } catch {}
-      } else {
-        loadFallbackUsers();
       }
     } catch (err) {
-      console.warn('Backend no disponible, cargando usuarios en modo fallback local...');
-      loadFallbackUsers();
+      console.warn('Backend con latencia o fuera de línea, conservando usuarios en caché...');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const loadFallbackUsers = () => {
-    try {
-      const saved = localStorage.getItem('gpon_managed_users');
-      if (saved) {
-        setUsers(JSON.parse(saved));
-      } else {
-        setUsers(defaultFallbackUsers);
-        localStorage.setItem('gpon_managed_users', JSON.stringify(defaultFallbackUsers));
-      }
-    } catch {
-      setUsers(defaultFallbackUsers);
-    }
-  };
-
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(false);
+  }, [fetchUsers]);
+
+  // Suscripción en tiempo real a modificaciones de usuarios
+  useEffect(() => {
+    const unsubscribe = subscribeToRealtime((event) => {
+      if (event.type === 'USER_CREATED') {
+        setUsers((prev) => {
+          const updated = [event.user, ...prev.filter((u) => u.id_usuario !== event.user.id_usuario)];
+          try {
+            localStorage.setItem('gpon_managed_users', JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
+      } else if (event.type === 'USER_UPDATED') {
+        setUsers((prev) => {
+          const updated = prev.map((u) => (u.id_usuario === event.user.id_usuario ? event.user : u));
+          try {
+            localStorage.setItem('gpon_managed_users', JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
+      } else if (event.type === 'USER_DELETED') {
+        setUsers((prev) => {
+          const updated = prev.filter((u) => u.id_usuario !== event.id_usuario);
+          try {
+            localStorage.setItem('gpon_managed_users', JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
+      }
+    });
+
+    const handleFocus = () => {
+      fetchUsers(false);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [fetchUsers]);
 
   const handleUserCreated = (newUser: User) => {
-    setUsers((prev) => [newUser, ...prev]);
+    setUsers((prev) => {
+      const updated = [newUser, ...prev.filter((u) => u.id_usuario !== newUser.id_usuario)];
+      try {
+        localStorage.setItem('gpon_managed_users', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     showNotification('success', `Personal "${newUser.nombre_completo}" registrado correctamente.`);
   };
 
   const handleUserUpdated = (updatedUser: User) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id_usuario === updatedUser.id_usuario ? updatedUser : u))
-    );
+    setUsers((prev) => {
+      const updated = prev.map((u) => (u.id_usuario === updatedUser.id_usuario ? updatedUser : u));
+      try {
+        localStorage.setItem('gpon_managed_users', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     showNotification('success', `Datos de "${updatedUser.nombre_completo}" actualizados con éxito.`);
   };
 
   const handleUserDeleted = (deletedId: string) => {
-    setUsers((prev) => prev.filter((u) => u.id_usuario !== deletedId));
+    setUsers((prev) => {
+      const updated = prev.filter((u) => u.id_usuario !== deletedId);
+      try {
+        localStorage.setItem('gpon_managed_users', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     showNotification('success', 'El usuario fue eliminado del sistema.');
   };
 
@@ -226,7 +278,7 @@ export const UsersManagementPage: React.FC = () => {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={fetchUsers}
+            onClick={() => fetchUsers(true)}
             disabled={loading}
             className="p-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
             title="Recargar lista de usuarios"

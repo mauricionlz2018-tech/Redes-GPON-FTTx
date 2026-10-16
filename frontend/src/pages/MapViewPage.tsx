@@ -56,10 +56,22 @@ import {
 } from '../data/mockGponData';
 import { exportGponNetworkToKmz } from '../utils/kmzExport';
 
+import {
+  getCachedNapsSync,
+  saveCachedNaps,
+  subscribeToRealtime,
+  broadcastRealtimeEvent,
+  haveDeepItemsChanged
+} from '../services/realtimeSync';
+
 export const MapViewPage: React.FC = () => {
-  const [naps, setNaps] = useState<NapBox[]>(mockNaps);
+  // Carga instantánea de NAPs desde caché local en 0ms (Cache-First)
+  const [naps, setNaps] = useState<NapBox[]>(() => getCachedNapsSync());
   const [odf, setOdf] = useState<OdfPanel | null>(mockOdf);
-  const [selectedNap, setSelectedNap] = useState<NapBox | null>(mockNaps[0]);
+  const [selectedNap, setSelectedNap] = useState<NapBox | null>(() => {
+    const cached = getCachedNapsSync();
+    return cached.length > 0 ? cached[0] : mockNaps[0];
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [loading, setLoading] = useState(false);
@@ -304,6 +316,15 @@ export const MapViewPage: React.FC = () => {
     }
   });
 
+  const [deletedNapIds, setDeletedNapIds] = useState<string[]>(() => {
+    try {
+      const s = localStorage.getItem('gpon_deleted_nap_ids');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
 // Helpers para seguimiento de IDs confirmados en la base de datos central (evita re-subir eliminados)
 const getKnownServerIds = (key: string): Set<string> => {
   try {
@@ -401,6 +422,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     } catch (e) {
       console.warn('Ruta guardada localmente; se sincronizará automáticamente:', e);
     }
+    broadcastRealtimeEvent({ type: 'INFRA_CREATED', category: 'route', item: newRoute });
     setFeedbackNotice({
       type: 'success',
       message: `Ruta ${newRoute.subtipo || newRoute.tipo} "${newRoute.nombre}" guardada y sincronizada (${newRoute.distancia_km} km).`
@@ -432,6 +454,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     } catch (e) {
       console.warn('Mufa guardada localmente; se sincronizará automáticamente:', e);
     }
+    broadcastRealtimeEvent({ type: 'INFRA_CREATED', category: 'mufa', item: newMufa });
     setFeedbackNotice({
       type: 'success',
       message: `Mufa "${newMufa.nombre}" instalada y sincronizada (${newMufa.capacidad_hilos} Hilos).`
@@ -463,6 +486,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     } catch (e) {
       console.warn('Poste guardado localmente; se sincronizará automáticamente:', e);
     }
+    broadcastRealtimeEvent({ type: 'INFRA_CREATED', category: 'poste', item: newPoste });
     setFeedbackNotice({
       type: 'success',
       message: `Poste "${newPoste.nombre}" (${newPoste.tipo === 'poste_propuesto' ? 'Propuesto' : 'CFE'}) registrado y sincronizado en todos los dispositivos.`
@@ -494,6 +518,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     } catch (e) {
       console.warn('Gasa guardada localmente; se sincronizará automáticamente:', e);
     }
+    broadcastRealtimeEvent({ type: 'INFRA_CREATED', category: 'gasa', item: newGasa });
     setFeedbackNotice({
       type: 'success',
       message: `Gasa de reserva técnica "${newGasa.nombre}" (${newGasa.longitud_metros || newGasa.metros_reserva || 30}m) registrada exitosamente.`
@@ -502,13 +527,9 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     fetchData(false);
   };
 
-  // Comparador de datos liviano para evitar re-renderizados innecesarios y pausas de recolección de basura
+  // Comparador de datos profundo para detectar cambios reales (puertos, métricas, coordenadas, clientes)
   const haveItemsChanged = <T extends Record<string, any>>(prev: T[], next: T[], idKey: string): boolean => {
-    if (prev.length !== next.length) return true;
-    for (let i = 0; i < prev.length; i++) {
-      if (prev[i][idKey] !== next[i][idKey]) return true;
-    }
-    return false;
+    return haveDeepItemsChanged(prev, next, idKey);
   };
 
   // Cargar NAPs, ODF e Infraestructura (Postes, Mufas, Rutas) sincronizada
@@ -544,18 +565,22 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         })
       ]);
 
-
       if (napsRes.data?.success && Array.isArray(napsRes.data.data) && napsRes.data.data.length > 0) {
         setNaps((prev) => {
-          if (!haveItemsChanged(prev, napsRes.data.data, 'id_nap')) return prev;
-          offlineDb.cached_naps.clear().then(() => offlineDb.cached_naps.bulkAdd(napsRes.data.data)).catch(() => {});
-          return napsRes.data.data;
+          const serverNaps: NapBox[] = napsRes.data.data;
+          const serverIds = new Set(serverNaps.map((n) => n.id_nap));
+          // Preservar NAPs creadas localmente que aún no hayan terminado de subir
+          const localOnly = prev.filter((p) => !serverIds.has(p.id_nap) && !deletedNapIds.includes(p.id_nap));
+          const mergedNaps = [...localOnly, ...serverNaps];
+          if (!haveDeepItemsChanged(prev, mergedNaps, 'id_nap')) return prev;
+          saveCachedNaps(mergedNaps);
+          return mergedNaps;
         });
         setIsDemoMode(false);
       } else {
         const cached = await offlineDb.cached_naps.toArray().catch(() => []);
         if (cached.length > 0) {
-          setNaps((prev) => (haveItemsChanged(prev, cached, 'id_nap') ? cached : prev));
+          setNaps((prev) => (haveDeepItemsChanged(prev, cached, 'id_nap') ? cached : prev));
         }
       }
 
@@ -757,19 +782,101 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     } finally {
       if (isInitial) setLoading(false);
     }
-  }, [deletedRouteIds, deletedMufaIds, deletedPosteIds, deletedGasaIds]);
+  }, [deletedRouteIds, deletedMufaIds, deletedPosteIds, deletedGasaIds, deletedNapIds]);
 
 
-  // Polling optimizado cada 25 segundos para sincronización multi-dispositivo sin trabar la interfaz
+  // Sincronización en tiempo real reactiva y polling optimizado entre pestañas y dispositivos
   useEffect(() => {
-    fetchData(true);
+    fetchData(false);
+
+    // 1. Suscripción instantánea a eventos emitidos en cualquier ventana/pestaña
+    const unsubscribe = subscribeToRealtime((event) => {
+      if (event.type === 'NAP_CREATED') {
+        setNaps((prev) => {
+          const updated = [event.nap, ...prev.filter((n) => n.id_nap !== event.nap.id_nap)];
+          saveCachedNaps(updated);
+          return updated;
+        });
+      } else if (event.type === 'NAP_UPDATED') {
+        setNaps((prev) => {
+          const updated = prev.map((n) => (n.id_nap === event.nap.id_nap ? event.nap : n));
+          saveCachedNaps(updated);
+          return updated;
+        });
+        setSelectedNap((curr) => (curr?.id_nap === event.nap.id_nap ? event.nap : curr));
+      } else if (event.type === 'CLIENT_ASSIGNED') {
+        if (event.nap) {
+          setNaps((prev) => {
+            const updated = prev.map((n) => (n.id_nap === event.nap!.id_nap ? event.nap! : n));
+            saveCachedNaps(updated);
+            return updated;
+          });
+          setSelectedNap((curr) => (curr?.id_nap === event.nap!.id_nap ? event.nap! : curr));
+        }
+      } else if (event.type === 'CLIENT_RELEASED') {
+        setNaps((prev) => {
+          const updated = prev.map((n) => {
+            if (n.id_nap === event.id_nap) {
+              const updatedPorts = (n.puertos || []).map((p) =>
+                p.id_puerto === event.id_puerto ? { ...p, estado: 'Libre' as any, cliente: null } : p
+              );
+              return { ...n, puertos: updatedPorts };
+            }
+            return n;
+          });
+          saveCachedNaps(updated);
+          return updated;
+        });
+        setSelectedNap((curr) => {
+          if (curr?.id_nap === event.id_nap) {
+            const updatedPorts = (curr.puertos || []).map((p) =>
+              p.id_puerto === event.id_puerto ? { ...p, estado: 'Libre' as any, cliente: null } : p
+            );
+            return { ...curr, puertos: updatedPorts };
+          }
+          return curr;
+        });
+      } else if (event.type === 'INFRA_CREATED') {
+        if (event.category === 'poste') {
+          setCustomPostes((prev) => [event.item, ...prev.filter((p) => p.id_poste !== event.item.id_poste)]);
+        } else if (event.category === 'mufa') {
+          setCustomEmpalmes((prev) => [event.item, ...prev.filter((m) => m.id_empalme !== event.item.id_empalme)]);
+        } else if (event.category === 'gasa') {
+          setCustomGasas((prev) => [event.item, ...prev.filter((g) => g.id_gasa !== event.item.id_gasa)]);
+        } else if (event.category === 'route') {
+          setCustomRoutes((prev) => [event.item, ...prev.filter((r) => r.id_ruta !== event.item.id_ruta)]);
+        }
+      } else if (event.type === 'INFRA_DELETED') {
+        if (event.category === 'poste') {
+          setCustomPostes((prev) => prev.filter((p) => p.id_poste !== event.id));
+        } else if (event.category === 'mufa') {
+          setCustomEmpalmes((prev) => prev.filter((m) => m.id_empalme !== event.id));
+        } else if (event.category === 'gasa') {
+          setCustomGasas((prev) => prev.filter((g) => g.id_gasa !== event.id));
+        } else if (event.category === 'route') {
+          setCustomRoutes((prev) => prev.filter((r) => r.id_ruta !== event.id));
+        }
+      }
+    });
+
+    // 2. Refrescar silenciosamente al regresar a la ventana
+    const handleFocus = () => {
+      fetchData(false);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    // 3. Polling activo a 10s cuando la pestaña está visible
     const syncTimer = setInterval(() => {
       if (document.visibilityState === 'visible') {
         fetchData(false);
       }
-    }, 25000);
+    }, 10000);
 
-    return () => clearInterval(syncTimer);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(syncTimer);
+    };
   }, [fetchData]);
 
   const refreshSelectedNap = async () => {
@@ -778,9 +885,11 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       const res = await api.get(`/naps/${selectedNap.id_nap}`);
       if (res.data.success) {
         setSelectedNap(res.data.data);
-        setNaps((prev) =>
-          prev.map((n) => (n.id_nap === selectedNap.id_nap ? res.data.data : n))
-        );
+        setNaps((prev) => {
+          const updated = prev.map((n) => (n.id_nap === selectedNap.id_nap ? res.data.data : n));
+          saveCachedNaps(updated);
+          return updated;
+        });
       }
     } catch (e) {
       console.error('Error refrescando NAP:', e);
@@ -886,8 +995,20 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         console.warn('Error eliminando de Dexie:', dbErr);
       }
 
-      // Actualizar estado en memoria
-      setNaps((prev) => prev.filter((n) => n.id_nap !== targetNap.id_nap && n.identificador !== targetNap.identificador));
+      // Actualizar estado en memoria y caché persistente
+      setNaps((prev) => {
+        const updated = prev.filter((n) => n.id_nap !== targetNap.id_nap && n.identificador !== targetNap.identificador);
+        saveCachedNaps(updated);
+        return updated;
+      });
+      setDeletedNapIds((prev) => {
+        const next = Array.from(new Set([...prev, targetNap.id_nap, targetNap.identificador]));
+        try {
+          localStorage.setItem('gpon_deleted_nap_ids', JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+      broadcastRealtimeEvent({ type: 'NAP_DELETED', id_nap: targetNap.id_nap });
 
       if (selectedNap?.id_nap === targetNap.id_nap || selectedNap?.identificador === targetNap.identificador) {
         setSelectedNap(null);
@@ -936,6 +1057,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           localStorage.setItem('gpon_custom_routes', JSON.stringify(next));
           return next;
         });
+        broadcastRealtimeEvent({ type: 'INFRA_DELETED', category: 'route', id });
         setFeedbackNotice({
           type: 'success',
           message: `Línea/Ruta "${name}" eliminada correctamente de la red.`
@@ -956,6 +1078,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           localStorage.setItem('gpon_custom_empalmes', JSON.stringify(next));
           return next;
         });
+        broadcastRealtimeEvent({ type: 'INFRA_DELETED', category: 'mufa', id });
         setFeedbackNotice({
           type: 'success',
           message: `Cierre de empalme / Mufa "${name}" eliminada correctamente.`
@@ -976,6 +1099,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           localStorage.setItem('gpon_custom_postes', JSON.stringify(next));
           return next;
         });
+        broadcastRealtimeEvent({ type: 'INFRA_DELETED', category: 'poste', id });
         setFeedbackNotice({
           type: 'success',
           message: `Poste de infraestructura "${name}" eliminado correctamente.`
@@ -996,6 +1120,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           localStorage.setItem('gpon_custom_gasas', JSON.stringify(next));
           return next;
         });
+        broadcastRealtimeEvent({ type: 'INFRA_DELETED', category: 'gasa', id });
         setFeedbackNotice({
           type: 'success',
           message: `Gasa de reserva técnica "${name}" eliminada correctamente.`
@@ -1773,7 +1898,11 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           }}
           existingNaps={naps}
           onCreatedSuccess={(newNap) => {
-            setNaps((prev) => [newNap, ...prev.filter((n) => n.id_nap !== newNap.id_nap)]);
+            setNaps((prev) => {
+              const updated = [newNap, ...prev.filter((n) => n.id_nap !== newNap.id_nap)];
+              saveCachedNaps(updated);
+              return updated;
+            });
             setSelectedNap(newNap);
             setTempPlacementPin(null);
             setDroppedCoordinates(null);

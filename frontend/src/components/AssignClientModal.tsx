@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { NapBox, NapPort } from '../types';
+import { NapBox, NapPort, Client } from '../types';
 import { useNetwork } from '../context/NetworkContext';
 import api from '../api/client';
+import { putCachedClientImmediate, putCachedNapImmediate, broadcastRealtimeEvent } from '../services/realtimeSync';
 import { UserCheck, X, WifiOff, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 
 interface AssignClientModalProps {
@@ -53,51 +54,62 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
 
     setLoading(true);
 
+    const newClient: Client = {
+      id_cliente: `cli-${Date.now()}`,
+      numero_cliente: formData.numero_cliente.trim(),
+      nombre_completo: formData.nombre_completo.trim(),
+      id_puerto_nap: port.id_puerto,
+      marca_ont: formData.marca_ont,
+      direccion: formData.direccion.trim(),
+      ont_mac: formData.ont_mac.trim().toUpperCase(),
+      potencia_rx_estimada: Number(formData.potencia_rx_estimada) || -19.5,
+      puerto_nap: {
+        ...port,
+        caja_nap: nap
+      }
+    };
+
+    // Actualización visual y métricas inmediata
+    const previousState = port.estado;
+    port.estado = 'Ocupado';
+    port.cliente = newClient;
+    if (nap.metricas) {
+      nap.metricas.ocupados += 1;
+      if (previousState === 'Reservado' && nap.metricas.reservados) {
+        nap.metricas.reservados = Math.max(0, nap.metricas.reservados - 1);
+      } else {
+        nap.metricas.libres = Math.max(0, nap.metricas.libres - 1);
+      }
+      nap.metricas.porcentajeSaturacion = Math.round((nap.metricas.ocupados / nap.total_puertos) * 100);
+      if (nap.metricas.porcentajeSaturacion >= 100) nap.metricas.estadoSaturacion = 'saturada';
+      else if (nap.metricas.porcentajeSaturacion >= 80) nap.metricas.estadoSaturacion = 'alerta';
+      else nap.metricas.estadoSaturacion = 'disponible';
+    }
+
+    // Persistencia instantánea en caché y transmisión en tiempo real a otras pestañas
+    putCachedClientImmediate(newClient);
+    putCachedNapImmediate(nap);
+    broadcastRealtimeEvent({ type: 'CLIENT_ASSIGNED', client: newClient, nap });
+
     try {
       if (isOnline) {
-        // En línea: ejecutar transacción atómica ACID en backend
+        // En línea: ejecutar transacción atómica en backend
         const response = await api.post('/puertos/asignar', payload);
-        if (response.data.success) {
-          onAssignedSuccess();
-          onClose();
+        if (response.data?.success && response.data?.data) {
+          const serverClient = response.data.data;
+          const mergedClient = { ...newClient, ...serverClient };
+          putCachedClientImmediate(mergedClient);
         }
       } else {
         // Fuera de línea: encolar en Dexie IndexedDB
         await enqueueAssignment(payload);
-        alert(
-          'Operacion guardada en modo OFFLINE. La asignacion del abonado se sincronizara automaticamente cuando el dispositivo recupere conexion a internet.'
-        );
-        onAssignedSuccess();
-        onClose();
       }
     } catch (err: any) {
-      console.warn('Backend no respondió, asignando abonado localmente en Modo Demostración...', err);
-      // Aplicar cambio visual inmediato en el puerto para demostración
-      const previousState = port.estado;
-      port.estado = 'Ocupado';
-      port.cliente = {
-        id_cliente: `cli-${Date.now()}`,
-        numero_cliente: formData.numero_cliente,
-        nombre_completo: formData.nombre_completo,
-        id_puerto_nap: port.id_puerto,
-        marca_ont: formData.marca_ont,
-        direccion: formData.direccion,
-        ont_mac: formData.ont_mac,
-        potencia_rx_estimada: Number(formData.potencia_rx_estimada) || -19.5
-      };
-      if (nap.metricas) {
-        nap.metricas.ocupados += 1;
-        if (previousState === 'Reservado' && nap.metricas.reservados) {
-          nap.metricas.reservados = Math.max(0, nap.metricas.reservados - 1);
-        } else {
-          nap.metricas.libres = Math.max(0, nap.metricas.libres - 1);
-        }
-        nap.metricas.porcentajeSaturacion = Math.round((nap.metricas.ocupados / nap.total_puertos) * 100);
-      }
-      onAssignedSuccess();
-      onClose();
+      console.warn('Backend con latencia o sin conexión, asignación persistida localmente:', err);
     } finally {
       setLoading(false);
+      onAssignedSuccess();
+      onClose();
     }
   };
 

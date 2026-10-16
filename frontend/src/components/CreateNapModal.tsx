@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NapBox, NapPort, NapPortStatus } from '../types';
 import api from '../api/client';
 import { offlineDb } from '../db/offlineDb';
+import { putCachedNapImmediate, broadcastRealtimeEvent } from '../services/realtimeSync';
 import { PlusCircle, MapPin, X, Compass, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface CreateNapModalProps {
@@ -118,11 +119,8 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
       const res = await api.post('/naps', payload);
       if (res.data.success) {
         const createdNap: NapBox = res.data.data;
-        try {
-          await offlineDb.cached_naps.put(createdNap);
-        } catch (dbErr) {
-          console.warn('Error guardando en Dexie cache:', dbErr);
-        }
+        await putCachedNapImmediate(createdNap);
+        broadcastRealtimeEvent({ type: 'NAP_CREATED', nap: createdNap });
         onCreatedSuccess(createdNap);
         onClose();
         return;
@@ -171,12 +169,8 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
         puertos: defaultPorts
       };
 
-      try {
-        await offlineDb.cached_naps.put(localNap);
-      } catch (dbErr) {
-        console.warn('Error guardando en Dexie cache local:', dbErr);
-      }
-
+      await putCachedNapImmediate(localNap);
+      broadcastRealtimeEvent({ type: 'NAP_CREATED', nap: localNap });
       onCreatedSuccess(localNap);
       onClose();
     } finally {

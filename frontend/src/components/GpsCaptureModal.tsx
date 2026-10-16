@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NapBox } from '../types';
 import { useNetwork } from '../context/NetworkContext';
 import api from '../api/client';
+import { putCachedNapImmediate, broadcastRealtimeEvent } from '../services/realtimeSync';
 import { Compass, MapPin, X, Check, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface GpsCaptureModalProps {
@@ -65,19 +66,21 @@ export const GpsCaptureModal: React.FC<GpsCaptureModalProps> = ({
     setErrorMsg(null);
 
     try {
+      nap.coordenadas_gps = { lat: numLat, lng: numLng };
+      await putCachedNapImmediate(nap);
+      broadcastRealtimeEvent({ type: 'NAP_UPDATED', nap });
+
       if (isOnline) {
         await api.patch(`/naps/${nap.id_nap}/gps`, { lat: numLat, lng: numLng });
       } else {
         await enqueueGpsUpdate(nap.id_nap, numLat, numLng);
       }
-      nap.coordenadas_gps = { lat: numLat, lng: numLng };
       onGpsUpdated();
       onClose();
     } catch (err: any) {
-      console.warn('Error en servidor al actualizar GPS, guardando localmente:', err);
+      console.warn('Error en servidor al actualizar GPS, guardado localmente:', err);
       try {
         await enqueueGpsUpdate(nap.id_nap, numLat, numLng);
-        nap.coordenadas_gps = { lat: numLat, lng: numLng };
         onGpsUpdated();
         onClose();
       } catch (offlineErr) {

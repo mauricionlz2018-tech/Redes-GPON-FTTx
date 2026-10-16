@@ -1,56 +1,101 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Client } from '../types';
 import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
+import {
+  getCachedClientsSync,
+  saveCachedClients,
+  subscribeToRealtime
+} from '../services/realtimeSync';
 import { Search, Users, Wifi, Filter, RefreshCw, Server, Edit3, ShieldCheck, X } from 'lucide-react';
 import { EditClientModal } from '../components/EditClientModal';
 import { TablePagination } from '../components/TablePagination';
 
 export const ClientsPage: React.FC = () => {
-  const [clients, setClients] = useState<Client[]>([]);
+  // Carga instantánea de clientes desde caché local en 0ms
+  const [clients, setClients] = useState<Client[]>(() => getCachedClientsSync());
   const [search, setSearch] = useState('');
   const [brandFilter, setBrandFilter] = useState('todas');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => getCachedClientsSync().length === 0);
   const [clientToEdit, setClientToEdit] = useState<Client | null>(null);
 
   // Estados de paginación (20 registros por página por defecto)
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async (isManualRefresh = false) => {
     try {
-      setLoading(true);
+      if (isManualRefresh) setLoading(true);
       const res = await api.get('/clientes');
       if (res.data?.success && Array.isArray(res.data.data)) {
         setClients(res.data.data);
+        saveCachedClients(res.data.data);
       } else {
         throw new Error('Respuesta inválida');
       }
     } catch (e) {
-      console.warn('Backend no disponible, cargando abonados desde mockNaps...');
-      const allMockClients: Client[] = [];
-      mockNaps.forEach((nap) => {
-        (nap.puertos || []).forEach((port) => {
-          if (port.cliente) {
-            allMockClients.push({
-              ...port.cliente,
-              puerto_nap: {
-                ...port,
-                caja_nap: nap
-              }
-            });
-          }
+      console.warn('Backend no disponible, conservando abonados en caché...');
+      if (clients.length === 0) {
+        const allMockClients: Client[] = [];
+        mockNaps.forEach((nap) => {
+          (nap.puertos || []).forEach((port) => {
+            if (port.cliente) {
+              allMockClients.push({
+                ...port.cliente,
+                puerto_nap: {
+                  ...port,
+                  caja_nap: nap
+                }
+              });
+            }
+          });
         });
-      });
-      setClients(allMockClients);
+        setClients(allMockClients);
+        saveCachedClients(allMockClients);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [clients.length]);
 
   useEffect(() => {
-    fetchClients();
-  }, []);
+    fetchClients(false);
+  }, [fetchClients]);
+
+  // Suscripción a eventos en tiempo real (cuando se asigna o edita un cliente en cualquier pestaña)
+  useEffect(() => {
+    const unsubscribe = subscribeToRealtime((event) => {
+      if (event.type === 'CLIENT_ASSIGNED') {
+        setClients((prev) => {
+          const updated = [event.client, ...prev.filter((c) => c.id_cliente !== event.client.id_cliente)];
+          saveCachedClients(updated);
+          return updated;
+        });
+      } else if (event.type === 'CLIENT_UPDATED') {
+        setClients((prev) => {
+          const updated = prev.map((c) => (c.id_cliente === event.client.id_cliente ? event.client : c));
+          saveCachedClients(updated);
+          return updated;
+        });
+      } else if (event.type === 'CLIENT_RELEASED') {
+        setClients((prev) => {
+          const updated = prev.filter((c) => c.id_puerto_nap !== event.id_puerto);
+          saveCachedClients(updated);
+          return updated;
+        });
+      }
+    });
+
+    const handleFocus = () => {
+      fetchClients(false);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchClients]);
 
   // Búsqueda automática e instantánea (0ms de latencia, insensible a mayúsculas y acentos)
   const filteredClients = useMemo(() => {
@@ -106,7 +151,7 @@ export const ClientsPage: React.FC = () => {
             Total activos: <strong className="text-sky-600 dark:text-sky-400">{filteredClients.length}</strong>
           </span>
           <button
-            onClick={fetchClients}
+            onClick={() => fetchClients(true)}
             className="p-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 shadow-sm"
             title="Recargar abonados"
           >

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Client } from '../types';
 import api from '../api/client';
+import { putCachedClientImmediate, broadcastRealtimeEvent } from '../services/realtimeSync';
 import { Edit3, X, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface EditClientModalProps {
@@ -48,24 +49,21 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
       potencia_rx_estimada: Number(formData.potencia_rx_estimada)
     };
 
+    const updatedClient: Client = {
+      ...client,
+      ...payload
+    };
+
+    // Actualización inmediata en caché local y transmisión en tiempo real
+    putCachedClientImmediate(updatedClient);
+    broadcastRealtimeEvent({ type: 'CLIENT_UPDATED', client: updatedClient });
+    onClientUpdated(updatedClient);
+    onClose();
+
     try {
-      const res = await api.put(`/clientes/${client.id_cliente}`, payload);
-      if (res.data.success) {
-        onClientUpdated({
-          ...client,
-          ...payload
-        });
-        onClose();
-      }
+      await api.put(`/clientes/${client.id_cliente}`, payload);
     } catch (err: any) {
-      console.warn('Error al actualizar abonado en backend, aplicando actualizacion en memoria (Modo Demo):', err);
-      // Fallback para modo demostración o cuando el backend está en la nube
-      const updatedClient: Client = {
-        ...client,
-        ...payload
-      };
-      onClientUpdated(updatedClient);
-      onClose();
+      console.warn('Actualización guardada localmente de inmediato:', err);
     } finally {
       setLoading(false);
     }

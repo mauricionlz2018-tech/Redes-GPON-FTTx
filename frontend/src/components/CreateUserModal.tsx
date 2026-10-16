@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../types';
 import api from '../api/client';
+import { broadcastRealtimeEvent } from '../services/realtimeSync';
 import {
   UserPlus,
   X,
@@ -101,11 +102,19 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onUse
 
       if (res.data.success) {
         const createdUser: User = res.data.data;
+        try {
+          const raw = localStorage.getItem('gpon_managed_users');
+          const list: User[] = raw ? JSON.parse(raw) : [];
+          const updated = [createdUser, ...list.filter((u) => u.id_usuario !== createdUser.id_usuario)];
+          localStorage.setItem('gpon_managed_users', JSON.stringify(updated));
+        } catch {}
+
+        broadcastRealtimeEvent({ type: 'USER_CREATED', user: createdUser });
         setSuccessMsg(`¡${createdUser.nombre_completo} fue registrado con éxito!`);
         setTimeout(() => {
           onUserCreated(createdUser);
           onClose();
-        }, 900);
+        }, 500);
       } else {
         setErrorMsg(res.data.message || 'No fue posible registrar al usuario.');
       }
@@ -127,15 +136,16 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onUse
         try {
           const raw = localStorage.getItem('gpon_managed_users');
           const list: User[] = raw ? JSON.parse(raw) : [];
-          list.push(fallbackUser);
-          localStorage.setItem('gpon_managed_users', JSON.stringify(list));
+          const updated = [fallbackUser, ...list];
+          localStorage.setItem('gpon_managed_users', JSON.stringify(updated));
         } catch {}
 
+        broadcastRealtimeEvent({ type: 'USER_CREATED', user: fallbackUser });
         setSuccessMsg(`Usuario ${cleanNombre} guardado en registro.`);
         setTimeout(() => {
           onUserCreated(fallbackUser);
           onClose();
-        }, 900);
+        }, 500);
       }
     } finally {
       setLoading(false);

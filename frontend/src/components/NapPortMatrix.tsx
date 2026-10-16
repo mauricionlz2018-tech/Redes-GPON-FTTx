@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NapBox, NapPort, UserRole, Client } from '../types';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import { putCachedNapImmediate, broadcastRealtimeEvent } from '../services/realtimeSync';
 import {
   Server,
   User,
@@ -63,7 +64,26 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
     try {
       setIsProcessing(true);
       setRbacError(null);
-      await api.delete(`/puertos/${portToRelease.id_puerto}/liberar`);
+
+      // Actualización optimista inmediata en memoria y caché
+      portToRelease.estado = 'Libre';
+      portToRelease.cliente = null;
+      if (nap.metricas) {
+        nap.metricas.ocupados = Math.max(0, nap.metricas.ocupados - 1);
+        nap.metricas.libres = Math.min(nap.total_puertos, nap.metricas.libres + 1);
+        nap.metricas.porcentajeSaturacion = Math.round((nap.metricas.ocupados / nap.total_puertos) * 100);
+        if (nap.metricas.porcentajeSaturacion >= 100) nap.metricas.estadoSaturacion = 'saturada';
+        else if (nap.metricas.porcentajeSaturacion >= 80) nap.metricas.estadoSaturacion = 'alerta';
+        else nap.metricas.estadoSaturacion = 'disponible';
+      }
+
+      await putCachedNapImmediate(nap);
+      broadcastRealtimeEvent({ type: 'CLIENT_RELEASED', id_puerto: portToRelease.id_puerto, id_nap: nap.id_nap });
+
+      await api.delete(`/puertos/${portToRelease.id_puerto}/liberar`).catch((e) => {
+        console.warn('Liberación ejecutada localmente; sincronizando con servidor:', e);
+      });
+
       setActionSuccess(`Puerto #${portToRelease.indice_puerto} liberado exitosamente.`);
       setPortToRelease(null);
       setSelectedPort(null);
@@ -73,14 +93,6 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         setRbacError(error.response.data.message || '403 Forbidden: Sin autorización');
         setPortToRelease(null);
       } else {
-        // Fallback interactivo si el backend no está disponible
-        portToRelease.estado = 'Libre';
-        portToRelease.cliente = null;
-        if (nap.metricas) {
-          nap.metricas.ocupados = Math.max(0, nap.metricas.ocupados - 1);
-          nap.metricas.libres = Math.min(nap.total_puertos, nap.metricas.libres + 1);
-          nap.metricas.porcentajeSaturacion = Math.round((nap.metricas.ocupados / nap.total_puertos) * 100);
-        }
         setActionSuccess(`Puerto #${portToRelease.indice_puerto} liberado exitosamente.`);
         setPortToRelease(null);
         setSelectedPort(null);
