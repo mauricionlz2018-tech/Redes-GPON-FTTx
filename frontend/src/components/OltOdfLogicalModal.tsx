@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   X,
   Server,
@@ -230,54 +230,93 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
     });
   }, []);
 
-  // CÁLCULO MATEMÁTICO EXACTO DE PRESUPUESTO ÓPTICO PARA LA NAP SELECCIONADA
+  // CÁLCULO MATEMÁTICO BIDIRECCIONAL DE PRESUPUESTO ÓPTICO (ITU-T G.984.2 CLASE C+)
   const opticalBudgetForTargetNap = useMemo(() => {
-    const tx = assignedPonForTargetNap.txPower; // Potencia Tx OLT (+4.50 a +4.95 dBm)
-    const lossOdf = 0.35; // Conector ODF SC/APC
+    // 1. Pérdidas por Elementos Pasivos Fijos (Splitters PLC)
     const lossSplitter1 = 10.50; // Splitter 1:8 primario en Mufa
     const lossSplitter2 = 13.80; // Splitter 1:16 secundario en NAP
-    const alphaFibra = 0.25; // dB/km a 1490 nm (ITU-T G.652D)
-    const lossFibra = Number((realDistanceKm * alphaFibra).toFixed(2));
-    const lossFusiones = 0.40; // 4 fusiones de arco x 0.1 dB (ODF, entrada mufa, salida mufa, entrada NAP)
-    const lossConectores = 1.05; // 3 conectores x 0.35 dB (SFP OLT, salida ODF, entrada ONT)
+    const lossSplitters = Number((lossSplitter1 + lossSplitter2).toFixed(2)); // 24.30 dB
 
-    // Atenuación Total Exacta: suma de todas las pérdidas del trayecto
-    const atenuacionTotal = Number(
-      (lossOdf + lossSplitter1 + lossSplitter2 + lossFibra + lossFusiones + lossConectores).toFixed(2)
+    // 2. Conectores: 4 pares acoplados SC/APC (Patchcord OLT, ODF front, NAP input, ONT drop) x 0.35 dB
+    const numConectores = 4;
+    const lossConectores = Number((numConectores * 0.35).toFixed(2)); // 1.40 dB
+
+    // 3. Fusiones Térmicas de Arco: N empalmes x 0.10 dB (variable según mufas del tramo)
+    const numFusiones = realDistanceKm > 5.0 ? 5 : realDistanceKm > 2.5 ? 4 : 3;
+    const lossFusiones = Number((numFusiones * 0.10).toFixed(2)); // 0.30 a 0.50 dB (múltiplo exacto de 0.10 dB)
+
+    // 4. Trayecto Bajada / Downstream (1490 nm, fibra G.652D @ 0.25 dB/km)
+    const alphaFibraDown = 0.25;
+    const lossFibraDown = Number((realDistanceKm * alphaFibraDown).toFixed(2));
+    const atenuacionTotalDown = Number(
+      (lossSplitters + lossConectores + lossFusiones + lossFibraDown).toFixed(2)
     );
+    const txDown = assignedPonForTargetNap.txPower; // OLT Tx (+4.50 a +4.95 dBm)
+    const rxDown = Number((txDown - atenuacionTotalDown).toFixed(2));
+    const sensibilidadOntClaseC = -30.00; // Sensibilidad ONT GPON Clase C+
+    const margenDown = Number((rxDown - sensibilidadOntClaseC).toFixed(2));
 
-    // Potencia Rx Exacta recibida en el detector de la ONT: Rx = Tx - AtenuaciónTotal
-    const rxEsperada = Number((tx - atenuacionTotal).toFixed(2));
+    // 5. Trayecto Subida / Upstream (1310 nm, fibra G.652D @ 0.35 dB/km)
+    const alphaFibraUp = 0.35;
+    const lossFibraUp = Number((realDistanceKm * alphaFibraUp).toFixed(2));
+    const atenuacionTotalUp = Number(
+      (lossSplitters + lossConectores + lossFusiones + lossFibraUp).toFixed(2)
+    );
+    const txUp = 2.50; // Potencia Tx ONT típica (+0.5 a +5.0 dBm)
+    const rxUp = Number((txUp - atenuacionTotalUp).toFixed(2));
+    const sensibilidadOltClaseC = -32.00; // Sensibilidad OLT GPON Clase C+
+    const margenUp = Number((rxUp - sensibilidadOltClaseC).toFixed(2));
 
-    // Sensibilidad mínima ONT (ITU-T G.984.2 Clase B+)
-    const sensibilidadMinima = -27.00;
-    const margenSeguridad = Number((rxEsperada - sensibilidadMinima).toFixed(2));
+    // 6. Peor caso para el veredicto del enlace (Worst-case)
+    const peorAtenuacion = Math.max(atenuacionTotalDown, atenuacionTotalUp);
+    const peorMargen = Math.min(margenDown, margenUp);
 
+    // Semáforo de 3 niveles según ingeniería óptica:
+    // Verde (Óptimo): margen >= 5.0 dB
+    // Ámbar (Aceptable / Alerta de Margen): margen entre 3.0 y 4.99 dB
+    // Rojo (Crítico): margen < 3.0 dB
     const estado: 'Optimo' | 'Aceptable' | 'Critico' =
-      rxEsperada >= -24.0 ? 'Optimo' : rxEsperada >= -27.0 ? 'Aceptable' : 'Critico';
+      peorMargen >= 5.0 ? 'Optimo' : peorMargen >= 3.0 ? 'Aceptable' : 'Critico';
 
     return {
-      tx,
-      lossOdf,
+      txDown,
+      txUp,
       lossSplitter1,
       lossSplitter2,
-      lossFibra,
-      lossFusiones,
+      lossSplitters,
+      numConectores,
       lossConectores,
-      atenuacionTotal,
-      rxEsperada,
-      sensibilidadMinima,
-      margenSeguridad,
+      numFusiones,
+      lossFusiones,
+      lossFibraDown,
+      lossFibraUp,
+      atenuacionTotalDown,
+      atenuacionTotalUp,
+      rxDown,
+      rxUp,
+      sensibilidadOntClaseC,
+      sensibilidadOltClaseC,
+      margenDown,
+      margenUp,
+      peorAtenuacion,
+      peorMargen,
       estado
     };
   }, [assignedPonForTargetNap, realDistanceKm]);
 
   // Estados interactivos para la Pestaña 4 (Calculadora / Simulador de Presupuesto)
-  const [simDistanceKm, setSimDistanceKm] = useState<number>(2.8);
+  const [simDistanceKm, setSimDistanceKm] = useState<number>(() => realDistanceKm || 2.8);
   const [simTxPower, setSimTxPower] = useState<number>(4.5);
   const [simSplit1, setSimSplit1] = useState<'1:2' | '1:4' | '1:8' | 'directo'>('1:8');
   const [simSplit2, setSimSplit2] = useState<'1:8' | '1:16' | '1:32'>('1:16');
   const [simFusions, setSimFusions] = useState<number>(4);
+
+  // Sincronizar automáticamente la distancia del simulador con la NAP seleccionada
+  useEffect(() => {
+    if (realDistanceKm > 0) {
+      setSimDistanceKm(realDistanceKm);
+    }
+  }, [realDistanceKm]);
 
   const splitLossTable: Record<string, number> = {
     '1:2': 3.70,
@@ -291,21 +330,41 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
   const calculatedSimBudget = useMemo(() => {
     const lSp1 = splitLossTable[simSplit1] ?? 10.50;
     const lSp2 = splitLossTable[simSplit2] ?? 13.80;
-    const lFibra = Number((simDistanceKm * 0.25).toFixed(2));
+    const lSplitters = Number((lSp1 + lSp2).toFixed(2));
+    const numCon = 4;
+    const lCon = Number((numCon * 0.35).toFixed(2)); // 1.40 dB
     const lFus = Number((simFusions * 0.10).toFixed(2));
-    const lCon = 1.05; // 3 conectores SC/APC x 0.35 dB
-    const lOdf = 0.35;
 
-    const totalAtenuacion = Number((lOdf + lSp1 + lSp2 + lFibra + lFus + lCon).toFixed(2));
-    const rx = Number((simTxPower - totalAtenuacion).toFixed(2));
-    const margen = Number((rx - (-27.00)).toFixed(2));
+    // Bajada (1490 nm)
+    const lFibraDown = Number((simDistanceKm * 0.25).toFixed(2));
+    const atenuacionDown = Number((lSplitters + lCon + lFus + lFibraDown).toFixed(2));
+    const rxDown = Number((simTxPower - atenuacionDown).toFixed(2));
+    const margenDown = Number((rxDown - (-30.00)).toFixed(2));
+
+    // Subida (1310 nm)
+    const lFibraUp = Number((simDistanceKm * 0.35).toFixed(2));
+    const atenuacionUp = Number((lSplitters + lCon + lFus + lFibraUp).toFixed(2));
+    const rxUp = Number((2.50 - atenuacionUp).toFixed(2));
+    const margenUp = Number((rxUp - (-32.00)).toFixed(2));
+
+    const peorMargen = Math.min(margenDown, margenUp);
+    const estado: 'Optimo' | 'Aceptable' | 'Critico' =
+      peorMargen >= 5.0 ? 'Optimo' : peorMargen >= 3.0 ? 'Aceptable' : 'Critico';
 
     return {
-      totalAtenuacion,
-      rx,
-      margen,
-      perdidaFibra: lFibra,
-      estado: rx >= -24.0 ? 'Optimo' : rx >= -27.0 ? 'Aceptable' : 'Critico'
+      lSplitters,
+      lCon,
+      lFus,
+      lFibraDown,
+      lFibraUp,
+      atenuacionDown,
+      atenuacionUp,
+      rxDown,
+      rxUp,
+      margenDown,
+      margenUp,
+      peorMargen,
+      estado
     };
   }, [simDistanceKm, simTxPower, simSplit1, simSplit2, simFusions]);
 
@@ -327,7 +386,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                   {odf?.nombre || 'Arquitectura Lógica OLT / ODF'}
                 </h2>
                 <span className="text-[10px] sm:text-[11px] font-semibold bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800 shrink-0">
-                  GPON ITU-T G.984.2 / Clase B+
+                  GPON ITU-T G.984.2 / Clase C+ (ODN 17-32 dB)
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">
@@ -500,7 +559,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                       Hilo: <strong className="text-sky-600 dark:text-sky-300">#{assignedPonForTargetNap.odfHiloNumber} ({assignedPonForTargetNap.odfColorName})</strong>
                     </div>
                     <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono pt-1 border-t border-slate-100 dark:border-slate-700/60">
-                      Pérdida Conector: -{opticalBudgetForTargetNap.lossOdf} dB
+                      Conector ODF: -0.35 dB SC/APC
                     </div>
                   </div>
 
@@ -522,7 +581,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                       Troncal 48H (Km {assignedPonForTargetNap.kmMufa})
                     </div>
                     <div className="text-[10px] text-amber-600 dark:text-amber-400 font-mono font-bold pt-1 border-t border-slate-100 dark:border-slate-700/60">
-                      Pérdida Splitter: -{opticalBudgetForTargetNap.lossSplitter1} dB
+                      Splitter 1:8: -{opticalBudgetForTargetNap.lossSplitter1} dB
                     </div>
                   </div>
 
@@ -541,10 +600,10 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                       {targetNap?.direccion_texto || 'Poste CFE'}
                     </div>
                     <div className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Fibra: {realDistanceKm} km (-{opticalBudgetForTargetNap.lossFibra} dB)
+                      Fibra: {realDistanceKm} km (-{opticalBudgetForTargetNap.lossFibraDown} dB @ 1490nm)
                     </div>
                     <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-bold pt-1 border-t border-slate-100 dark:border-slate-700/60">
-                      Pérdida Splitter: -{opticalBudgetForTargetNap.lossSplitter2} dB
+                      Splitter 1:16: -{opticalBudgetForTargetNap.lossSplitter2} dB
                     </div>
                   </div>
 
@@ -566,25 +625,47 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                       Saturación: <strong>{targetNap?.metricas?.porcentajeSaturacion || 88}%</strong>
                     </div>
                     <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-bold pt-1 border-t border-slate-100 dark:border-slate-700/60">
-                      Rx: {opticalBudgetForTargetNap.rxEsperada} dBm (Margen: +{opticalBudgetForTargetNap.margenSeguridad} dB)
+                      Rx Bajada: {opticalBudgetForTargetNap.rxDown} dBm (Margen: +{opticalBudgetForTargetNap.margenDown} dB)
                     </div>
                   </div>
                 </div>
 
-                {/* Resumen Matemático del Presupuesto Óptico Verificable */}
-                <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-300 shadow-xs">
-                  <div className="space-y-0.5">
-                    <span className="block text-[11px] font-mono text-slate-500">
-                      Fórmula: Rx = Tx (+{opticalBudgetForTargetNap.tx}) - ODF (0.35) - Mufa1:8 (10.50) - NAP1:16 (13.80) - Fibra ({opticalBudgetForTargetNap.lossFibra}) - Empalmes (1.45) = <strong className="text-slate-900 dark:text-white">{opticalBudgetForTargetNap.rxEsperada} dBm</strong>
-                    </span>
-                    <span className="block text-slate-600 dark:text-slate-400 text-[11px]">
-                      Factor de División Cascada: <strong>1:8 &times; 1:16 = 1:128 Máx (Operando a 1:64)</strong>
+                {/* Resumen Matemático del Presupuesto Óptico Bidireccional */}
+                <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs text-slate-700 dark:text-slate-300 shadow-xs">
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <div className="text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                      <span className="font-bold text-sky-700 dark:text-sky-400">Bajada (1490 nm):</span> Rx = Tx (+{opticalBudgetForTargetNap.txDown.toFixed(2)}) − Splitters ({opticalBudgetForTargetNap.lossSplitters.toFixed(2)} dB) − 4x Conectores ({opticalBudgetForTargetNap.lossConectores.toFixed(2)} dB) − {opticalBudgetForTargetNap.numFusiones}x Fusiones ({opticalBudgetForTargetNap.lossFusiones.toFixed(2)} dB) − Fibra {realDistanceKm} km ({opticalBudgetForTargetNap.lossFibraDown.toFixed(2)} dB) = <strong className="text-slate-900 dark:text-white">{opticalBudgetForTargetNap.rxDown.toFixed(2)} dBm</strong> (Margen: +{opticalBudgetForTargetNap.margenDown.toFixed(2)} dB)
+                    </div>
+                    <div className="text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                      <span className="font-bold text-indigo-700 dark:text-indigo-400">Subida (1310 nm):</span> Rx = Tx ONT (+{opticalBudgetForTargetNap.txUp.toFixed(2)}) − Atenuación ({opticalBudgetForTargetNap.atenuacionTotalUp.toFixed(2)} dB @ 0.35 dB/km) = <strong className="text-slate-900 dark:text-white">{opticalBudgetForTargetNap.rxUp.toFixed(2)} dBm</strong> (Margen OLT: +{opticalBudgetForTargetNap.margenUp.toFixed(2)} dB)
+                    </div>
+                    <div className="text-slate-500 dark:text-slate-400 text-[11px]">
+                      Topología ODN: <strong>División en Cascada 1:8 &times; 1:16 = 1:128 Máx. por Puerto PON</strong> &bull; Transceptores SFP GPON Clase C+ (Presupuesto ODN: 17 a 32 dB)
+                    </div>
+                  </div>
+
+                  <div
+                    className={`px-3 py-2 rounded-xl border flex items-center gap-2 font-bold text-xs shrink-0 ${
+                      opticalBudgetForTargetNap.estado === 'Optimo'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+                        : opticalBudgetForTargetNap.estado === 'Aceptable'
+                        ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300'
+                        : 'bg-red-50 dark:bg-red-950/60 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300'
+                    }`}
+                  >
+                    {opticalBudgetForTargetNap.estado === 'Optimo' ? (
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                    )}
+                    <span>
+                      {opticalBudgetForTargetNap.estado === 'Optimo'
+                        ? 'Enlace Óptico Óptimo (Margen ≥ 5.0 dB)'
+                        : opticalBudgetForTargetNap.estado === 'Aceptable'
+                        ? 'Alerta de Margen (3.0 a 4.9 dB)'
+                        : 'Enlace Crítico (< 3.0 dB)'}
                     </span>
                   </div>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 shrink-0 text-xs">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    Enlace Óptico en Rango Conforme ITU-T
-                  </span>
                 </div>
               </div>
             </div>
@@ -603,7 +684,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                     Diferenciación de Capa Activa (OLT) vs Pasiva (ODF)
                   </div>
                   <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-[11px] sm:text-xs">
-                    La <strong>OLT (Optical Line Terminal)</strong> es el equipo activo de conmutación electrónica que emite luz láser modulada mediante transceptores SFP+ Clase B+ (+4.50 a +4.95 dBm). Cada puerto PON alimenta una red óptica pasiva mediante splitteo jerárquico 1:128 (1:8 troncal + 1:16 en NAP). El <strong>ODF</strong> organiza y fusiona físicamente estos hilos hacia la planta externa.
+                    La <strong>OLT (Optical Line Terminal)</strong> es el equipo activo de conmutación electrónica que emite luz láser modulada mediante transceptores SFP GPON Clase C+ (+4.50 a +5.00 dBm). Cada puerto PON alimenta una red óptica pasiva mediante splitteo jerárquico 1:128 (1:8 troncal + 1:16 en NAP). El <strong>ODF</strong> organiza y fusiona físicamente estos hilos hacia la planta externa.
                   </p>
                 </div>
               </div>
@@ -616,7 +697,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                 </div>
                 <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 dark:text-slate-400 text-[11px] block">Tarjeta GPON (Slot 1)</span>
-                  <span className="font-bold text-slate-900 dark:text-white">GPFD 16 Puertos SFP+</span>
+                  <span className="font-bold text-slate-900 dark:text-white">GPFD 16 Puertos SFP GPON</span>
                 </div>
                 <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 dark:text-slate-400 text-[11px] block">Límite Físico de División</span>
@@ -635,7 +716,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <Radio className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
-                    <span>Puertos GPON SFP+ (Tarjeta Slot 1) - Capacidad 128 ONTs/PON</span>
+                    <span>Puertos GPON SFP (Tarjeta Slot 1) - Capacidad 128 ONTs/PON</span>
                   </h3>
                   <span className="text-[11px] text-slate-500 hidden sm:inline">Selecciona un puerto PON para ver su carga</span>
                 </div>
@@ -817,10 +898,10 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
               <div className="bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs space-y-2">
                 <div className="font-semibold text-sky-700 dark:text-sky-400 flex items-center gap-2">
                   <Activity className="w-4 h-4 shrink-0" />
-                  <span>Fórmula Oficial de Presupuesto Óptico (Norma ITU-T G.984.2):</span>
+                  <span>Cálculo de Presupuesto de Enlace Óptico (Valores de Diseño) - Clases según ITU-T G.984.2:</span>
                 </div>
                 <div className="font-mono bg-white dark:bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-center overflow-x-auto text-[11px] sm:text-xs">
-                  Atenuación Total = (Distancia &times; 0.25 dB/km) + (Fusiones &times; 0.1 dB) + (Conectores &times; 0.35 dB) + Loss_Splitter1 + Loss_Splitter2
+                  Atenuación Total = (Distancia &times; Coef. Fibra [0.25 / 0.35 dB/km]) + (Fusiones &times; 0.10 dB) + (4 Conectores &times; 0.35 dB) + Pérdida Splitters
                 </div>
               </div>
 
@@ -876,7 +957,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                     <option value="1:16">Splitter 1:16 (Pérdida 13.80 dB)</option>
                     <option value="1:32">Splitter 1:32 (Pérdida 17.10 dB)</option>
                   </select>
-                  <span className="text-[11px] text-slate-500 block">Distribución de 16 puertos por caja NAP</span>
+                  <span className="text-[11px] text-slate-500 block">Distribución de puertos por caja NAP</span>
                 </div>
               </div>
 
@@ -887,27 +968,31 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                   <span className="text-base font-black text-slate-900 dark:text-white">
                     +{simTxPower.toFixed(2)} dBm
                   </span>
+                  <span className="text-[10px] text-slate-400 block font-mono">Clase C+ GPON</span>
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 text-[11px] block">Pérdida Fibra ({simDistanceKm} km):</span>
                   <span className="text-base font-black text-slate-900 dark:text-white">
-                    {calculatedSimBudget.perdidaFibra} dB
+                    {calculatedSimBudget.lFibraDown} dB
                   </span>
+                  <span className="text-[10px] text-slate-400 block font-mono">1490nm (Subida: {calculatedSimBudget.lFibraUp} dB)</span>
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 text-[11px] block">Atenuación Total:</span>
                   <span className="text-base font-black text-rose-600 dark:text-rose-400">
-                    {calculatedSimBudget.totalAtenuacion} dB
+                    {calculatedSimBudget.atenuacionDown} dB
                   </span>
+                  <span className="text-[10px] text-slate-400 block font-mono">Subida: {calculatedSimBudget.atenuacionUp} dB</span>
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 text-[11px] block">Potencia Rx (ONT):</span>
                   <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                    {calculatedSimBudget.rx} dBm
+                    {calculatedSimBudget.rxDown} dBm
                   </span>
+                  <span className="text-[10px] text-slate-400 block font-mono">Rx OLT: {calculatedSimBudget.rxUp} dBm</span>
                 </div>
               </div>
 
@@ -917,22 +1002,32 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                   calculatedSimBudget.estado === 'Optimo'
                     ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
                     : calculatedSimBudget.estado === 'Aceptable'
-                    ? 'bg-yellow-50 dark:bg-yellow-950/40 border-yellow-200 dark:border-yellow-800 text-yellow-900 dark:text-yellow-200'
+                    ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200'
                     : 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800 text-red-900 dark:text-red-200'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  {calculatedSimBudget.estado === 'Optimo' ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  )}
                   <div>
-                    <span className="font-bold">Veredicto del Enlace: {calculatedSimBudget.estado} (Rango Conforme ITU-T)</span>
+                    <span className="font-bold">
+                      {calculatedSimBudget.estado === 'Optimo'
+                        ? 'Veredicto del Enlace: Óptimo (Margen ≥ 5.0 dB Conforme)'
+                        : calculatedSimBudget.estado === 'Aceptable'
+                        ? 'Veredicto del Enlace: Aceptable / Alerta de Margen (3.0 a 4.9 dB)'
+                        : 'Veredicto del Enlace: Crítico / Requiere Optimización (< 3.0 dB)'}
+                    </span>
                     <span className="block text-[11px] opacity-80">
-                      Sensibilidad ONT: -27.00 dBm | Margen Dinámico: +{calculatedSimBudget.margen} dB
+                      Sensibilidad ONT: -30.00 dBm (Clase C+) | Margen Bajada: +{calculatedSimBudget.margenDown} dB | Margen Subida: +{calculatedSimBudget.margenUp} dB
                     </span>
                   </div>
                 </div>
 
                 <span className="self-start sm:self-auto px-2.5 py-1 bg-white dark:bg-slate-800 rounded-lg font-mono font-bold text-xs shadow-xs border border-slate-200 dark:border-slate-700">
-                  +{calculatedSimBudget.margen} dB Margen
+                  +{calculatedSimBudget.peorMargen} dB Margen Crítico
                 </span>
               </div>
             </div>

@@ -109,7 +109,7 @@ export function calculateOpticalPowerBudget(params: {
     splitter1Ratio = '1:8',
     splitter2Ratio = '1:16',
     numFusiones = 4, // Típico: Salida ODF, Mufa 1, Mufa 2, Entrada NAP
-    numConectores = 4, // OLT SFP+, ODF front, NAP input, ONT SC/APC
+    numConectores = 4, // OLT SFP, ODF front, NAP input, ONT SC/APC
     potenciaTxDbm = 3.5, // Emisor OLT SFP Clase B+ típico (+1.5 a +5 dBm)
     longitudOnda = '1490'
   } = params;
