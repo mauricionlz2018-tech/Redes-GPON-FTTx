@@ -720,13 +720,9 @@ export const GponMap: React.FC<GponMapProps> = ({
       }
     });
     troncalMufas.forEach((tm) => {
-      if (!combined.some((c) => c.id_empalme === tm.id_empalme)) {
+      const key = (tm.nombre || tm.id_empalme).toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!combined.some((c) => (c.nombre || c.id_empalme).toLowerCase().replace(/[^a-z0-9]/g, '') === key)) {
         combined.push(tm);
-      }
-    });
-    mockEmpalmes.forEach((me) => {
-      if (!combined.some((c) => c.id_empalme === me.id_empalme)) {
-        combined.push(me);
       }
     });
     return combined.filter((m) => {

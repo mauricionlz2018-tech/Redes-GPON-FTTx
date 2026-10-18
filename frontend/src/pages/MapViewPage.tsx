@@ -71,8 +71,18 @@ import {
 } from '../services/realtimeSync';
 
 export const MapViewPage: React.FC = () => {
-  // Carga instantánea de NAPs desde caché local en 0ms (Cache-First)
-  const [naps, setNaps] = useState<NapBox[]>(() => getCachedNapsSync());
+  // Carga instantánea de NAPs desde caché local en 0ms (Deduplicación estricta para garantizar 26 NAPs exactas)
+  const [naps, setNaps] = useState<NapBox[]>(() => {
+    const cached = getCachedNapsSync();
+    const seen = new Set<string>();
+    const unique = cached.filter((n) => {
+      const key = (n.identificador || n.id_nap).toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    return unique.length > 0 ? unique : mockNaps;
+  });
   const [odf, setOdf] = useState<OdfPanel | null>(mockOdf);
   const [selectedNap, setSelectedNap] = useState<NapBox | null>(() => {
     const cached = getCachedNapsSync();
@@ -597,10 +607,17 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       if (napsRes.data?.success && Array.isArray(napsRes.data.data) && napsRes.data.data.length > 0) {
         setNaps((prev) => {
           const serverNaps: NapBox[] = napsRes.data.data;
-          const serverIds = new Set(serverNaps.map((n) => n.id_nap));
-          // Preservar NAPs creadas localmente que aún no hayan terminado de subir
-          const localOnly = prev.filter((p) => !serverIds.has(p.id_nap) && !deletedNapIds.includes(p.id_nap));
-          const mergedNaps = [...localOnly, ...serverNaps];
+          const serverIds = new Set(serverNaps.map((n) => n.id_nap.toLowerCase()));
+          const serverIdents = new Set(serverNaps.map((n) => (n.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, '')));
+          
+          // Preservar únicamente NAPs creadas fuera de línea con prefijo local-
+          const localOnly = prev.filter((p) => 
+            p.id_nap.startsWith('local-') && 
+            !serverIds.has(p.id_nap.toLowerCase()) && 
+            !serverIdents.has((p.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, '')) &&
+            !deletedNapIds.includes(p.id_nap)
+          );
+          const mergedNaps = [...serverNaps, ...localOnly];
           if (!haveDeepItemsChanged(prev, mergedNaps, 'id_nap')) return prev;
           saveCachedNaps(mergedNaps);
           return mergedNaps;
@@ -2019,7 +2036,16 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         isOpen={isLegendModalOpen}
         onClose={() => setIsLegendModalOpen(false)}
         activeRoutes={[...troncalIxtJocRoutes, ...customRoutes].filter((r) => !deletedRouteIds.includes(r.id_ruta))}
-        activeEmpalmes={[...troncalMufas, ...customEmpalmes].filter((m) => !deletedMufaIds.includes(m.id_empalme))}
+        activeEmpalmes={(() => {
+          const seen = new Set<string>();
+          return [...customEmpalmes, ...troncalMufas].filter((m) => {
+            if (deletedMufaIds.includes(m.id_empalme)) return false;
+            const key = (m.nombre || m.id_empalme).toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+        })()}
       />
 
       {/* Modal de Arquitectura Lógica GPON: Chasis OLT Activo, Puertos PON, Distribuidor ODF, Trazabilidad y Atenuación */}
