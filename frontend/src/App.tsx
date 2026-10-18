@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { NetworkProvider } from './context/NetworkContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/Navbar';
-import { DemoRoleBar } from './components/DemoRoleBar';
 import { LoginPage } from './pages/LoginPage';
 import { MapViewPage } from './pages/MapViewPage';
 import { ClientsPage } from './pages/ClientsPage';
@@ -46,8 +45,6 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 flex flex-col w-full overflow-x-hidden">
-      {/* Barra de prueba de roles para evaluación de RBAC con botón de aviso de datos */}
-      <DemoRoleBar onOpenDisclaimer={() => setShowDisclaimer(true)} />
       <Navbar />
       <main className="flex-1 pb-20 sm:pb-8 w-full max-w-full overflow-x-hidden">{children}</main>
       {/* Modal de Aviso de Privacidad y Entorno de Pruebas */}

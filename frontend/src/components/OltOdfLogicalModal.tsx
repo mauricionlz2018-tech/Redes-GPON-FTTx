@@ -12,7 +12,8 @@ import {
   Radio,
   Info,
   Sliders,
-  Gauge
+  Gauge,
+  MapPin
 } from 'lucide-react';
 import { OdfPanel, NapBox, FiberRoute } from '../types';
 import { calculateOpticalPowerBudget, SPLITTER_PLC_LOSS_DB } from '../utils/geoUtils';
@@ -34,7 +35,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
   routes = [],
   onSelectNapOnMap
 }) => {
-  const [activeTab, setActiveTab] = useState<'olt' | 'odf' | 'trace' | 'budget'>('trace');
+  const [activeTab, setActiveTab] = useState<'trace' | 'olt' | 'odf' | 'budget'>('trace');
   const [selectedPonIndex, setSelectedPonIndex] = useState<number>(0);
   const [selectedNapId, setSelectedNapId] = useState<string>(naps[0]?.id_nap || '');
   const [budgetDistanceKm, setBudgetDistanceKm] = useState<number>(2.4);
@@ -166,25 +167,25 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
-      <div className="relative w-full max-w-5xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden my-auto text-slate-900 dark:text-white flex flex-col max-h-[90vh] transition-colors">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+      <div className="relative w-full max-w-5xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden my-auto text-slate-900 dark:text-white flex flex-col max-h-[92vh] transition-colors">
         
-        {/* Cabecera del Modal con estilo idéntico a FiberDesignLegendModal */}
-        <div className="bg-slate-100 dark:bg-slate-800 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
+        {/* Cabecera del Modal con estilo uniforme del sistema */}
+        <div className="bg-slate-100 dark:bg-slate-800 px-3.5 sm:px-6 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
             <div className="p-2 bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-xl shrink-0">
-              <Server className="w-5 h-5" />
+              <Server className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <h2 className="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white truncate">
                   {odf?.nombre || 'Arquitectura Lógica OLT / ODF'}
                 </h2>
-                <span className="text-[11px] font-semibold bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800 hidden sm:inline">
-                  Estándar GPON ITU-T G.984.2
+                <span className="text-[10px] sm:text-[11px] font-semibold bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800 shrink-0">
+                  GPON ITU-T G.984
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">
                 {odf?.ubicacion_central || 'Centro de Operaciones de Red (NOC) - San José del Rincón'}
               </p>
             </div>
@@ -192,37 +193,37 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer shrink-0"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer shrink-0 ml-2"
             title="Cerrar ventana"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Barra de Pestañas con estilo limpio y armónico */}
-        <div className="bg-slate-50 dark:bg-slate-900/60 px-4 sm:px-6 py-2.5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0">
+        {/* Barra de Pestañas táctil y adaptativa para móviles */}
+        <div className="bg-slate-50 dark:bg-slate-900/60 px-3 sm:px-6 py-2 border-b border-slate-200 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0">
           <button
             onClick={() => setActiveTab('trace')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'trace'
                 ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-slate-200 dark:border-slate-700 shadow-xs font-bold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'
             }`}
           >
-            <GitBranch className="w-3.5 h-3.5" />
-            <span>1. Trazabilidad Extremo a Extremo</span>
+            <GitBranch className="w-3.5 h-3.5 shrink-0" />
+            <span>1. Trazabilidad de Ruta</span>
           </button>
 
           <button
             onClick={() => setActiveTab('olt')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'olt'
                 ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-slate-200 dark:border-slate-700 shadow-xs font-bold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'
             }`}
           >
-            <Cpu className="w-3.5 h-3.5" />
-            <span>2. OLT Activa & Puertos PON</span>
+            <Cpu className="w-3.5 h-3.5 shrink-0" />
+            <span>2. Chasis OLT & PON</span>
             <span className="text-[10px] bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 px-1.5 py-0.2 rounded-full font-mono">
               16
             </span>
@@ -230,14 +231,14 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
 
           <button
             onClick={() => setActiveTab('odf')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'odf'
                 ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-slate-200 dark:border-slate-700 shadow-xs font-bold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span>3. Distribuidor Pasivo ODF</span>
+            <Layers className="w-3.5 h-3.5 shrink-0" />
+            <span>3. Distribuidor ODF</span>
             <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.2 rounded-full font-mono">
               48H
             </span>
@@ -245,42 +246,43 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
 
           <button
             onClick={() => setActiveTab('budget')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'budget'
                 ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-slate-200 dark:border-slate-700 shadow-xs font-bold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'
             }`}
           >
-            <Gauge className="w-3.5 h-3.5" />
+            <Gauge className="w-3.5 h-3.5 shrink-0" />
             <span>4. Presupuesto Óptico</span>
           </button>
         </div>
 
-        {/* Cuerpo del Modal con Contenido por Pestaña */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5">
+        {/* Cuerpo del Modal con Scroll Suave */}
+        <div className="p-3 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-5">
 
           {/* ========================================================== */}
           {/* PESTAÑA 1: TRAZABILIDAD LÓGICA EXTREMO A EXTREMO           */}
           {/* ========================================================== */}
           {activeTab === 'trace' && (
-            <div className="space-y-5 animate-fadeIn">
-              {/* Barra de Selección de Caja */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/60 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="space-y-4 sm:space-y-5 animate-fadeIn">
+              {/* Barra de Selección de Caja bien distribuida */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                 <div>
                   <div className="text-xs font-bold text-slate-900 dark:text-white">
                     Inspección de Ruta Lógica Extremo a Extremo (Trace Route Óptico)
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">
-                    Selecciona una Caja NAP para trazar todo el trayecto desde el emisor láser de la OLT hasta el abonado
+                  <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
+                    Trazado fotónico completo desde el puerto PON de la OLT hasta el abonado
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Caja NAP:</span>
+                {/* Selector + Botón Centrar sin flechas extrañas */}
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 shrink-0">Caja NAP:</span>
                   <select
                     value={selectedNapId}
                     onChange={(e) => setSelectedNapId(e.target.value)}
-                    className="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white cursor-pointer focus:ring-1 focus:ring-sky-500"
+                    className="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white cursor-pointer focus:ring-1 focus:ring-sky-500 flex-1 sm:flex-none max-w-full sm:max-w-xs"
                   >
                     {naps.map((n) => (
                       <option key={n.id_nap} value={n.id_nap}>
@@ -288,20 +290,35 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                       </option>
                     ))}
                   </select>
+
+                  {targetNap && onSelectNapOnMap && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectNapOnMap(targetNap);
+                        onClose();
+                      }}
+                      className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1"
+                      title={`Centrar ${targetNap.identificador} en el mapa interactivo`}
+                    >
+                      <MapPin className="w-3.5 h-3.5 shrink-0" />
+                      <span>Ver en Mapa</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Diagrama de Trazabilidad Lógica Horizontal */}
-              <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 sm:p-5 bg-slate-50/50 dark:bg-slate-800/30 space-y-4">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              {/* Diagrama de Trazabilidad Lógica: Responsive (1 columna en teléfono, 2 en tablet, 5 en PC) */}
+              <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 sm:p-5 bg-slate-50/50 dark:bg-slate-800/30 space-y-3.5 sm:space-y-4">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span>Topología Física & Lógica del Enlace Óptico:</span>
                   <span className="text-[11px] font-normal normal-case text-slate-500">
-                    {targetNap?.identificador} &bull; {targetNap?.coordenadas_gps ? `${targetNap.coordenadas_gps.lat.toFixed(4)}, ${targetNap.coordenadas_gps.lng.toFixed(4)}` : ''}
+                    Caja: <strong>{targetNap?.identificador}</strong> ({targetNap?.zona})
                   </span>
                 </div>
 
                 {/* Cadena de Bloques de Red */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 relative">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
                   {/* Bloque 1: OLT Activa */}
                   <div className="bg-white dark:bg-slate-800 p-3.5 rounded-lg border-l-4 border-indigo-600 border-t border-r border-b border-slate-200 dark:border-slate-700 shadow-xs text-xs space-y-1">
                     <div className="flex items-center justify-between text-indigo-700 dark:text-indigo-400 font-bold">
@@ -383,7 +400,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                   </div>
 
                   {/* Bloque 5: Abonado ONT */}
-                  <div className="bg-white dark:bg-slate-800 p-3.5 rounded-lg border-l-4 border-purple-600 border-t border-r border-b border-slate-200 dark:border-slate-700 shadow-xs text-xs space-y-1">
+                  <div className="bg-white dark:bg-slate-800 p-3.5 rounded-lg border-l-4 border-purple-600 border-t border-r border-b border-slate-200 dark:border-slate-700 shadow-xs text-xs space-y-1 sm:col-span-2 lg:col-span-1">
                     <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 font-bold">
                       <span className="flex items-center gap-1.5">
                         <Radio className="w-3.5 h-3.5" />
@@ -404,26 +421,14 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                 </div>
 
                 {/* Resumen del Factor Total de División */}
-                <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-300 shadow-xs">
+                <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-300 shadow-xs">
                   <span>Factor de División Total en Cascada: <strong>1:8 &times; 1:16 = 1:128 Máx (Operando a 1:64)</strong></span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 shrink-0">
                     <CheckCircle2 className="w-4 h-4 shrink-0" />
                     Enlace Óptico Sincronizado sin Saturación
                   </span>
                 </div>
               </div>
-
-              {/* Botón de Centrar Caja en el Mapa */}
-              {targetNap && onSelectNapOnMap && (
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => onSelectNapOnMap(targetNap)}
-                    className="px-3.5 py-1.5 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-sky-800 rounded-lg text-xs font-bold hover:bg-sky-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                  >
-                    Centrar {targetNap.identificador} en el Mapa &rarr;
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
@@ -431,22 +436,22 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
           {/* PESTAÑA 2: CHASIS OLT ACTIVA & MATRIZ DE PUERTOS PON      */}
           {/* ========================================================== */}
           {activeTab === 'olt' && (
-            <div className="space-y-5 animate-fadeIn">
+            <div className="space-y-4 sm:space-y-5 animate-fadeIn">
               {/* Tarjeta Informativa de Distinción OLT vs ODF */}
-              <div className="bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/70 rounded-xl p-3.5 flex items-start gap-3 text-xs">
+              <div className="bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/70 rounded-xl p-3 sm:p-3.5 flex items-start gap-2.5 sm:gap-3 text-xs">
                 <Info className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <div className="font-bold text-sky-950 dark:text-sky-200">
                     Diferenciación de Capa Activa (OLT) vs Pasiva (ODF)
                   </div>
-                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-[11px] sm:text-xs">
                     La <strong>OLT (Optical Line Terminal)</strong> es el equipo activo de conmutación electrónica que emite luz láser modulada mediante transceptores SFP+ Clase B+ (+1.5 a +5.0 dBm). Cada puerto PON alimenta una red óptica pasiva mediante splitteo jerárquico 1:64 (1:8 troncal + 1:16 en NAP). El <strong>ODF</strong> organiza y fusiona físicamente estos hilos hacia la planta externa.
                   </p>
                 </div>
               </div>
 
               {/* Ficha Técnica de Hardware OLT */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
                 <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 dark:text-slate-400 text-[11px] block">Chasis OLT</span>
                   <span className="font-bold text-slate-900 dark:text-white">Huawei SmartAX MA5800</span>
@@ -469,15 +474,15 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
 
               {/* Matriz Visual de los 16 Puertos PON de la OLT */}
               <div>
-                <div className="flex items-center justify-between mb-2.5">
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Radio className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Radio className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
                     <span>Puertos GPON SFP+ (Tarjeta Slot 1)</span>
                   </h3>
-                  <span className="text-xs text-slate-500">Selecciona un puerto PON para ver su carga</span>
+                  <span className="text-[11px] text-slate-500 hidden sm:inline">Selecciona un puerto PON para ver su carga</span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
                   {ponPortsData.map((pon, idx) => {
                     const isSelected = idx === selectedPonIndex;
                     return (
@@ -521,7 +526,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
               </div>
 
               {/* Detalle del Puerto PON Seleccionado */}
-              <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+              <div className="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/60 pb-3">
                   <div>
                     <span className="text-xs font-bold text-slate-900 dark:text-white">
@@ -531,7 +536,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                       Estado: <strong className="text-emerald-600 dark:text-emerald-400">{activePon.status}</strong>
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-xs flex-wrap">
                     <span className="bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-md font-mono text-slate-700 dark:text-slate-300">
                       Potencia Tx: {activePon.txPower} dBm
                     </span>
@@ -572,20 +577,20 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
           {/* PESTAÑA 3: DISTRIBUIDOR PASIVO ODF (48 HILOS TIA-598)      */}
           {/* ========================================================== */}
           {activeTab === 'odf' && (
-            <div className="space-y-5 animate-fadeIn">
-              <div className="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex items-start gap-2.5">
+            <div className="space-y-4 sm:space-y-5 animate-fadeIn">
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex items-start gap-2.5">
                 <Info className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px] sm:text-xs">
                   El <strong>ODF Pasivo</strong> distribuye los 48 hilos ópticos hacia la troncal 48H divididos en 4 bandejas de 12 fusiones cada una, identificados bajo el código de colores internacional <strong>TIA-598</strong>.
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3.5 sm:space-y-4">
                 {odfTrays.map((tray) => (
                   <div key={tray.trayNum} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-xs">
-                    <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <div className="bg-slate-100 dark:bg-slate-800 px-3.5 sm:px-4 py-2 sm:py-2.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                       <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-2">
-                        <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                        <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                         {tray.name}
                       </span>
                       <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
@@ -593,35 +598,36 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                       </span>
                     </div>
 
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
+                    {/* Tabla con ancho mínimo garantizado y badges whitespace-nowrap sin roturas */}
+                    <div className="overflow-x-auto scrollbar-thin">
+                      <table className="w-full text-left text-xs min-w-[620px]">
                         <thead className="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 text-[11px] uppercase border-b border-slate-200 dark:border-slate-800">
                           <tr>
-                            <th className="py-2 px-3 font-semibold w-16">Hilo</th>
-                            <th className="py-2 px-3 font-semibold w-28">Color TIA-598</th>
-                            <th className="py-2 px-3 font-semibold w-28">Puerto OLT</th>
-                            <th className="py-2 px-3 font-semibold w-36">Estado</th>
-                            <th className="py-2 px-3 font-semibold">Destino de Fibra Troncal</th>
+                            <th className="py-2.5 px-3 font-semibold w-16 text-center">Hilo</th>
+                            <th className="py-2.5 px-3 font-semibold w-32">Color TIA-598</th>
+                            <th className="py-2.5 px-3 font-semibold w-28">Puerto OLT</th>
+                            <th className="py-2.5 px-3 font-semibold w-48 whitespace-nowrap">Estado</th>
+                            <th className="py-2.5 px-3 font-semibold min-w-[200px]">Destino de Fibra Troncal</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                           {tray.hilos.map((hilo) => (
                             <tr key={hilo.hiloGlobal} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                              <td className="py-2 px-3 font-mono font-bold text-slate-900 dark:text-white">
+                              <td className="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white text-center">
                                 #{hilo.hiloGlobal}
                               </td>
-                              <td className="py-2 px-3">
+                              <td className="py-2.5 px-3 whitespace-nowrap">
                                 <span className="inline-flex items-center gap-1.5 font-medium">
                                   <span className={`w-3 h-3 rounded-full shrink-0 ${hilo.colorBg}`} />
                                   <span className="text-slate-700 dark:text-slate-300">{hilo.colorName}</span>
                                 </span>
                               </td>
-                              <td className="py-2 px-3 font-mono font-bold text-sky-600 dark:text-sky-400">
+                              <td className="py-2.5 px-3 font-mono font-bold text-sky-600 dark:text-sky-400 whitespace-nowrap">
                                 {hilo.ponAsociado}
                               </td>
-                              <td className="py-2 px-3">
+                              <td className="py-2.5 px-3 whitespace-nowrap">
                                 <span
-                                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                  className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${
                                     hilo.estado.includes('Activo')
                                       ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -630,7 +636,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                                   {hilo.estado}
                                 </span>
                               </td>
-                              <td className="py-2 px-3 text-slate-600 dark:text-slate-300 text-[11px]">
+                              <td className="py-2.5 px-3 text-slate-600 dark:text-slate-300 text-[11px]">
                                 {hilo.destino}
                               </td>
                             </tr>
@@ -648,21 +654,21 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
           {/* PESTAÑA 4: CALCULADORA DE PRESUPUESTO ÓPTICO              */}
           {/* ========================================================== */}
           {activeTab === 'budget' && (
-            <div className="space-y-5 animate-fadeIn">
+            <div className="space-y-4 sm:space-y-5 animate-fadeIn">
               {/* Fórmula Teórica con soporte perfecto para modo claro y oscuro */}
-              <div className="bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs space-y-2">
+              <div className="bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs space-y-2">
                 <div className="font-semibold text-sky-700 dark:text-sky-400 flex items-center gap-2">
                   <Activity className="w-4 h-4 shrink-0" />
                   <span>Fórmula Oficial de Presupuesto Óptico (Norma ITU-T G.984.2):</span>
                 </div>
-                <div className="font-mono bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-center overflow-x-auto text-xs">
+                <div className="font-mono bg-white dark:bg-slate-900 p-2.5 sm:p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-center overflow-x-auto text-[11px] sm:text-xs">
                   Atenuación Total = (Distancia &times; 0.35 dB/km) + (Fusiones &times; 0.1 dB) + (Conectores &times; 0.35 dB) + Loss_Splitter1 + Loss_Splitter2
                 </div>
               </div>
 
               {/* Controles de Simulación */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                <div className="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-2.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
                     Distancia del Tramo OLT - NAP ({budgetDistanceKm} km):
                   </label>
@@ -682,7 +688,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+                <div className="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-2.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
                     Splitter Primario en Mufa:
                   </label>
@@ -699,7 +705,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                   <span className="text-[11px] text-slate-500 block">Ubicado en Mufa Torpedo Troncal</span>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+                <div className="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-2.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
                     Splitter Secundario en NAP:
                   </label>
@@ -717,29 +723,29 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
               </div>
 
               {/* Resultados de Atenuación y Potencia Rx */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 text-[11px] block">Potencia Tx (OLT):</span>
                   <span className="text-base font-black text-slate-900 dark:text-white">
                     +{budgetTxPower.toFixed(1)} dBm
                   </span>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+                <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 text-[11px] block">Pérdida por Fibra:</span>
                   <span className="text-base font-black text-slate-900 dark:text-white">
                     {calculatedBudget.perdidaFibraDb} dB
                   </span>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+                <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 text-[11px] block">Atenuación Total:</span>
                   <span className="text-base font-black text-rose-600 dark:text-rose-400">
                     {calculatedBudget.atenuacionTotalTeoricaDb} dB
                   </span>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+                <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
                   <span className="text-slate-500 text-[11px] block">Potencia Rx (ONT):</span>
                   <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
                     {calculatedBudget.potenciaRxEsperadaDbm} dBm
@@ -749,7 +755,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
 
               {/* Veredicto de Enlace y Margen de Operación */}
               <div
-                className={`p-3.5 rounded-xl border flex items-center justify-between text-xs font-medium ${
+                className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs font-medium ${
                   calculatedBudget.estadoEnlace === 'Optimo'
                     ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
                     : calculatedBudget.estadoEnlace === 'Aceptable'
@@ -767,7 +773,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
                   </div>
                 </div>
 
-                <span className="px-2.5 py-1 bg-white dark:bg-slate-800 rounded-lg font-mono font-bold text-xs shadow-xs border border-slate-200 dark:border-slate-700">
+                <span className="self-start sm:self-auto px-2.5 py-1 bg-white dark:bg-slate-800 rounded-lg font-mono font-bold text-xs shadow-xs border border-slate-200 dark:border-slate-700">
                   +{calculatedBudget.margenOperativoDb} dB
                 </span>
               </div>
@@ -777,11 +783,11 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
         </div>
 
         {/* Pie del Modal con estilo idéntico a los otros modales */}
-        <div className="bg-slate-50 dark:bg-slate-950 px-4 sm:px-6 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 shrink-0">
-          <span>Sistema de Mapeo Lógico y Físico GPON FTTx</span>
+        <div className="bg-slate-50 dark:bg-slate-950 px-3.5 sm:px-6 py-2.5 sm:py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 shrink-0">
+          <span className="hidden sm:inline">Sistema de Mapeo Lógico y Físico GPON FTTx</span>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer text-center"
           >
             Entendido y Aceptar
           </button>
