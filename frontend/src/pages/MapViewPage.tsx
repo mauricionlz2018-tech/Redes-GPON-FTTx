@@ -12,6 +12,7 @@ import { CreateMufaModal } from '../components/CreateMufaModal';
 import { CreatePosteModal } from '../components/CreatePosteModal';
 import { CreateGasaModal } from '../components/CreateGasaModal';
 import { DeleteElementModal } from '../components/DeleteElementModal';
+import { OltOdfLogicalModal } from '../components/OltOdfLogicalModal';
 import { useAuth } from '../context/AuthContext';
 import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
 import { offlineDb } from '../db/offlineDb';
@@ -41,12 +42,15 @@ import {
   Maximize2,
   Minimize2,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Cpu
 } from 'lucide-react';
 
 import {
   mockNaps,
   mockOdf,
+  mockFiberRoutes,
+  mockEmpalmes,
   troncalIxtJocRoutes,
   troncalMufas,
   troncalGasas,
@@ -55,6 +59,7 @@ import {
   getTroncalDesignMetrics
 } from '../data/mockGponData';
 import { exportGponNetworkToKmz } from '../utils/kmzExport';
+
 
 import {
   getCachedNapsSync,
@@ -161,6 +166,7 @@ export const MapViewPage: React.FC = () => {
 
   // Estados de Planta Externa: Simbología, Metrajes y Creación de Rutas/Mufas/Gasas/Postes
   const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
+  const [isOltModalOpen, setIsOltModalOpen] = useState(false);
   const [isCreateRouteOpen, setIsCreateRouteOpen] = useState(false);
   const [isCreateMufaOpen, setIsCreateMufaOpen] = useState(false);
   const [isCreatePosteOpen, setIsCreatePosteOpen] = useState(false);
@@ -1300,6 +1306,16 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
         {/* Fila 2: Elementos de Despliegue de Red y Trazado Centrados y con sus Colores Originales */}
         <div className="flex items-center justify-center gap-2 sm:gap-2.5 flex-wrap pb-0.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+          {/* Botón de Arquitectura Lógica GPON OLT / ODF y Trazabilidad */}
+          <button
+            onClick={() => setIsOltModalOpen(true)}
+            className="flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 rounded-lg shadow-md shadow-emerald-950/20 transition-all active:scale-95 cursor-pointer shrink-0"
+            title="Abrir Arquitectura Lógica GPON: Chasis OLT Activo, Puertos PON, Distribuidor ODF, Trazabilidad Extremo a Extremo y Presupuesto Óptico"
+          >
+            <Cpu className="w-3.5 h-3.5 shrink-0 text-emerald-100" />
+            <span>Mapeo Lógico OLT / ODF</span>
+          </button>
+
           {/* Botón de Simbología Estándar y Metrajes */}
           <button
             onClick={() => setIsLegendModalOpen(true)}
@@ -1496,6 +1512,15 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               ) : (
                 /* Botones de herramientas completas para tablets y PC (Modo Claro Oficial) */
                 <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  <button
+                    onClick={() => setIsOltModalOpen(true)}
+                    className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    title="Mapeo Lógico GPON: OLT, Puertos PON, ODF y Trazabilidad"
+                  >
+                    <Cpu className="w-3.5 h-3.5 text-white shrink-0" />
+                    <span>Mapeo Lógico</span>
+                  </button>
+
                   <button
                     onClick={() => setIsLegendModalOpen(true)}
                     className="flex items-center gap-1 bg-white/95 hover:bg-sky-50 text-sky-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-sky-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
@@ -1703,6 +1728,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             onClearRoutePoints={handleClearRoutePoints}
             onFinishDrawingRoute={handleFinishDrawingRoute}
             onCancelDrawingRoute={handleCancelDrawingRoute}
+            onOpenOltModal={() => setIsOltModalOpen(true)}
           />
         </div>
 
@@ -1993,6 +2019,19 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         onClose={() => setIsLegendModalOpen(false)}
         activeRoutes={[...troncalIxtJocRoutes, ...customRoutes].filter((r) => !deletedRouteIds.includes(r.id_ruta))}
         activeEmpalmes={[...troncalMufas, ...customEmpalmes].filter((m) => !deletedMufaIds.includes(m.id_empalme))}
+      />
+
+      {/* Modal de Arquitectura Lógica GPON: Chasis OLT Activo, Puertos PON, Distribuidor ODF, Trazabilidad y Atenuación */}
+      <OltOdfLogicalModal
+        isOpen={isOltModalOpen}
+        onClose={() => setIsOltModalOpen(false)}
+        odf={odf}
+        naps={filteredNaps}
+        routes={[...troncalIxtJocRoutes, ...customRoutes].filter((r) => !deletedRouteIds.includes(r.id_ruta))}
+        onSelectNapOnMap={(nap) => {
+          setSelectedNap(nap);
+          setIsOltModalOpen(false);
+        }}
       />
 
       {/* Modal para Crear y Trazar Nueva Ruta Troncal o Ramal */}

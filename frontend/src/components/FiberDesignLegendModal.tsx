@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Network, GitCommit, Layers, Info } from 'lucide-react';
 import { FIBER_DESIGN_COLORS } from './standardFiberIcons';
-import { getTroncalDesignMetrics } from '../data/troncalIxtJocData';
+import { getRouteDistance } from '../utils/geoUtils';
 import { FiberRoute, EmpalmeClosure } from '../types';
 
 interface FiberDesignLegendModalProps {
@@ -9,6 +9,9 @@ interface FiberDesignLegendModalProps {
   onClose: () => void;
   activeRoutes?: FiberRoute[];
   activeEmpalmes?: EmpalmeClosure[];
+  totalGasasCount?: number;
+  totalPostesCfeCount?: number;
+  totalPostesPropuestosCount?: number;
 }
 
 interface CalculatedMetrics {
@@ -16,6 +19,7 @@ interface CalculatedMetrics {
   totalKm: number;
   rutas96H_metros: number;
   rutas48H_metros: number;
+  rutas24H_metros: number;
   rutas12HTroncal_metros: number;
   rutas12HDist_metros: number;
   totalMufas: number;
@@ -28,63 +32,58 @@ interface CalculatedMetrics {
 export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
   isOpen,
   onClose,
-  activeRoutes,
-  activeEmpalmes
+  activeRoutes = [],
+  activeEmpalmes,
+  totalGasasCount = 31,
+  totalPostesCfeCount = 803,
+  totalPostesPropuestosCount = 144
 }) => {
   if (!isOpen) return null;
 
-  const baseMetrics = getTroncalDesignMetrics();
-  
   const calculatedMetrics: CalculatedMetrics = React.useMemo(() => {
-    const summary: CalculatedMetrics = {
-      totalMetros:
-        baseMetrics.fibra12hDistribucionMl +
-        baseMetrics.fibra12hTroncalMl +
-        baseMetrics.fibra48hTroncalMl +
-        baseMetrics.fibra96hTroncalMl +
-        baseMetrics.fibra24hTroncalMl,
-      totalKm: baseMetrics.totalLineasKm,
-      rutas96H_metros: baseMetrics.fibra96hTroncalMl,
-      rutas48H_metros: baseMetrics.fibra48hTroncalMl,
-      rutas12HTroncal_metros: baseMetrics.fibra12hTroncalMl,
-      rutas12HDist_metros: baseMetrics.fibra12hDistribucionMl,
-      totalMufas: activeEmpalmes ? activeEmpalmes.length : baseMetrics.totalMufasCount,
-      totalGasas: baseMetrics.totalGasasCount,
-      totalPostesCfe: baseMetrics.totalPostesCfeCount,
-      totalPostesPropuestos: baseMetrics.totalPostesPropuestosCount,
-      totalRutasTrazadas: activeRoutes ? activeRoutes.length : baseMetrics.totalRutasCount
+    let totM = 0;
+    let r96 = 0;
+    let r48 = 0;
+    let r24 = 0;
+    let r12T = 0;
+    let r12D = 0;
+
+    activeRoutes.forEach((r) => {
+      const { metros: dist } = getRouteDistance(r);
+      totM += dist;
+      const st = (r.subtipo || '').toLowerCase();
+      const cap = r.hilos || 0;
+      if (cap === 96 || st.includes('96')) {
+        r96 += dist;
+      } else if (cap === 48 || st.includes('48')) {
+        r48 += dist;
+      } else if (cap === 24 || st.includes('24')) {
+        r24 += dist;
+      } else if (cap === 12 && (st.includes('distribuc') || r.tipo === 'ramal')) {
+        r12D += dist;
+      } else if (cap === 12 || st.includes('12')) {
+        r12T += dist;
+      } else {
+        r48 += dist;
+      }
+    });
+
+    return {
+      totalMetros: Math.round(totM),
+      totalKm: Number((totM / 1000).toFixed(2)),
+      rutas96H_metros: Math.round(r96),
+      rutas48H_metros: Math.round(r48),
+      rutas24H_metros: Math.round(r24),
+      rutas12HTroncal_metros: Math.round(r12T),
+      rutas12HDist_metros: Math.round(r12D),
+      totalMufas: activeEmpalmes ? activeEmpalmes.length : 11,
+      totalGasas: totalGasasCount,
+      totalPostesCfe: totalPostesCfeCount,
+      totalPostesPropuestos: totalPostesPropuestosCount,
+      totalRutasTrazadas: activeRoutes.length
     };
+  }, [activeRoutes, activeEmpalmes, totalGasasCount, totalPostesCfeCount, totalPostesPropuestosCount]);
 
-    if (activeRoutes && activeRoutes.length > 0) {
-      let totM = 0;
-      let r96 = 0;
-      let r48 = 0;
-      let r12T = 0;
-      let r12D = 0;
-
-      activeRoutes.forEach((r) => {
-        const dist = r.distancia_metros || 0;
-        totM += dist;
-        const st = (r.subtipo || '').toLowerCase();
-        const cap = r.hilos || 0;
-        if (cap === 96 || st.includes('96')) r96 += dist;
-        else if (cap === 48 || st.includes('48')) r48 += dist;
-        else if (cap === 12 && (st.includes('distribuc') || r.tipo === 'ramal')) r12D += dist;
-        else if (cap === 12 || st.includes('12')) r12T += dist;
-        else r12T += dist;
-      });
-
-      summary.totalMetros = Math.round(totM);
-      summary.totalKm = Number((totM / 1000).toFixed(2));
-      summary.rutas96H_metros = Math.round(r96);
-      summary.rutas48H_metros = Math.round(r48);
-      summary.rutas12HTroncal_metros = Math.round(r12T);
-      summary.rutas12HDist_metros = Math.round(r12D);
-      summary.totalRutasTrazadas = activeRoutes.length;
-    }
-
-    return summary;
-  }, [activeRoutes, activeEmpalmes, baseMetrics]);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
@@ -134,12 +133,17 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
                   Fibra 96H Troncal
                 </div>
                 <div className="text-base font-black text-purple-950 dark:text-purple-300 mt-1">
-                  {(calculatedMetrics.rutas96H_metros / 1000).toFixed(2)} km
+                  {calculatedMetrics.rutas96H_metros > 0
+                    ? `${(calculatedMetrics.rutas96H_metros / 1000).toFixed(2)} km`
+                    : '0.00 km (En Reserva / Fase 2)'}
                 </div>
                 <div className="text-[10px] text-slate-500 font-mono">
-                  {calculatedMetrics.rutas96H_metros.toLocaleString()} ML
+                  {calculatedMetrics.rutas96H_metros > 0
+                    ? `${calculatedMetrics.rutas96H_metros.toLocaleString()} ML`
+                    : 'Capacidad de Ampliación'}
                 </div>
               </div>
+
 
               {/* 48H Troncal */}
               <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border-l-4 border-amber-800 shadow-xs">

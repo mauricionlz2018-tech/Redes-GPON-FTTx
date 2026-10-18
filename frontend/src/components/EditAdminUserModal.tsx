@@ -82,8 +82,8 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
       return;
     }
 
-    if (newPassword && newPassword.length < 4) {
-      setErrorMsg('La nueva contraseña debe tener al menos 4 caracteres.');
+    if (newPassword && newPassword.length < 8) {
+      setErrorMsg('La nueva contraseña debe tener al menos 8 caracteres por política de seguridad corporativa.');
       return;
     }
 
@@ -277,7 +277,7 @@ export const EditAdminUserModal: React.FC<EditAdminUserModalProps> = ({
             </div>
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Nueva contraseña opcional (mínimo 4 caracteres)"
+              placeholder="Nueva contraseña opcional (mínimo 8 caracteres)"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"

@@ -28,8 +28,10 @@ import {
   RefreshCw,
   Power,
   Ruler,
-  Box
+  Box,
+  Cpu
 } from 'lucide-react';
+
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
 import { StreetViewModal } from './StreetViewModal';
 import {
@@ -91,7 +93,9 @@ interface GponMapProps {
   onClearRoutePoints?: () => void;
   onFinishDrawingRoute?: () => void;
   onCancelDrawingRoute?: () => void;
+  onOpenOltModal?: () => void;
 }
+
 
 // Controlador para escuchar cambios de límites visibles (bounds) y nivel de zoom para virtualización
 const ViewportListener: React.FC<{
@@ -170,20 +174,20 @@ function getRouteDistance(route: FiberRoute): { metros: number; km: number } {
   return { metros, km: Number((metros / 1000).toFixed(2)) };
 }
 
-// Asignar color estándar de ingeniería según la capacidad y tipo de cable
 function getRouteStandardColor(route: FiberRoute): string {
-  if (route.color && route.color !== '#38bdf8' && route.color !== '#0284c7') {
-    return route.color;
-  }
   const st = (route.subtipo || '').toLowerCase();
   const cap = route.hilos || 0;
   if (cap === 96 || st.includes('96')) return FIBER_DESIGN_COLORS.fibraTroncal96H;
   if (cap === 48 || st.includes('48')) return FIBER_DESIGN_COLORS.fibraTroncal48H;
+  if (cap === 24 || st.includes('24')) return FIBER_DESIGN_COLORS.fibra24H;
   if (cap === 12 && (st.includes('distribuc') || route.tipo === 'ramal')) return FIBER_DESIGN_COLORS.fibraDistribucion12H;
   if (cap === 12 || st.includes('12')) return FIBER_DESIGN_COLORS.fibraTroncal12H;
-  if (cap === 24 || st.includes('24')) return FIBER_DESIGN_COLORS.fibra24H;
+  if (route.color && route.color.startsWith('#') && route.color !== '#38bdf8' && route.color !== '#0284c7') {
+    return route.color;
+  }
   return route.tipo === 'troncal' ? FIBER_DESIGN_COLORS.fibraTroncal48H : FIBER_DESIGN_COLORS.fibraDistribucion12H;
 }
+
 
 // Componente para ajustar dinámicamente el encuadre del mapa
 const MapBoundsAdjuster: React.FC<{ coordinates?: [number, number][] }> = ({ coordinates }) => {
@@ -473,8 +477,10 @@ export const GponMap: React.FC<GponMapProps> = ({
   onRemoveLastRoutePoint,
   onClearRoutePoints,
   onFinishDrawingRoute,
-  onCancelDrawingRoute
+  onCancelDrawingRoute,
+  onOpenOltModal
 }) => {
+
   // Detección de dispositivo móvil / táctil para optimización ultra-fluida de recursos
   const isMobile = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -1656,18 +1662,41 @@ export const GponMap: React.FC<GponMapProps> = ({
             icon={odfIcon}
           >
             <Popup>
-              <div className="p-1 max-w-[220px]">
+              <div className="p-1.5 max-w-[260px] text-xs">
                 <div className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400 font-bold text-sm mb-1">
-                  <Server className="w-4 h-4" />
-                  <span>{odf.nombre}</span>
+                  <Server className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{odf.nombre}</span>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300">{odf.ubicacion_central}</p>
-                <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 p-1.5 rounded border border-slate-200 dark:border-slate-700">
-                  <span>Capacidad: </span>
-                  <strong className="text-slate-900 dark:text-white">{odf.capacidad_hilos} Hilos de Fibra</strong>
+                <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">
+                  Cabecera NOC: OLT Activa & Distribuidor ODF
                 </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">{odf.ubicacion_central}</p>
+                <div className="mt-2 text-[11px] text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700 space-y-1">
+                  <div className="flex justify-between">
+                    <span>ODF Pasivo:</span>
+                    <strong className="text-slate-900 dark:text-white">{odf.capacidad_hilos} Hilos (4 Bandejas)</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>OLT GPON:</span>
+                    <strong className="text-emerald-600 dark:text-emerald-400">16 Puertos PON (1:64)</strong>
+                  </div>
+                </div>
+
+                {onOpenOltModal && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenOltModal();
+                    }}
+                    className="mt-2.5 w-full py-1.5 px-3 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                  >
+                    <Cpu className="w-3.5 h-3.5" />
+                    <span>Ver Lógica OLT/ODF & PON</span>
+                  </button>
+                )}
               </div>
             </Popup>
+
           </Marker>
         )}
 

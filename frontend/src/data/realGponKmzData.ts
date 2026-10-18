@@ -1648,14 +1648,15 @@ export const realNaps: NapBox[] = [
     metricas: {
       total: 16,
       libres: 2,
-      ocupados: 12,
-      danados: 1,
-      reservados: 1,
-      porcentajeSaturacion: 75,
-      estadoSaturacion: 'disponible'
+      ocupados: 14,
+      danados: 0,
+      reservados: 0,
+      porcentajeSaturacion: 88,
+      estadoSaturacion: 'alerta'
     },
-    puertos: createPortsForRealNap('nap-sjr-01', 'NAP-SJR-01', 12, true, 14)
+    puertos: createPortsForRealNap('nap-sjr-01', 'NAP-SJR-01', 14, false)
   },
+
   {
     id_nap: 'nap-sjr-02',
     identificador: 'NAP-SJR-02',

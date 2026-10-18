@@ -79,8 +79,8 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onUse
       return;
     }
 
-    if (!password || password.length < 4) {
-      setErrorMsg('La contraseña inicial debe tener al menos 4 caracteres.');
+    if (!password || password.length < 8) {
+      setErrorMsg('La contraseña inicial debe tener al menos 8 caracteres por política de seguridad corporativa.');
       return;
     }
 
@@ -290,7 +290,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onUse
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
-                placeholder="Mínimo 4 caracteres"
+                placeholder="Mínimo 8 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"

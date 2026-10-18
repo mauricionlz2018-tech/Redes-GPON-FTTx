@@ -144,7 +144,7 @@ export const listUsers = async (req: Request, res: Response) => {
 
 const updateProfileSchema = z.object({
   nombre_completo: z.string().min(3).max(150).optional(),
-  password: z.string().min(4).optional()
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').optional()
 });
 
 export const updateProfile = async (req: Request, res: Response) => {
@@ -199,7 +199,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 const createUserSchema = z.object({
   nombre_completo: z.string().min(3, 'El nombre debe tener al menos 3 caracteres').max(150),
   credencial_acceso: z.string().min(3, 'La credencial debe tener al menos 3 caracteres').max(100),
-  password: z.string().min(4, 'La contraseña debe tener al menos 4 caracteres'),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres por política de seguridad'),
   rol: z.enum(['Admin', 'Soporte', 'Tecnico'])
 });
 
@@ -255,7 +255,7 @@ export const createUser = async (req: Request, res: Response) => {
 const updateUserSchema = z.object({
   nombre_completo: z.string().min(3).max(150).optional(),
   credencial_acceso: z.string().min(3).max(100).optional(),
-  password: z.string().min(4).optional(),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').optional(),
   rol: z.enum(['Admin', 'Soporte', 'Tecnico']).optional()
 });
 
@@ -464,10 +464,10 @@ export const resetPassword = async (req: Request, res: Response) => {
       return;
     }
 
-    if (newPassword.length < 4) {
+    if (newPassword.length < 8) {
       res.status(400).json({
         success: false,
-        message: 'La nueva contraseña debe tener al menos 4 caracteres.'
+        message: 'La nueva contraseña debe tener al menos 8 caracteres por política de seguridad corporativa.'
       });
       return;
     }

@@ -103,8 +103,8 @@ export const PasswordRecoveryModal: React.FC<PasswordRecoveryModalProps> = ({
       return;
     }
 
-    if (newPassword.length < 4) {
-      setErrorMsg('La nueva contraseña debe tener un mínimo de 4 caracteres.');
+    if (newPassword.length < 8) {
+      setErrorMsg('La nueva contraseña debe tener un mínimo de 8 caracteres por política de seguridad.');
       return;
     }
 
@@ -299,7 +299,7 @@ export const PasswordRecoveryModal: React.FC<PasswordRecoveryModalProps> = ({
                     type={showPassword ? 'text' : 'password'}
                     required
                     disabled={secondsLeft <= 0}
-                    placeholder="Mínimo 4 caracteres"
+                    placeholder="Mínimo 8 caracteres"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-10 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
