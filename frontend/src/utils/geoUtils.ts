@@ -162,3 +162,4 @@ export function calculateOpticalPowerBudget(params: {
     estadoEnlace
   };
 }
+

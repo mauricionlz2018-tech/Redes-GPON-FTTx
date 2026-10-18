@@ -43,7 +43,8 @@ import {
   Minimize2,
   ChevronRight,
   ChevronLeft,
-  Cpu
+  Cpu,
+  Server
 } from 'lucide-react';
 
 import {
@@ -1309,10 +1310,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           {/* Botón de Arquitectura Lógica GPON OLT / ODF y Trazabilidad */}
           <button
             onClick={() => setIsOltModalOpen(true)}
-            className="flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 rounded-lg shadow-md shadow-emerald-950/20 transition-all active:scale-95 cursor-pointer shrink-0"
+            className="flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-slate-800 dark:to-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold text-xs px-3 rounded-lg border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer shrink-0"
             title="Abrir Arquitectura Lógica GPON: Chasis OLT Activo, Puertos PON, Distribuidor ODF, Trazabilidad Extremo a Extremo y Presupuesto Óptico"
           >
-            <Cpu className="w-3.5 h-3.5 shrink-0 text-emerald-100" />
+            <Server className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>Mapeo Lógico OLT / ODF</span>
           </button>
 
@@ -1514,10 +1515,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                 <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <button
                     onClick={() => setIsOltModalOpen(true)}
-                    className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    className="flex items-center gap-1 bg-white/95 hover:bg-emerald-50 text-emerald-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-emerald-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
                     title="Mapeo Lógico GPON: OLT, Puertos PON, ODF y Trazabilidad"
                   >
-                    <Cpu className="w-3.5 h-3.5 text-white shrink-0" />
+                    <Server className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     <span>Mapeo Lógico</span>
                   </button>
 
