@@ -469,46 +469,48 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
           {/* ========================================================== */}
           {activeTab === 'trace' && (
             <div className="space-y-4 sm:space-y-5 animate-fadeIn">
-              {/* Barra de Selección de Caja bien distribuida */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                <div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">
-                    Inspección de Ruta Lógica Extremo a Extremo (Trace Route Óptico)
+              {/* Barra de Selección de Caja bien distribuida y contenida sin desbordamiento */}
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white">
+                      Inspección de Ruta Lógica Extremo a Extremo (Trace Route Óptico)
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Selecciona una Caja NAP para trazar dinámicamente todo el enlace óptico, hilo ODF, mufa y cálculo exacto de dBm
+                    </div>
                   </div>
-                  <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
-                    Selecciona una Caja NAP para trazar dinámicamente todo el enlace óptico, hilo ODF, mufa y cálculo exacto de dBm
-                  </div>
-                </div>
 
-                {/* Selector + Botón Centrar sin flechas extrañas */}
-                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 shrink-0">Caja NAP:</span>
-                  <select
-                    value={selectedNapId}
-                    onChange={(e) => setSelectedNapId(e.target.value)}
-                    className="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white cursor-pointer focus:ring-1 focus:ring-sky-500 flex-1 sm:flex-none max-w-full sm:max-w-xs"
-                  >
-                    {sortedNaps.map((n) => (
-                      <option key={n.id_nap} value={n.id_nap}>
-                        {n.identificador} ({n.zona})
-                      </option>
-                    ))}
-                  </select>
-
-                  {targetNap && onSelectNapOnMap && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectNapOnMap(targetNap);
-                        onClose();
-                      }}
-                      className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg text-xs shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1"
-                      title={`Centrar ${targetNap.identificador} en el mapa interactivo`}
+                  {/* Selector + Botón Centrar perfectamente acotados */}
+                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0 min-w-0">
+                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 shrink-0">Caja NAP:</span>
+                    <select
+                      value={selectedNapId}
+                      onChange={(e) => setSelectedNapId(e.target.value)}
+                      className="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white cursor-pointer focus:ring-1 focus:ring-sky-500 w-auto min-w-[180px] max-w-[220px] truncate"
                     >
-                      <MapPin className="w-3.5 h-3.5 shrink-0" />
-                      <span>Ver en Mapa</span>
-                    </button>
-                  )}
+                      {sortedNaps.map((n) => (
+                        <option key={n.id_nap} value={n.id_nap}>
+                          {n.identificador} ({n.zona})
+                        </option>
+                      ))}
+                    </select>
+
+                    {targetNap && onSelectNapOnMap && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSelectNapOnMap(targetNap);
+                          onClose();
+                        }}
+                        className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-semibold rounded-lg text-xs shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0"
+                        title={`Centrar ${targetNap.identificador} en el mapa interactivo`}
+                      >
+                        <MapPin className="w-3.5 h-3.5 shrink-0" />
+                        <span>Ver en Mapa</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
