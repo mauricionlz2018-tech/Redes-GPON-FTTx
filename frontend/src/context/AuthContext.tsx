@@ -107,8 +107,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(initialToken);
       setUser(demoUser);
 
-      // Sincronización transparente de JWT con el servidor en segundo plano
-      api.post('/auth/login', { credencial_acceso, password }, { timeout: 8000 })
+      // Sincronización transparente de JWT con el servidor en segundo plano (35s para permitir cold-start en Render)
+      api.post('/auth/login', { credencial_acceso, password }, { timeout: 35000 })
         .then((response) => {
           if (response.data?.success && response.data.data?.token) {
             localStorage.setItem('gpon_token', response.data.data.token);

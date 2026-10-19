@@ -272,14 +272,42 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Color de Línea
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-1.5">
                 <input
                   type="color"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                   className="w-8 h-8 rounded border border-slate-300 dark:border-slate-700 cursor-pointer p-0.5 bg-transparent"
+                  title="Haz clic para elegir cualquier color personalizado"
                 />
-                <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{color}</span>
+                <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">{color}</span>
+              </div>
+              {/* Paleta rápida de colores para selección instantánea */}
+              <div className="flex items-center gap-1 flex-wrap">
+                {[
+                  { name: 'Azul', hex: '#2563eb' },
+                  { name: 'Verde', hex: '#16a34a' },
+                  { name: 'Naranja', hex: '#ea580c' },
+                  { name: 'Amarillo', hex: '#eab308' },
+                  { name: 'Rojo', hex: '#dc2626' },
+                  { name: 'Morado', hex: '#9333ea' },
+                  { name: 'Cian', hex: '#06b6d4' },
+                  { name: 'Rosa', hex: '#ec4899' },
+                  { name: 'Café', hex: '#8d5b4c' }
+                ].map((p) => (
+                  <button
+                    key={p.hex}
+                    type="button"
+                    onClick={() => setColor(p.hex)}
+                    style={{ backgroundColor: p.hex }}
+                    className={`w-4 h-4 rounded-full transition-transform cursor-pointer ${
+                      color.toLowerCase() === p.hex.toLowerCase()
+                        ? 'ring-2 ring-offset-1 ring-sky-500 scale-110'
+                        : 'hover:scale-110 opacity-90 hover:opacity-100'
+                    }`}
+                    title={p.name}
+                  />
+                ))}
               </div>
             </div>
 

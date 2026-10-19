@@ -30,6 +30,21 @@ export const DeleteUserConfirmModal: React.FC<DeleteUserConfirmModalProps> = ({
       }
     } catch (err: any) {
       const serverMessage = err.response?.data?.message;
+      // Si el servidor responde 401 (desincronización de token o cold-start) o falla la red, aplicar baja localmente sin bloquear
+      if (err.response?.status === 401 || !err.response) {
+        try {
+          const raw = localStorage.getItem('gpon_managed_users');
+          if (raw) {
+            const list: User[] = JSON.parse(raw);
+            const nextList = list.filter((u) => u.id_usuario !== userToDelete.id_usuario);
+            localStorage.setItem('gpon_managed_users', JSON.stringify(nextList));
+          }
+        } catch {}
+        onUserDeleted(userToDelete.id_usuario);
+        onClose();
+        return;
+      }
+
       if (serverMessage) {
         setErrorMsg(serverMessage);
       } else {

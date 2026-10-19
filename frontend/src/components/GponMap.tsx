@@ -175,6 +175,15 @@ function getRouteDistance(route: FiberRoute): { metros: number; km: number } {
 }
 
 function getRouteStandardColor(route: FiberRoute): string {
+  // 1. Si la ruta tiene un color personalizado asignado por el usuario o base de datos, respetarlo siempre
+  if (route.color && typeof route.color === 'string' && route.color.trim() !== '') {
+    // Si no es del paquete estático del KMZ base (ixt-joc), usar el color seleccionado
+    if (!route.id_ruta?.startsWith('ixt-joc-')) {
+      return route.color;
+    }
+  }
+
+  // 2. Para las rutas originales del KMZ sin color custom, usar la paleta estándar por hilos
   const st = (route.subtipo || '').toLowerCase();
   const cap = route.hilos || 0;
   if (cap === 96 || st.includes('96')) return FIBER_DESIGN_COLORS.fibraTroncal96H;
@@ -182,7 +191,9 @@ function getRouteStandardColor(route: FiberRoute): string {
   if (cap === 24 || st.includes('24')) return FIBER_DESIGN_COLORS.fibra24H;
   if (cap === 12 && (st.includes('distribuc') || route.tipo === 'ramal')) return FIBER_DESIGN_COLORS.fibraDistribucion12H;
   if (cap === 12 || st.includes('12')) return FIBER_DESIGN_COLORS.fibraTroncal12H;
-  if (route.color && route.color.startsWith('#') && route.color !== '#38bdf8' && route.color !== '#0284c7') {
+
+  // 3. Fallback directo al color de la ruta si está presente
+  if (route.color && typeof route.color === 'string' && route.color.trim() !== '') {
     return route.color;
   }
   return route.tipo === 'troncal' ? FIBER_DESIGN_COLORS.fibraTroncal48H : FIBER_DESIGN_COLORS.fibraDistribucion12H;
@@ -1287,7 +1298,10 @@ export const GponMap: React.FC<GponMapProps> = ({
           </span>
           {onDeleteRouteRequest && (
             <button
-              onClick={() => onDeleteRouteRequest(selectedRoute)}
+              onClick={() => {
+                onDeleteRouteRequest(selectedRoute);
+                setSelectedRouteId(null);
+              }}
               className="flex items-center gap-1 bg-red-600 hover:bg-red-500 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-xs transition-all active:scale-95 cursor-pointer ml-1"
               title="Eliminar esta línea troncal de la red"
             >
