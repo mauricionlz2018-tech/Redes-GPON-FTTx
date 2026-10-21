@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, Circle, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, Circle, LayerGroup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
 import {
@@ -1402,8 +1402,9 @@ export const GponMap: React.FC<GponMapProps> = ({
         )}
 
         {/* 4. Trazado de Rutas Reales de Fibra Óptica (KMZ IXT-JOC + Complementos) */}
-        {showFiberRoutes &&
-          allRoutes.map((route) => {
+        {showFiberRoutes && (
+          <LayerGroup key="layer-fiber-routes">
+            {allRoutes.map((route) => {
             const { metros, km } = getRouteDistance(route);
             const lineColor = getRouteStandardColor(route);
             const lineWeight = route.grosor || 4;
@@ -1459,10 +1460,13 @@ export const GponMap: React.FC<GponMapProps> = ({
               </React.Fragment>
             );
           })}
+          </LayerGroup>
+        )}
 
         {/* 5. Marcadores de Cierres de Empalme (Mufas Torpedo Estandarizadas) */}
-        {showEmpalmes &&
-          allEmpalmes.map((emp) => {
+        {showEmpalmes && (
+          <LayerGroup key="layer-empalmes">
+            {allEmpalmes.map((emp) => {
             const icon = createMufaTorpedoIcon(emp);
             return (
               <Marker
@@ -1521,10 +1525,13 @@ export const GponMap: React.FC<GponMapProps> = ({
               </Marker>
             );
           })}
+          </LayerGroup>
+        )}
 
         {/* 6. Marcadores de Gasas de Reserva Técnica (∞) */}
-        {showGasas &&
-          visibleGasas.map((gasa) => {
+        {showGasas && (
+          <LayerGroup key="layer-gasas">
+            {visibleGasas.map((gasa) => {
             const icon = createGasaReservaIcon(gasa);
             const metraje = gasa.longitud_metros || gasa.metros_reserva || 30;
             return (
@@ -1577,10 +1584,13 @@ export const GponMap: React.FC<GponMapProps> = ({
               </Marker>
             );
           })}
+          </LayerGroup>
+        )}
 
         {/* 7. Marcadores de Postes Propuestos Normalizados (Virtualizados a 60 FPS) */}
-        {showPostesPropuestos &&
-          visiblePostesPropuestos.map((poste) => {
+        {showPostesPropuestos && (
+          <LayerGroup key="layer-postes-propuestos">
+            {visiblePostesPropuestos.map((poste) => {
             const codigo = poste.codigo || poste.nombre;
             const icon = createPostePropuestoIcon(codigo);
             return (
@@ -1632,15 +1642,18 @@ export const GponMap: React.FC<GponMapProps> = ({
               </Marker>
             );
           })}
+          </LayerGroup>
+        )}
 
         {/* 8. Marcadores de Postes CFE Existentes (Virtualizados con LOD a 60 FPS) */}
-        {showPostesCfe &&
-          visiblePostesCfe.map((poste) => {
-            const codigo = poste.codigo || poste.nombre;
-            const icon = createPosteCfeIcon(codigo);
-            return (
-              <Marker
-                key={poste.id_poste}
+        {showPostesCfe && (
+          <LayerGroup key="layer-postes-cfe">
+            {visiblePostesCfe.map((poste) => {
+              const codigo = poste.codigo || poste.nombre;
+              const icon = createPosteCfeIcon(codigo);
+              return (
+                <Marker
+                  key={`poste-cfe-${poste.id_poste}`}
                 position={[poste.coordenadas_gps.lat, poste.coordenadas_gps.lng]}
                 icon={icon}
               >
@@ -1689,6 +1702,8 @@ export const GponMap: React.FC<GponMapProps> = ({
               </Marker>
             );
           })}
+          </LayerGroup>
+        )}
 
         {/* 9. Marcador del ODF Central en Cabecera */}
         {odf && odf.coordenadas_gps && (
@@ -1764,8 +1779,9 @@ export const GponMap: React.FC<GponMapProps> = ({
         )}
 
         {/* 11. Marcadores de Cajas NAP Normalizadas con Semáforo Cromático */}
-        {showNaps &&
-          naps.map((nap) => {
+        {showNaps && (
+          <LayerGroup key="layer-naps">
+            {naps.map((nap) => {
             if (!nap.coordenadas_gps) return null;
             const isSelected = selectedNap?.id_nap === nap.id_nap;
             const isRouteDestination = Boolean(activeRoute && selectedNap?.id_nap === nap.id_nap);
@@ -1906,6 +1922,8 @@ export const GponMap: React.FC<GponMapProps> = ({
               </Marker>
             );
           })}
+          </LayerGroup>
+        )}
 
         {/* Baliza Satelital de Posición GPS del Usuario a Demanda */}
         {userGpsPosition && isGpsActive && (
