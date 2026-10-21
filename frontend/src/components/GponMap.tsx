@@ -797,11 +797,11 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
   }, [customGasas, gasas, deletedGasaIds]);
 
-  // Virtualización por Vista (Viewport Culling & LOD):
-  // A nivel regional (zoom < 13 en PC, < 14 en móvil), los postes y gasas se ocultan para evitar saturación y amontonamiento.
+  // Virtualización por Vista (Viewport Culling & LOD Ultra-Optimizado):
+  // A nivel regional y de carretera los postes y gasas se ocultan para mantener el mapa fluido a 60 FPS sin saturación ni tirones.
   const visiblePostesPropuestos = useMemo(() => {
     if (!showPostesPropuestos) return [];
-    const minZoom = isMobile ? 14 : 13;
+    const minZoom = isMobile ? 15 : 14;
     if (currentZoom < minZoom || !bufferedBounds) {
       return [];
     }
@@ -815,15 +815,15 @@ export const GponMap: React.FC<GponMapProps> = ({
       bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng])
     );
 
-    const budget = isMobile ? 45 : 120;
-    const cappedKmz = kmzInView.length > budget ? kmzInView.slice(0, budget) : kmzInView;
-
-    return [...customInView, ...cappedKmz];
+    const budget = isMobile ? 25 : 50;
+    const combined = [...customInView, ...kmzInView];
+    return combined.slice(0, budget);
   }, [showPostesPropuestos, customPostes, postesPropuestos, bufferedBounds, currentZoom, isMobile]);
 
   const visiblePostesCfe = useMemo(() => {
     if (!showPostesCfe) return [];
-    const minZoom = isMobile ? 15 : 14;
+    // Nivel calle (zoom 15+) para postes CFE masivos (evita colapsar CPU y encimamiento en carreteras)
+    const minZoom = 15;
     if (currentZoom < minZoom || !bufferedBounds) {
       return [];
     }
@@ -837,23 +837,24 @@ export const GponMap: React.FC<GponMapProps> = ({
       bufferedBounds.contains([p.coordenadas_gps.lat, p.coordenadas_gps.lng])
     );
 
-    const budget = isMobile ? 50 : 130;
-    const cappedKmz = kmzInView.length > budget ? kmzInView.slice(0, budget) : kmzInView;
-
-    return [...customInView, ...cappedKmz];
+    // Presupuesto estricto consolidado para garantizar 60 FPS fluidos en cualquier laptop o teléfono
+    const budget = isMobile ? 30 : 60;
+    const combined = [...customInView, ...kmzInView];
+    return combined.slice(0, budget);
   }, [showPostesCfe, customPostes, postesCfe, bufferedBounds, currentZoom, isMobile]);
 
   // Virtualización de Gasas por Nivel de Detalle (LOD):
-  // En zoom alejado no se dibujan para evitar que se solapen formando una oruga o tubo azul continuo
   const visibleGasas = useMemo(() => {
     if (!showGasas) return [];
-    const minZoom = isMobile ? 14 : 13;
+    const minZoom = isMobile ? 15 : 14;
     if (currentZoom < minZoom || !bufferedBounds) {
       return [];
     }
-    return allGasas.filter((g) =>
+    const inView = allGasas.filter((g) =>
       bufferedBounds.contains([g.coordenadas_gps.lat, g.coordenadas_gps.lng])
     );
+    const budget = isMobile ? 20 : 40;
+    return inView.slice(0, budget);
   }, [showGasas, allGasas, bufferedBounds, currentZoom, isMobile]);
 
   // Total de kilómetros y ML calculados
@@ -1165,9 +1166,9 @@ export const GponMap: React.FC<GponMapProps> = ({
                   Gasas de Reserva ({allGasas.length})
                   {showGasas && (
                     <span className="text-[10px] block">
-                      {currentZoom < (isMobile ? 14 : 13) ? (
+                      {currentZoom < (isMobile ? 15 : 14) ? (
                         <span className="text-amber-600 dark:text-amber-400 font-medium">
-                          Acércate a la calle (zoom {isMobile ? 14 : 13}+)
+                          Acércate a la calle (zoom {isMobile ? 15 : 14}+)
                         </span>
                       ) : (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
@@ -1192,9 +1193,9 @@ export const GponMap: React.FC<GponMapProps> = ({
                   Postes Propuestos ({allPostesPropuestos.length})
                   {showPostesPropuestos && (
                     <span className="text-[10px] block">
-                      {currentZoom < (isMobile ? 14 : 13) ? (
+                      {currentZoom < (isMobile ? 15 : 14) ? (
                         <span className="text-amber-600 dark:text-amber-400 font-medium">
-                          Acércate a la calle (zoom {isMobile ? 14 : 13}+)
+                          Acércate a la calle (zoom {isMobile ? 15 : 14}+)
                         </span>
                       ) : (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
@@ -1221,13 +1222,13 @@ export const GponMap: React.FC<GponMapProps> = ({
                   Postes CFE ({allPostesCfe.length})
                   {showPostesCfe && (
                     <span className="text-[10px] block">
-                      {currentZoom < (isMobile ? 15 : 14) ? (
+                      {currentZoom < 15 ? (
                         <span className="text-amber-600 dark:text-amber-400 font-medium">
-                          Acércate a la calle (zoom {isMobile ? 15 : 14}+)
+                          Acércate a la calle (zoom 15+)
                         </span>
                       ) : (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                          {visiblePostesCfe.length} en pantalla (optimizado)
+                          {visiblePostesCfe.length} en pantalla
                         </span>
                       )}
                     </span>
