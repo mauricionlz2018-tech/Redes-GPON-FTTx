@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, Circle, LayerGroup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, Circle, Polygon, LayerGroup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
 import {
@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
+import { MUNICIPALITIES_DATA, MunicipalityBoundary } from '../data/municipalitiesBoundaries';
 import { StreetViewModal } from './StreetViewModal';
 import {
   mockFiberRoutes,
@@ -449,93 +450,6 @@ const MapEventsAndDropListener: React.FC<{
   return null;
 };
 
-// Destinos de municipios y sectores para navegación rápida
-export interface MunicipalityNavTarget {
-  key: string;
-  label: string;
-  coords: [number, number];
-  zoom: number;
-  description: string;
-}
-
-export const MUNICIPALITIES_NAV: MunicipalityNavTarget[] = [
-  {
-    key: 'ixtlahuaca',
-    label: 'Ixtlahuaca',
-    coords: [19.5714, -99.7650],
-    zoom: 13,
-    description: 'Cabecera Troncal 48H Pista'
-  },
-  {
-    key: 'jocotitlan',
-    label: 'Jocotitlán',
-    coords: [19.7060, -99.7880],
-    zoom: 13,
-    description: 'Troncal Norte y Enlaces Carretera 55'
-  },
-  {
-    key: 'san-jose-rincon',
-    label: 'San José del Rincón',
-    coords: [19.6980, -100.1150],
-    zoom: 14,
-    description: 'Sector Cajas NAP, FTTx y Abonados'
-  },
-  {
-    key: 'san-felipe-progreso',
-    label: 'San Felipe del Progreso',
-    coords: [19.7120, -99.9500],
-    zoom: 13,
-    description: 'Troncal Poniente San Cristóbal - San Felipe'
-  },
-  {
-    key: 'jiquipilco',
-    label: 'Jiquipilco',
-    coords: [19.5650, -99.6150],
-    zoom: 13,
-    description: 'Ramal Ixtlahuaca - Jiquipilco (Sector Oriente)'
-  },
-  {
-    key: 'acambay',
-    label: 'Acambay / Dongu',
-    coords: [19.9580, -99.8850],
-    zoom: 13,
-    description: 'Sector Norte KMZ y Cierres de Empalme'
-  },
-  {
-    key: 'el-oro',
-    label: 'El Oro / Tlalpujahuilla',
-    coords: [19.7800, -100.1350],
-    zoom: 13,
-    description: 'Extensión La Presa - El Oro'
-  },
-  {
-    key: 'red-completa',
-    label: 'Vista General (Toda la Red)',
-    coords: [19.7500, -99.9200],
-    zoom: 10,
-    description: 'Cobertura macro de toda la infraestructura'
-  }
-];
-
-const createMunicipalityBeaconIcon = (nombre: string) => {
-  return L.divIcon({
-    className: 'custom-municipality-beacon',
-    html: `
-      <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); cursor: pointer; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));">
-        <div style="background: linear-gradient(135deg, #0284c7, #4f46e5); color: #ffffff; font-weight: 800; font-size: 11px; padding: 4px 10px; border-radius: 9999px; border: 2px solid #ffffff; white-space: nowrap; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(2,132,199,0.4);">
-          <span style="width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
-          <span>📍 ${nombre}</span>
-        </div>
-        <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #4f46e5; margin-top: -1px;"></div>
-        <div style="width: 6px; height: 6px; border-radius: 50%; background: #0284c7; margin-top: 1px;"></div>
-      </div>
-    `,
-    iconSize: [0, 0],
-    iconAnchor: [0, 0],
-    popupAnchor: [0, -32]
-  });
-};
-
 export const GponMap: React.FC<GponMapProps> = ({
   naps,
   odf,
@@ -592,25 +506,32 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   const [targetFocus, setTargetFocus] = useState<[number, number] | null>(null);
   const [targetZoom, setTargetZoom] = useState<number>(12);
-  // Municipio o zona seleccionada para navegación rápida y resaltado en mapa
+  // Municipio seleccionado para navegación y delimitación de contorno oficial
   const [selectedMunicipality, setSelectedMunicipality] = useState<string>('');
-  const [municipalityHighlight, setMunicipalityHighlight] = useState<{
-    nombre: string;
-    coords: [number, number];
-    descripcion?: string;
-  } | null>(null);
+  const [highlightedBoundary, setHighlightedBoundary] = useState<MunicipalityBoundary | null>(null);
 
   const handleSelectMunicipality = (key: string) => {
     setSelectedMunicipality(key);
-    const muni = MUNICIPALITIES_NAV.find((m) => m.key === key);
+    if (!key) {
+      setHighlightedBoundary(null);
+      return;
+    }
+    if (key === 'red-completa') {
+      setTargetFocus([19.7500, -99.9200]);
+      setTargetZoom(10);
+      setHighlightedBoundary(null);
+      return;
+    }
+    const muni = MUNICIPALITIES_DATA.find((m) => m.key === key);
     if (!muni) return;
-    setTargetFocus(muni.coords);
+    setTargetFocus(muni.center);
     setTargetZoom(muni.zoom);
-    setMunicipalityHighlight({
-      nombre: muni.label,
-      coords: muni.coords,
-      descripcion: muni.description
-    });
+    setHighlightedBoundary(muni);
+  };
+
+  const handleClearMunicipality = () => {
+    setSelectedMunicipality('');
+    setHighlightedBoundary(null);
   };
 
 
@@ -1357,20 +1278,17 @@ export const GponMap: React.FC<GponMapProps> = ({
               </label>
             </div>
 
-            {/* Navegación rápida por Municipios de la Red */}
+            {/* Navegación y demarcación por Municipios de la Red */}
             <div className="pt-2.5 border-t border-slate-200 dark:border-slate-800 space-y-1.5">
               <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                   <span>Municipio / Sector:</span>
                 </span>
-                {municipalityHighlight && (
+                {highlightedBoundary && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setMunicipalityHighlight(null);
-                      setSelectedMunicipality('');
-                    }}
+                    onClick={handleClearMunicipality}
                     className="text-[10px] text-red-500 hover:text-red-700 dark:hover:text-red-400 font-semibold cursor-pointer"
                   >
                     Desmarcar
@@ -1382,12 +1300,13 @@ export const GponMap: React.FC<GponMapProps> = ({
                 <select
                   value={selectedMunicipality}
                   onChange={(e) => handleSelectMunicipality(e.target.value)}
-                  className="w-full text-xs bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-2.5 py-1.5 pr-8 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium cursor-pointer shadow-xs transition-all"
+                  className="w-full text-xs bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-2.5 py-1.5 pr-8 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium cursor-pointer shadow-xs transition-all appearance-none"
                 >
-                  <option value="" disabled>Selecciona un municipio...</option>
-                  {MUNICIPALITIES_NAV.map((m) => (
+                  <option value="">Selecciona un municipio...</option>
+                  <option value="red-completa">Vista General (Toda la Red)</option>
+                  {MUNICIPALITIES_DATA.map((m) => (
                     <option key={m.key} value={m.key}>
-                      {m.label}
+                      {m.name}
                     </option>
                   ))}
                 </select>
@@ -1395,13 +1314,6 @@ export const GponMap: React.FC<GponMapProps> = ({
                   <ChevronDown className="w-3.5 h-3.5" />
                 </div>
               </div>
-
-              {municipalityHighlight && (
-                <div className="text-[10px] bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 px-2 py-1 rounded border border-sky-200 dark:border-sky-800/60 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0"></span>
-                  <span className="truncate">Marcado en mapa: <strong>{municipalityHighlight.nombre}</strong></span>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -2056,36 +1968,21 @@ export const GponMap: React.FC<GponMapProps> = ({
           </LayerGroup>
         )}
 
-                {/* 12. Marcador y Zona Resaltada del Municipio Seleccionado */}
-        {municipalityHighlight && (
-          <LayerGroup key={`highlight-${municipalityHighlight.nombre}`}>
-            <Circle
-              center={municipalityHighlight.coords}
-              radius={1000}
+        {/* Contorno poligonal oficial del Municipio Seleccionado */}
+        {highlightedBoundary && (
+          <LayerGroup key={`boundary-${highlightedBoundary.key}`}>
+            <Polygon
+              positions={highlightedBoundary.coordinates as any}
               pathOptions={{
                 color: '#0284c7',
-                fillColor: '#38bdf8',
-                fillOpacity: 0.16,
                 weight: 2.5,
-                dashArray: '6, 6'
+                opacity: 0.95,
+                dashArray: '8, 6',
+                fillColor: '#38bdf8',
+                fillOpacity: 0.12,
+                interactive: false
               }}
             />
-            <Marker
-              position={municipalityHighlight.coords}
-              icon={createMunicipalityBeaconIcon(municipalityHighlight.nombre)}
-              zIndexOffset={12000}
-            >
-              <Popup>
-                <div className="p-1.5 text-center min-w-[160px]">
-                  <strong className="block text-sky-700 dark:text-sky-400 font-bold text-sm">
-                    {municipalityHighlight.nombre}
-                  </strong>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
-                    {municipalityHighlight.descripcion || 'Zona Operativa GPON'}
-                  </span>
-                </div>
-              </Popup>
-            </Marker>
           </LayerGroup>
         )}
 
