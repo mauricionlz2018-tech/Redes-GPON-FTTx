@@ -374,3 +374,70 @@ export const deleteNap = async (req: Request, res: Response) => {
     });
   }
 };
+
+const updateNapSchema = z.object({
+  identificador: z.string().min(3).max(50).optional(),
+  zona: z.string().min(2).max(100).optional(),
+  direccion_texto: z.string().min(3).max(255).optional(),
+  coordenadas_gps: z.object({
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180)
+  }).optional()
+});
+
+export const updateNap = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const parseResult = updateNapSchema.safeParse(req.body);
+
+    if (!parseResult.success) {
+      res.status(400).json({
+        success: false,
+        message: 'Datos de la caja NAP inválidos',
+        errors: parseResult.error.errors
+      });
+      return;
+    }
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const nap = isUuid
+      ? await NapBox.findByPk(id)
+      : await NapBox.findOne({ where: { identificador: id } });
+
+    if (!nap) {
+      res.status(404).json({ success: false, message: `No se encontró la caja NAP con identificador '${id}'` });
+      return;
+    }
+
+    const { identificador, zona, direccion_texto, coordenadas_gps } = parseResult.data;
+
+    if (identificador && identificador.trim().toUpperCase() !== nap.identificador.toUpperCase()) {
+      const existing = await NapBox.findOne({ where: { identificador: identificador.trim().toUpperCase() } });
+      if (existing && existing.id_nap !== nap.id_nap) {
+        res.status(409).json({
+          success: false,
+          message: `Ya existe una caja NAP registrada con el identificador '${identificador.trim().toUpperCase()}'`
+        });
+        return;
+      }
+      nap.identificador = identificador.trim().toUpperCase();
+    }
+
+    if (zona !== undefined) nap.zona = zona.trim();
+    if (direccion_texto !== undefined) nap.direccion_texto = direccion_texto.trim();
+    if (coordenadas_gps !== undefined) nap.coordenadas_gps = coordenadas_gps;
+
+    await nap.save();
+
+    broadcastNetworkChange('NAP_CHANGED', { action: 'update', nap });
+
+    res.json({
+      success: true,
+      message: `Caja NAP '${nap.identificador}' actualizada correctamente.`,
+      data: nap
+    });
+  } catch (error: any) {
+    console.error('Error al actualizar caja NAP:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

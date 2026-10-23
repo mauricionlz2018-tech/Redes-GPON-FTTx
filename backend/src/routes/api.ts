@@ -13,7 +13,7 @@ import {
   resetPassword
 } from '../controllers/authController';
 import { listOdfs, getOdfById } from '../controllers/odfController';
-import { listNaps, getNapById, updateGpsCoordinates, createNap, deleteNap } from '../controllers/napController';
+import { listNaps, getNapById, updateGpsCoordinates, createNap, updateNap, deleteNap } from '../controllers/napController';
 import { assignPort, releasePort, updatePortStatus } from '../controllers/portController';
 import { listClients, getClientById, updateClient } from '../controllers/clientController';
 import { generateSaturationReport } from '../controllers/reportController';
@@ -90,6 +90,7 @@ router.get('/odf/:id', authenticateToken, getOdfById);
 router.get('/naps', authenticateToken, listNaps);
 router.post('/naps', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createNap);
 router.get('/naps/:id', authenticateToken, getNapById);
+router.put('/naps/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, updateNap);
 router.delete('/naps/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, deleteNap);
 // Actualizar GPS en campo: Permitido para todos los roles de campo
 router.patch('/naps/:id/gps', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, updateGpsCoordinates);

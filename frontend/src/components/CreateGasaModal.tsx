@@ -8,6 +8,7 @@ interface CreateGasaModalProps {
   onSaveGasa: (newGasa: GasaReserva) => void;
   defaultCoordinates?: [number, number];
   existingGasasCount?: number;
+  gasaToEdit?: GasaReserva | null;
 }
 
 export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
@@ -15,9 +16,10 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
   onClose,
   onSaveGasa,
   defaultCoordinates = [19.645, -99.82],
-  existingGasasCount = 8
+  existingGasasCount = 8,
+  gasaToEdit = null
 }) => {
-  const [nombre, setNombre] = useState(() => `Gasa Reserva #${existingGasasCount + 1}`);
+  const [nombre, setNombre] = useState('');
   const [metros, setMetros] = useState<number>(30);
   const [tipoCable, setTipoCable] = useState('Cable Troncal 48H');
   const [lat, setLat] = useState<string | number>(defaultCoordinates[0]);
@@ -26,11 +28,28 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (defaultCoordinates && defaultCoordinates.length >= 2) {
-      setLat(defaultCoordinates[0]);
-      setLng(defaultCoordinates[1]);
+    if (!isOpen) return;
+
+    if (gasaToEdit) {
+      setNombre(gasaToEdit.nombre || '');
+      setMetros(Number(gasaToEdit.longitud_metros || gasaToEdit.metros_reserva || 30));
+      setTipoCable(gasaToEdit.tipo_cable || 'Cable Troncal 48H');
+      if (gasaToEdit.coordenadas_gps) {
+        setLat(gasaToEdit.coordenadas_gps.lat);
+        setLng(gasaToEdit.coordenadas_gps.lng);
+      }
+      setErrorMsg(null);
+    } else {
+      setNombre(`Gasa Reserva #${existingGasasCount + 1}`);
+      setMetros(30);
+      setTipoCable('Cable Troncal 48H');
+      if (defaultCoordinates && defaultCoordinates.length >= 2) {
+        setLat(defaultCoordinates[0]);
+        setLng(defaultCoordinates[1]);
+      }
+      setErrorMsg(null);
     }
-  }, [defaultCoordinates[0], defaultCoordinates[1], isOpen]);
+  }, [isOpen, gasaToEdit, defaultCoordinates[0], defaultCoordinates[1], existingGasasCount]);
 
   if (!isOpen) return null;
 
@@ -70,8 +89,8 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
       return;
     }
 
-    const newGasa: GasaReserva = {
-      id_gasa: `gasa-custom-${Date.now()}`,
+    const savedGasa: GasaReserva = {
+      id_gasa: gasaToEdit ? gasaToEdit.id_gasa : `gasa-custom-${Date.now()}`,
       nombre: nombre.trim(),
       metros_reserva: Number(metros),
       longitud_metros: Number(metros),
@@ -82,9 +101,11 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
       }
     };
 
-    onSaveGasa(newGasa);
+    onSaveGasa(savedGasa);
     onClose();
   };
+
+  const isEditing = Boolean(gasaToEdit);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs overflow-y-auto animate-fadeIn">
@@ -97,10 +118,12 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Agregar Gasa / Reserva Técnica
+                {isEditing ? 'Editar Gasa / Reserva Técnica' : 'Agregar Gasa / Reserva Técnica'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Bucle de reserva de cable de fibra óptica para empalmes y maniobras
+                {isEditing
+                  ? 'Modificar metraje o coordenadas de la reserva'
+                  : 'Bucle de reserva de cable de fibra óptica para empalmes y maniobras'}
               </p>
             </div>
           </div>
@@ -131,7 +154,7 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Ej. Gasa Mufa Centro (30m)"
-              className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
 
@@ -149,7 +172,7 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
                     className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
                       metros === val
                         ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                        : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                     }`}
                   >
                     {val}m
@@ -163,7 +186,7 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
                 required
                 value={metros}
                 onChange={(e) => setMetros(Number(e.target.value))}
-                className="w-full mt-1.5 text-xs px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full mt-1.5 text-xs px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
 
@@ -174,7 +197,7 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
               <select
                 value={tipoCable}
                 onChange={(e) => setTipoCable(e.target.value)}
-                className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 <option value="Cable Troncal 96H">Troncal 96 Hilos</option>
                 <option value="Cable Troncal 48H">Troncal 48 Hilos</option>
@@ -205,25 +228,25 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[11px] text-slate-500 mb-0.5">Latitud</label>
+                <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">Latitud</label>
                 <input
                   type="number"
                   step="any"
                   required
                   value={lat}
                   onChange={(e) => setLat(e.target.value)}
-                  className="w-full text-xs px-2.5 py-2 font-mono rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full text-xs px-2.5 py-2 font-mono rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-slate-500 mb-0.5">Longitud</label>
+                <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">Longitud</label>
                 <input
                   type="number"
                   step="any"
                   required
                   value={lng}
                   onChange={(e) => setLng(e.target.value)}
-                  className="w-full text-xs px-2.5 py-2 font-mono rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full text-xs px-2.5 py-2 font-mono rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
             </div>
@@ -243,7 +266,7 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
               className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Guardar Gasa</span>
+              <span>{isEditing ? 'Guardar Cambios' : 'Guardar Gasa'}</span>
             </button>
           </div>
         </form>
@@ -251,4 +274,3 @@ export const CreateGasaModal: React.FC<CreateGasaModalProps> = ({
     </div>
   );
 };
-

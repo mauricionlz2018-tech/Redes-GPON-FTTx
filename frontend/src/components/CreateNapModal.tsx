@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NapBox, NapPort, NapPortStatus } from '../types';
 import api from '../api/client';
-import { offlineDb } from '../db/offlineDb';
 import { putCachedNapImmediate, broadcastRealtimeEvent } from '../services/realtimeSync';
 import { PlusCircle, MapPin, X, Compass, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -10,6 +9,7 @@ interface CreateNapModalProps {
   onCreatedSuccess: (newNap: NapBox) => void;
   defaultCoordinates?: { lat: number; lng: number };
   existingNaps?: NapBox[];
+  napToEdit?: NapBox | null;
 }
 
 const getInitialIdentificador = (naps?: NapBox[]) => {
@@ -30,9 +30,10 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
   onClose,
   onCreatedSuccess,
   defaultCoordinates,
-  existingNaps
+  existingNaps,
+  napToEdit = null
 }) => {
-  const [identificador, setIdentificador] = useState(() => getInitialIdentificador(existingNaps));
+  const [identificador, setIdentificador] = useState('');
   const [zona, setZona] = useState('');
   const [direccionTexto, setDireccionTexto] = useState('');
   const [lat, setLat] = useState<string | number>(defaultCoordinates?.lat ?? 19.6670);
@@ -40,24 +41,42 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
   const [totalPuertos, setTotalPuertos] = useState<number>(16);
 
   useEffect(() => {
-    if (defaultCoordinates) {
-      setLat(defaultCoordinates.lat);
-      setLng(defaultCoordinates.lng);
+    if (napToEdit) {
+      setIdentificador(napToEdit.identificador || '');
+      setZona(napToEdit.zona || '');
+      setDireccionTexto(napToEdit.direccion_texto || '');
+      setTotalPuertos(napToEdit.total_puertos || 16);
+      if (napToEdit.coordenadas_gps) {
+        setLat(napToEdit.coordenadas_gps.lat);
+        setLng(napToEdit.coordenadas_gps.lng);
+      }
+    } else {
+      setIdentificador(getInitialIdentificador(existingNaps));
+      setZona('');
+      setDireccionTexto('');
+      setTotalPuertos(16);
+      if (defaultCoordinates) {
+        setLat(defaultCoordinates.lat);
+        setLng(defaultCoordinates.lng);
+      }
     }
-  }, [defaultCoordinates?.lat, defaultCoordinates?.lng]);
+  }, [napToEdit, defaultCoordinates?.lat, defaultCoordinates?.lng, existingNaps]);
 
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Validación en tiempo real si el nombre ya existe en la red
+  // Validacion en tiempo real si el nombre ya existe en la red
   const trimmedId = identificador.trim().toUpperCase();
-  const duplicateMatch = existingNaps?.find(
-    (n) => n.identificador.trim().toUpperCase() === trimmedId
-  );
+  const duplicateMatch = existingNaps?.find((n) => {
+    if (napToEdit && (n.id_nap === napToEdit.id_nap || n.identificador.toUpperCase() === napToEdit.identificador.toUpperCase())) {
+      return false;
+    }
+    return n.identificador.trim().toUpperCase() === trimmedId;
+  });
   const isDuplicateName = Boolean(trimmedId && duplicateMatch);
 
-  // Obtener geolocalización actual del navegador / smartphone
+  // Obtener geolocalizacion actual del navegador / smartphone
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
       setErrorMsg('Tu navegador o dispositivo no soporta geolocalización GPS.');
@@ -84,9 +103,9 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
     e.preventDefault();
     setErrorMsg(null);
 
-    // Si el nombre ya existe, bloquea rotundamente la creación
+    // Si el nombre ya existe, bloquea la creacion/edicion
     if (isDuplicateName) {
-      setErrorMsg(`¡Alerta! Ya existe una caja NAP registrada con el nombre "${trimmedId}" en la zona "${duplicateMatch?.zona}". Debes cambiar el nombre antes de poder crearla.`);
+      setErrorMsg(`Alerta: Ya existe una caja NAP registrada con el nombre "${trimmedId}" en la zona "${duplicateMatch?.zona}". Debes cambiar el nombre.`);
       return;
     }
 
@@ -115,6 +134,40 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
     };
 
     setLoading(true);
+
+    if (napToEdit) {
+      try {
+        const res = await api.put(`/naps/${napToEdit.id_nap}`, payload);
+        const updatedNap: NapBox = {
+          ...napToEdit,
+          ...payload,
+          puertos: napToEdit.puertos,
+          metricas: napToEdit.metricas
+        };
+        await putCachedNapImmediate(updatedNap);
+        broadcastRealtimeEvent({ type: 'NAP_UPDATED', nap: updatedNap });
+        onCreatedSuccess(updatedNap);
+        onClose();
+        return;
+      } catch (err: any) {
+        console.warn('Error guardando en backend, guardando en cache local:', err);
+        const updatedNap: NapBox = {
+          ...napToEdit,
+          ...payload,
+          puertos: napToEdit.puertos,
+          metricas: napToEdit.metricas
+        };
+        await putCachedNapImmediate(updatedNap);
+        broadcastRealtimeEvent({ type: 'NAP_UPDATED', nap: updatedNap });
+        onCreatedSuccess(updatedNap);
+        onClose();
+        return;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Modo creacion
     try {
       const res = await api.post('/naps', payload);
       if (res.data.success) {
@@ -126,8 +179,7 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
         return;
       }
     } catch (err: any) {
-      console.warn('Backend no respondió o error de conexión al registrar caja NAP:', err);
-      // Si el servidor explícitamente respondió con error de validación o conflicto de nombre
+      console.warn('Backend no respondio o error de conexion al registrar caja NAP:', err);
       if (err.response && (err.response.status === 409 || err.response.status === 400)) {
         const serverMsg = err.response.data?.message || 'Error de validación al registrar la caja';
         setErrorMsg(serverMsg);
@@ -135,8 +187,6 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
         return;
       }
 
-      // Si no hay conexión con el servidor (servidor local apagado, Render en suspensión o error de red):
-      // Modo resiliente y offline-first: crear la caja con sus 16 puertos e insertarla localmente
       const localId = `nap-local-${Date.now()}`;
       const defaultPorts: NapPort[] = Array.from({ length: Number(totalPuertos) }, (_, i) => ({
         id_puerto: `port-local-${Date.now()}-${i + 1}`,
@@ -178,23 +228,31 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
     }
   };
 
+  const isEditing = Boolean(napToEdit);
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-scaleUp text-slate-900 dark:text-white transition-colors">
-        {/* Cabecera del Modal */}
-        <div className="bg-slate-100 dark:bg-gradient-to-r dark:from-slate-800 dark:to-sky-950 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-xl">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 dark:text-white transition-colors">
+        {/* Encabezado */}
+        <div className="bg-slate-100 dark:bg-slate-800/80 px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400">
               <PlusCircle className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Registrar Nueva Caja NAP</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Instalación y despliegue de divisor óptico 1:16</p>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                {isEditing ? 'Editar Caja NAP' : 'Nueva Caja de Distribución Óptica (NAP)'}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {isEditing
+                  ? 'Modificar datos de identificación, zona o ubicación geodésica'
+                  : 'Registro de nuevo punto de acceso y matriz de puertos para abonados'}
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -204,7 +262,7 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {errorMsg && (
             <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-950/50 border border-red-500/30 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
@@ -233,8 +291,8 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
                 <div className="mt-1.5 p-2 rounded-lg bg-red-50 dark:bg-red-950/60 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 text-[11px] flex items-start gap-1.5">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
                   <div>
-                    <strong className="block font-semibold">¡Nombre de caja ya registrado!</strong>
-                    <span>Ya existe una caja registrada como <strong>"{trimmedId}"</strong>{duplicateMatch?.zona ? ` en la zona "${duplicateMatch.zona}"` : ''}. Debes ingresar un nombre o número diferente para poder crearla.</span>
+                    <strong className="block font-semibold">Nombre de caja ya registrado</strong>
+                    <span>Ya existe una caja registrada como <strong>"{trimmedId}"</strong>{duplicateMatch?.zona ? ` en la zona "${duplicateMatch.zona}"` : ''}.</span>
                   </div>
                 </div>
               )}
@@ -246,8 +304,9 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
               </label>
               <select
                 value={totalPuertos}
+                disabled={isEditing}
                 onChange={(e) => setTotalPuertos(Number(e.target.value))}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 disabled:opacity-60"
               >
                 <option value={8}>8 Puertos (Splitter 1:8)</option>
                 <option value={16}>16 Puertos (Estándar 1:16)</option>
@@ -258,53 +317,53 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Zona / Sector de Cobertura *
+              Zona / Municipio / Localidad *
             </label>
             <input
               type="text"
               required
               value={zona}
               onChange={(e) => setZona(e.target.value)}
-              placeholder="Ej. Barrio San Miguel / Colonia Centro"
+              placeholder="Ej. San José del Rincón Centro"
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Dirección Física / Referencia de Poste *
+              Dirección Física / Referencia del Poste *
             </label>
             <input
               type="text"
               required
               value={direccionTexto}
               onChange={(e) => setDireccionTexto(e.target.value)}
-              placeholder="Ej. Av. Hidalgo esq. Allende, Poste CFE #89"
+              placeholder="Ej. Calle Hidalgo #45, Poste CFE #892 frente a Farmacia"
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
             />
           </div>
 
           {/* Coordenadas GPS */}
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 space-y-3">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
-                <MapPin className="w-4 h-4" />
-                Coordenadas Geográficas (GPS)
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-sky-500" />
+                Coordenadas GPS de la Caja
               </span>
               <button
                 type="button"
                 onClick={handleGetCurrentLocation}
                 disabled={locating}
-                className="text-[11px] text-sky-700 dark:text-sky-400 hover:text-sky-900 dark:hover:text-sky-300 bg-sky-100 dark:bg-sky-950/60 hover:bg-sky-200 dark:hover:bg-sky-900/80 border border-sky-300 dark:border-sky-800/80 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <Compass className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
-                <span>{locating ? 'Capturando...' : 'GPS de mi dispositivo'}</span>
+                <Compass className={`w-3 h-3 ${locating ? 'animate-spin' : ''}`} />
+                <span>{locating ? 'Capturando GPS...' : 'Usar mi ubicación'}</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">Latitud</label>
+                <label className="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">Latitud</label>
                 <input
                   type="number"
                   step="any"
@@ -315,7 +374,7 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">Longitud</label>
+                <label className="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">Longitud</label>
                 <input
                   type="number"
                   step="any"
@@ -333,14 +392,14 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors"
+              className="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading || isDuplicateName}
-              className={`px-5 py-2 text-xs font-bold text-white rounded-lg shadow-lg flex items-center gap-1.5 transition-all ${
+              className={`px-5 py-2 text-xs font-bold text-white rounded-lg shadow-lg flex items-center gap-1.5 transition-all cursor-pointer ${
                 isDuplicateName
                   ? 'bg-rose-700/80 cursor-not-allowed opacity-80'
                   : 'bg-sky-600 hover:bg-sky-500 shadow-sky-900/30 disabled:opacity-50'
@@ -351,7 +410,9 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
                 {isDuplicateName
                   ? 'Nombre Duplicado - Cambiar Nombre'
                   : loading
-                  ? 'Creando caja y puertos...'
+                  ? 'Guardando...'
+                  : isEditing
+                  ? 'Guardar Cambios'
                   : 'Guardar y Desplegar Caja'}
               </span>
             </button>
@@ -361,4 +422,3 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
     </div>
   );
 };
-

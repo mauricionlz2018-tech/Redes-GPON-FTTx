@@ -29,7 +29,8 @@ import {
   Power,
   Ruler,
   Box,
-  Cpu
+  Cpu,
+  Pencil
 } from 'lucide-react';
 
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
@@ -76,6 +77,11 @@ interface GponMapProps {
   onDeleteMufaRequest?: (mufa: EmpalmeClosure) => void;
   onDeletePosteRequest?: (poste: PosteInfraestructura) => void;
   onDeleteGasaRequest?: (gasa: GasaReserva) => void;
+  onEditRouteRequest?: (route: FiberRoute) => void;
+  onEditMufaRequest?: (mufa: EmpalmeClosure) => void;
+  onEditPosteRequest?: (poste: PosteInfraestructura) => void;
+  onEditGasaRequest?: (gasa: GasaReserva) => void;
+  onEditNapRequest?: (nap: NapBox) => void;
   deletedRouteIds?: string[];
   deletedMufaIds?: string[];
   deletedPosteIds?: string[];
@@ -472,6 +478,11 @@ export const GponMap: React.FC<GponMapProps> = ({
   onDeleteMufaRequest,
   onDeletePosteRequest,
   onDeleteGasaRequest,
+  onEditRouteRequest,
+  onEditMufaRequest,
+  onEditPosteRequest,
+  onEditGasaRequest,
+  onEditNapRequest,
   deletedRouteIds = [],
   deletedMufaIds = [],
   deletedPosteIds = [],
@@ -726,23 +737,11 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   // Combinar rutas KMZ completas con rutas de la base central y personalizadas (Filtrando eliminadas)
   const allRoutes = useMemo(() => {
-    const combined: FiberRoute[] = [];
-    (fiberRoutes || []).forEach((fr) => {
-      if (!combined.some((c) => c.id_ruta === fr.id_ruta)) {
-        combined.push(fr);
-      }
-    });
-    troncalIxtJocRoutes.forEach((tr) => {
-      if (!combined.some((c) => c.id_ruta === tr.id_ruta)) {
-        combined.push(tr);
-      }
-    });
-    mockFiberRoutes.forEach((sr) => {
-      if (!combined.some((c) => c.id_ruta === sr.id_ruta)) {
-        combined.push(sr);
-      }
-    });
-    return combined.filter((r) => {
+    const routeMap: Record<string, FiberRoute> = {};
+    troncalIxtJocRoutes.forEach((tr) => { routeMap[tr.id_ruta] = tr; });
+    mockFiberRoutes.forEach((sr) => { routeMap[sr.id_ruta] = sr; });
+    (fiberRoutes || []).forEach((fr) => { routeMap[fr.id_ruta] = fr; });
+    return Object.values(routeMap).filter((r) => {
       if (deletedRouteIds.includes(r.id_ruta)) return false;
       if (!r.coordenadas || !Array.isArray(r.coordenadas) || r.coordenadas.length < 2) return false;
       return r.coordenadas.every(
@@ -753,19 +752,10 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   // Combinar empalmes KMZ con empalmes de la base central (Filtrando eliminadas)
   const allEmpalmes = useMemo(() => {
-    const combined: EmpalmeClosure[] = [];
-    (empalmes || []).forEach((em) => {
-      if (!combined.some((c) => c.id_empalme === em.id_empalme)) {
-        combined.push(em);
-      }
-    });
-    troncalMufas.forEach((tm) => {
-      const key = (tm.nombre || tm.id_empalme).toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (!combined.some((c) => (c.nombre || c.id_empalme).toLowerCase().replace(/[^a-z0-9]/g, '') === key)) {
-        combined.push(tm);
-      }
-    });
-    return combined.filter((m) => {
+    const empalmeMap: Record<string, EmpalmeClosure> = {};
+    troncalMufas.forEach((tm) => { empalmeMap[tm.id_empalme] = tm; });
+    (empalmes || []).forEach((em) => { empalmeMap[em.id_empalme] = em; });
+    return Object.values(empalmeMap).filter((m) => {
       if (deletedMufaIds.includes(m.id_empalme)) return false;
       if (!m.coordenadas_gps || typeof m.coordenadas_gps.lat !== 'number' || typeof m.coordenadas_gps.lng !== 'number') return false;
       return !isNaN(m.coordenadas_gps.lat) && !isNaN(m.coordenadas_gps.lng);
@@ -774,15 +764,16 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   // Combinar postes propuestos (KMZ + personalizados de la base central)
   const allPostesPropuestos = useMemo(() => {
-    const combined = [...postesPropuestos];
-    if (customPostes && customPostes.length > 0) {
-      customPostes.forEach((cp) => {
-        if (cp.tipo === 'poste_propuesto' && !combined.some((p) => p.id_poste === cp.id_poste)) {
-          combined.push(cp);
-        }
-      });
-    }
-    return combined.filter((p) => {
+    const posteMap: Record<string, PosteInfraestructura> = {};
+    postesPropuestos.forEach((p) => { posteMap[p.id_poste] = p; });
+    (customPostes || []).forEach((cp) => {
+      if (cp.tipo === 'poste_propuesto') {
+        posteMap[cp.id_poste] = cp;
+      } else {
+        delete posteMap[cp.id_poste];
+      }
+    });
+    return Object.values(posteMap).filter((p) => {
       if (deletedPosteIds.includes(p.id_poste)) return false;
       if (!p.coordenadas_gps || typeof p.coordenadas_gps.lat !== 'number' || typeof p.coordenadas_gps.lng !== 'number') return false;
       return !isNaN(p.coordenadas_gps.lat) && !isNaN(p.coordenadas_gps.lng);
@@ -791,15 +782,16 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   // Combinar postes CFE (KMZ + personalizados de la base central)
   const allPostesCfe = useMemo(() => {
-    const combined = [...postesCfe];
-    if (customPostes && customPostes.length > 0) {
-      customPostes.forEach((cp) => {
-        if (cp.tipo === 'poste_cfe' && !combined.some((p) => p.id_poste === cp.id_poste)) {
-          combined.push(cp);
-        }
-      });
-    }
-    return combined.filter((p) => {
+    const posteMap: Record<string, PosteInfraestructura> = {};
+    postesCfe.forEach((p) => { posteMap[p.id_poste] = p; });
+    (customPostes || []).forEach((cp) => {
+      if (cp.tipo === 'poste_cfe') {
+        posteMap[cp.id_poste] = cp;
+      } else {
+        delete posteMap[cp.id_poste];
+      }
+    });
+    return Object.values(posteMap).filter((p) => {
       if (deletedPosteIds.includes(p.id_poste)) return false;
       if (!p.coordenadas_gps || typeof p.coordenadas_gps.lat !== 'number' || typeof p.coordenadas_gps.lng !== 'number') return false;
       return !isNaN(p.coordenadas_gps.lat) && !isNaN(p.coordenadas_gps.lng);
@@ -808,23 +800,15 @@ export const GponMap: React.FC<GponMapProps> = ({
 
   // Combinar gasas KMZ con gasas personalizadas creadas por el usuario (Filtrando eliminadas)
   const allGasas = useMemo(() => {
-    const combined: GasaReserva[] = [];
-    (customGasas || []).forEach((cg) => {
-      if (!combined.some((g) => g.id_gasa === cg.id_gasa)) {
-        combined.push(cg);
-      }
-    });
-    (gasas || troncalGasas || []).forEach((g) => {
-      if (!combined.some((cg) => cg.id_gasa === g.id_gasa)) {
-        combined.push(g);
-      }
-    });
-    return combined.filter((g) => {
+    const gasaMap: Record<string, GasaReserva> = {};
+    (gasas || troncalGasas || []).forEach((g) => { gasaMap[g.id_gasa] = g; });
+    (customGasas || []).forEach((cg) => { gasaMap[cg.id_gasa] = cg; });
+    return Object.values(gasaMap).filter((g) => {
       if (deletedGasaIds.includes(g.id_gasa)) return false;
       if (!g.coordenadas_gps || typeof g.coordenadas_gps.lat !== 'number' || typeof g.coordenadas_gps.lng !== 'number') return false;
       return !isNaN(g.coordenadas_gps.lat) && !isNaN(g.coordenadas_gps.lng);
     });
-  }, [customGasas, gasas, deletedGasaIds]);
+  }, [gasas, customGasas, deletedGasaIds]);
 
   // Virtualización por Vista (Viewport Culling & LOD Ultra-Optimizado):
   // A nivel regional y de carretera los postes y gasas se ocultan para mantener el mapa fluido a 60 FPS sin saturación ni tirones.
@@ -1372,6 +1356,16 @@ export const GponMap: React.FC<GponMapProps> = ({
           <span className="text-indigo-600 dark:text-indigo-400 font-bold shrink-0">
             {getRouteDistance(selectedRoute).km} km ({getRouteDistance(selectedRoute).metros.toLocaleString()} ML)
           </span>
+          {onEditRouteRequest && (
+            <button
+              onClick={() => onEditRouteRequest(selectedRoute)}
+              className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-xs transition-all active:scale-95 cursor-pointer ml-1"
+              title="Editar parámetros y trazado de esta línea"
+            >
+              <Pencil className="w-3 h-3" />
+              <span>Editar</span>
+            </button>
+          )}
           {onDeleteRouteRequest && (
             <button
               onClick={() => {
@@ -1560,6 +1554,17 @@ export const GponMap: React.FC<GponMapProps> = ({
                       <Camera className="w-3 h-3 text-amber-800 dark:text-amber-400" />
                       <span>Ver Mufa en Street View</span>
                     </button>
+                    {onEditMufaRequest && (
+                      <button
+                        type="button"
+                        onClick={() => onEditMufaRequest(emp)}
+                        className="mt-1.5 w-full bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-sky-300 dark:border-sky-800 font-semibold cursor-pointer"
+                        title="Editar parámetros o coordenadas de esta mufa"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span>Editar Mufa</span>
+                      </button>
+                    )}
                     {onDeleteMufaRequest && (
                       <button
                         type="button"
@@ -1619,6 +1624,17 @@ export const GponMap: React.FC<GponMapProps> = ({
                       <Camera className="w-3 h-3 text-amber-800 dark:text-amber-400" />
                       <span>Ver en Street View</span>
                     </button>
+                    {onEditGasaRequest && (
+                      <button
+                        type="button"
+                        onClick={() => onEditGasaRequest(gasa)}
+                        className="mt-1.5 w-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-blue-300 dark:border-blue-800 font-semibold cursor-pointer"
+                        title="Editar parámetros o coordenadas de esta gasa"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span>Editar Gasa</span>
+                      </button>
+                    )}
                     {onDeleteGasaRequest && (
                       <button
                         type="button"
@@ -1677,6 +1693,17 @@ export const GponMap: React.FC<GponMapProps> = ({
                       <Camera className="w-3 h-3 text-amber-800 dark:text-amber-400" />
                       <span>Ver Poste en Street View</span>
                     </button>
+                    {onEditPosteRequest && (
+                      <button
+                        type="button"
+                        onClick={() => onEditPosteRequest(poste)}
+                        className="mt-1.5 w-full bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-rose-300 dark:border-rose-800 font-semibold cursor-pointer"
+                        title="Editar parámetros o coordenadas de este poste"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span>Editar Poste</span>
+                      </button>
+                    )}
                     {onDeletePosteRequest && (
                       <button
                         type="button"
@@ -1737,6 +1764,17 @@ export const GponMap: React.FC<GponMapProps> = ({
                       <Camera className="w-3 h-3 text-amber-800 dark:text-amber-400" />
                       <span>Ver Poste en Street View</span>
                     </button>
+                    {onEditPosteRequest && (
+                      <button
+                        type="button"
+                        onClick={() => onEditPosteRequest(poste)}
+                        className="mt-1.5 w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-slate-300 dark:border-slate-700 font-semibold cursor-pointer"
+                        title="Editar parámetros o coordenadas de este poste"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span>Editar Poste</span>
+                      </button>
+                    )}
                     {onDeletePosteRequest && (
                       <button
                         type="button"
@@ -1956,6 +1994,18 @@ export const GponMap: React.FC<GponMapProps> = ({
                       </button>
 
                       
+
+                      {onEditNapRequest && (
+                        <button
+                          type="button"
+                          onClick={() => onEditNapRequest(nap)}
+                          className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-slate-300 dark:border-slate-700 cursor-pointer"
+                          title="Editar identificador, zona o coordenadas de esta caja NAP"
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
+                          <span>Editar Caja NAP</span>
+                        </button>
+                      )}
 
                       {onDeleteNapRequest && (
                         <button

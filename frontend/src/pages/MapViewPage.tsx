@@ -183,6 +183,13 @@ export const MapViewPage: React.FC = () => {
   const [isCreatePosteOpen, setIsCreatePosteOpen] = useState(false);
   const [isCreateGasaOpen, setIsCreateGasaOpen] = useState(false);
 
+  // Estados de Edición de Infraestructura
+  const [editingRoute, setEditingRoute] = useState<FiberRoute | null>(null);
+  const [editingMufa, setEditingMufa] = useState<EmpalmeClosure | null>(null);
+  const [editingPoste, setEditingPoste] = useState<PosteInfraestructura | null>(null);
+  const [editingGasa, setEditingGasa] = useState<GasaReserva | null>(null);
+  const [editingNap, setEditingNap] = useState<NapBox | null>(null);
+
   // Estados para Drag & Drop y Colocación Interactiva de Elementos
   const [placementMode, setPlacementMode] = useState<'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | null>(null);
   const [droppedCoordinates, setDroppedCoordinates] = useState<{ lat: number; lng: number } | null>(null);
@@ -1790,6 +1797,11 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                 details: `Reserva técnica: ${gasa.longitud_metros || gasa.metros_reserva || 30} metros.`
               })
             }
+            onEditRouteRequest={(route) => setEditingRoute(route)}
+            onEditMufaRequest={(mufa) => setEditingMufa(mufa)}
+            onEditPosteRequest={(poste) => setEditingPoste(poste)}
+            onEditGasaRequest={(gasa) => setEditingGasa(gasa)}
+            onEditNapRequest={(nap) => setEditingNap(nap)}
             deletedRouteIds={deletedRouteIds}
             deletedMufaIds={deletedMufaIds}
             deletedPosteIds={deletedPosteIds}
@@ -2032,30 +2044,34 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         />
       )}
 
-      {isCreateNapOpen && (
+      {(isCreateNapOpen || !!editingNap) && (
         <CreateNapModal
           onClose={() => {
             setIsCreateNapOpen(false);
+            setEditingNap(null);
             setTempPlacementPin(null);
             setDroppedCoordinates(null);
           }}
+          napToEdit={editingNap}
           existingNaps={naps}
-          onCreatedSuccess={(newNap) => {
+          onCreatedSuccess={(savedNap) => {
             setNaps((prev) => {
-              const updated = [newNap, ...prev.filter((n) => n.id_nap !== newNap.id_nap)];
+              const updated = [savedNap, ...prev.filter((n) => n.id_nap !== savedNap.id_nap)];
               saveCachedNaps(updated);
               return updated;
             });
-            setSelectedNap(newNap);
+            setSelectedNap(savedNap);
+            setEditingNap(null);
             setTempPlacementPin(null);
             setDroppedCoordinates(null);
             setFeedbackNotice({
               type: 'success',
-              message: `Caja ${newNap.identificador} registrada y desplegada exitosamente en el mapa (${newNap.total_puertos} puertos).`
+              message: `Caja ${savedNap.identificador} guardada exitosamente (${savedNap.total_puertos} puertos).`
             });
             setTimeout(() => setFeedbackNotice(null), 6000);
           }}
           defaultCoordinates={
+            editingNap?.coordenadas_gps ||
             droppedCoordinates ||
             (odf?.coordenadas_gps
               ? {
@@ -2128,11 +2144,12 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         }}
       />
 
-      {/* Modal para Crear y Trazar Nueva Ruta Troncal o Ramal */}
+      {/* Modal para Crear y Trazar Nueva Ruta Troncal o Ramal, o Editar una existente */}
       <CreateRouteModal
-        isOpen={isCreateRouteOpen}
+        isOpen={isCreateRouteOpen || !!editingRoute}
         onClose={() => {
           setIsCreateRouteOpen(false);
+          setEditingRoute(null);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
           setRouteDraftPoints([]);
@@ -2140,18 +2157,23 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         }}
         onSaveRoute={(route) => {
           handleSaveRoute(route);
+          setIsCreateRouteOpen(false);
+          setEditingRoute(null);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
           setRouteDraftPoints([]);
           setIsDrawingRoute(false);
         }}
+        routeToEdit={editingRoute}
         draftPoints={routeDraftPoints.length >= 2 ? routeDraftPoints : undefined}
         onEditOnMap={() => {
           setIsCreateRouteOpen(false);
           setIsDrawingRoute(true);
         }}
         defaultCoordinates={
-          droppedCoordinates
+          editingRoute?.coordenadas?.[0]
+            ? editingRoute.coordenadas[0]
+            : droppedCoordinates
             ? [droppedCoordinates.lat, droppedCoordinates.lng]
             : selectedNap?.coordenadas_gps
             ? [selectedNap.coordenadas_gps.lat, selectedNap.coordenadas_gps.lng]
@@ -2161,21 +2183,27 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         }
       />
 
-      {/* Modal para Crear e Instalar Nueva Mufa / Cierre de Empalme Torpedo */}
+      {/* Modal para Crear e Instalar Nueva Mufa / Cierre de Empalme Torpedo, o Editar una existente */}
       <CreateMufaModal
-        isOpen={isCreateMufaOpen}
+        isOpen={isCreateMufaOpen || !!editingMufa}
         onClose={() => {
           setIsCreateMufaOpen(false);
+          setEditingMufa(null);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
         }}
         onSaveMufa={(mufa) => {
           handleSaveMufa(mufa);
+          setIsCreateMufaOpen(false);
+          setEditingMufa(null);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
         }}
+        mufaToEdit={editingMufa}
         defaultCoordinates={
-          droppedCoordinates
+          editingMufa?.coordenadas_gps
+            ? [editingMufa.coordenadas_gps.lat, editingMufa.coordenadas_gps.lng]
+            : droppedCoordinates
             ? [droppedCoordinates.lat, droppedCoordinates.lng]
             : selectedNap?.coordenadas_gps
             ? [
@@ -2186,21 +2214,27 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         }
       />
 
-      {/* Modal para Crear y Registrar Nuevo Poste de Red (Propuesto o CFE) */}
+      {/* Modal para Crear y Registrar Nuevo Poste de Red (Propuesto o CFE), o Editar uno existente */}
       <CreatePosteModal
-        isOpen={isCreatePosteOpen}
+        isOpen={isCreatePosteOpen || !!editingPoste}
         onClose={() => {
           setIsCreatePosteOpen(false);
+          setEditingPoste(null);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
         }}
         onSavePoste={(poste) => {
           handleSavePoste(poste);
+          setIsCreatePosteOpen(false);
+          setEditingPoste(null);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
         }}
+        posteToEdit={editingPoste}
         defaultCoordinates={
-          droppedCoordinates
+          editingPoste?.coordenadas_gps
+            ? [editingPoste.coordenadas_gps.lat, editingPoste.coordenadas_gps.lng]
+            : droppedCoordinates
             ? [droppedCoordinates.lat, droppedCoordinates.lng]
             : selectedNap?.coordenadas_gps
             ? [
@@ -2212,21 +2246,27 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         existingPostesCount={144 + customPostes.length}
       />
 
-      {/* Modal para Crear y Registrar Nueva Gasa de Reserva Técnica */}
+      {/* Modal para Crear y Registrar Nueva Gasa de Reserva Técnica, o Editar una existente */}
       <CreateGasaModal
-        isOpen={isCreateGasaOpen}
+        isOpen={isCreateGasaOpen || !!editingGasa}
         onClose={() => {
           setIsCreateGasaOpen(false);
+          setEditingGasa(null);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
         }}
         onSaveGasa={(gasa) => {
           handleSaveGasa(gasa);
+          setIsCreateGasaOpen(false);
+          setEditingGasa(null);
           setTempPlacementPin(null);
           setDroppedCoordinates(null);
         }}
+        gasaToEdit={editingGasa}
         defaultCoordinates={
-          droppedCoordinates
+          editingGasa?.coordenadas_gps
+            ? [editingGasa.coordenadas_gps.lat, editingGasa.coordenadas_gps.lng]
+            : droppedCoordinates
             ? [droppedCoordinates.lat, droppedCoordinates.lng]
             : selectedNap?.coordenadas_gps
             ? [

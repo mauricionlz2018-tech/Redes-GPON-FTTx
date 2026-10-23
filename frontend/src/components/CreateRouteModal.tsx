@@ -10,9 +10,10 @@ interface CreateRouteModalProps {
   defaultCoordinates?: [number, number];
   draftPoints?: [number, number][];
   onEditOnMap?: () => void;
+  routeToEdit?: FiberRoute | null;
 }
 
-// Cálculo geodésico Haversine para metros y kilómetros
+// Calculo geodesico Haversine para metros y kilometros
 function calculateDistanceMeters(coords: [number, number][]): number {
   if (!coords || coords.length < 2) return 0;
   let total = 0;
@@ -43,7 +44,8 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
   onSaveRoute,
   defaultCoordinates = [19.698, -100.112],
   draftPoints,
-  onEditOnMap
+  onEditOnMap,
+  routeToEdit = null
 }) => {
   const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState<'troncal' | 'ramal' | 'distribucion'>('troncal');
@@ -62,9 +64,29 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
     ];
   });
 
-  // Sincronizar coordenadas iniciales si el usuario arrastró o hizo clic en una posición del mapa o trazó puntos
+  // Sincronizar coordenadas iniciales si el usuario arrastro o hizo clic en una posicion del mapa o trazo puntos
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return;
+
+    if (routeToEdit) {
+      setNombre(routeToEdit.nombre || '');
+      setTipo((routeToEdit.tipo as any) || 'troncal');
+      setHilos(routeToEdit.hilos || 48);
+      setSubtipo(routeToEdit.subtipo || 'Troncal 48H');
+      setColor(routeToEdit.color || FIBER_DESIGN_COLORS.fibraTroncal48H);
+      setGrosor(routeToEdit.grosor || 4);
+      setEstado((routeToEdit.estado as any) || 'operativa');
+      if (routeToEdit.coordenadas && routeToEdit.coordenadas.length >= 2) {
+        setPoints(routeToEdit.coordenadas);
+      }
+    } else {
+      setNombre('');
+      setTipo('troncal');
+      setHilos(48);
+      setSubtipo('Troncal 48H');
+      setColor(FIBER_DESIGN_COLORS.fibraTroncal48H);
+      setGrosor(4);
+      setEstado('operativa');
       if (draftPoints && draftPoints.length >= 2) {
         setPoints(draftPoints);
       } else if (defaultCoordinates && defaultCoordinates.length >= 2) {
@@ -77,9 +99,9 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
         ]);
       }
     }
-  }, [isOpen, draftPoints, defaultCoordinates[0], defaultCoordinates[1]]);
+  }, [isOpen, routeToEdit, draftPoints, defaultCoordinates[0], defaultCoordinates[1]]);
 
-  // Manejar cambio de tipo de cable para autoajustar color y grosor según la norma
+  // Manejar cambio de tipo de cable para autoajustar color y grosor segun la norma
   const handleSubtipoPresetChange = (preset: string) => {
     setSubtipo(preset);
     if (preset === 'Troncal 96H') {
@@ -97,7 +119,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
       setHilos(12);
       setColor(FIBER_DESIGN_COLORS.fibraTroncal12H);
       setGrosor(3.5);
-    } else if (preset === 'Distribución 12H') {
+    } else if (preset === 'Distribucion 12H') {
       setTipo('distribucion');
       setHilos(12);
       setColor(FIBER_DESIGN_COLORS.fibraDistribucion12H);
@@ -110,7 +132,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
     }
   };
 
-  // Cálculo en tiempo real de la distancia de la línea
+  // Calculo en tiempo real de la distancia de la linea
   const distanciaMetros = useMemo(() => calculateDistanceMeters(points), [points]);
   const distanciaKm = useMemo(() => Number((distanciaMetros / 1000).toFixed(2)), [distanciaMetros]);
 
@@ -144,8 +166,8 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
       return;
     }
 
-    const newRoute: FiberRoute = {
-      id_ruta: `route-custom-${Date.now()}`,
+    const savedRoute: FiberRoute = {
+      id_ruta: routeToEdit ? routeToEdit.id_ruta : `route-custom-${Date.now()}`,
       nombre: nombre.trim(),
       tipo,
       subtipo,
@@ -161,12 +183,14 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
       estado
     };
 
-    onSaveRoute(newRoute);
+    onSaveRoute(savedRoute);
     setNombre('');
     onClose();
   };
 
   if (!isOpen) return null;
+
+  const isEditing = Boolean(routeToEdit);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
@@ -178,9 +202,13 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
               <Network className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Registrar Línea de Fibra Óptica</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                {isEditing ? 'Editar Línea de Fibra Óptica' : 'Registrar Línea de Fibra Óptica'}
+              </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Configuración de tendido, capacidad de hilos y cálculo métrico
+                {isEditing
+                  ? 'Modificar parámetros técnicos, hilos o geometría del tendido'
+                  : 'Configuración de tendido, capacidad de hilos y cálculo métrico'}
               </p>
             </div>
           </div>
@@ -246,7 +274,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                 <option value="Troncal 96H">Troncal 96 Hilos</option>
                 <option value="Troncal 48H">Troncal 48 Hilos</option>
                 <option value="Troncal 12H">Troncal 12 Hilos</option>
-                <option value="Distribución 12H">Distribución 12 Hilos</option>
+                <option value="Distribucion 12H">Distribución 12 Hilos</option>
                 <option value="Ramal 24H">Ramal 24 Hilos</option>
               </select>
             </div>
@@ -411,7 +439,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
               className="px-5 py-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-lg shadow-sky-900/20 flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Guardar Línea de Fibra ({distanciaKm} km)</span>
+              <span>{isEditing ? 'Guardar Cambios' : 'Guardar Línea de Fibra'} ({distanciaKm} km)</span>
             </button>
           </div>
         </form>
@@ -419,4 +447,3 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
     </div>
   );
 };
-

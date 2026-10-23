@@ -48,6 +48,7 @@ export const createPoste = async (req: Request, res: Response) => {
     const existing = await InfrastructurePoste.findByPk(posteId);
     if (existing) {
       await existing.update({ nombre, codigo, tipo, coordenadas_gps, material });
+      broadcastNetworkChange('POSTE_CHANGED', { action: 'update', poste: existing });
       res.status(200).json({
         success: true,
         message: `Poste ${codigo} actualizado correctamente.`,
@@ -178,6 +179,7 @@ export const createRoute = async (req: Request, res: Response) => {
     const existing = await InfrastructureRoute.findByPk(routeId);
     if (existing) {
       await existing.update({ nombre, tipo, hilos, subtipo, color, grosor, distancia_metros, distancia_km, vertices, coordenadas, estado });
+      broadcastNetworkChange('ROUTE_CHANGED', { action: 'update', route: existing });
       res.status(200).json({ success: true, data: existing });
       return;
     }

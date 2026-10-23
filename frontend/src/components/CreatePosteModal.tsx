@@ -8,6 +8,7 @@ interface CreatePosteModalProps {
   onSavePoste: (newPoste: PosteInfraestructura) => void;
   defaultCoordinates?: [number, number];
   existingPostesCount?: number;
+  posteToEdit?: PosteInfraestructura | null;
 }
 
 export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
@@ -15,12 +16,11 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
   onClose,
   onSavePoste,
   defaultCoordinates = [19.6450, -99.8200],
-  existingPostesCount = 144
+  existingPostesCount = 144,
+  posteToEdit = null
 }) => {
   const [tipo, setTipo] = useState<'poste_propuesto' | 'poste_cfe'>('poste_propuesto');
-  const [codigo, setCodigo] = useState(() => {
-    return `POSTE-P-${existingPostesCount + 1}`;
-  });
+  const [codigo, setCodigo] = useState('');
   const [material, setMaterial] = useState('Concreto 12m');
   const [lat, setLat] = useState<string | number>(defaultCoordinates[0]);
   const [lng, setLng] = useState<string | number>(defaultCoordinates[1]);
@@ -28,21 +28,39 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (defaultCoordinates && defaultCoordinates.length >= 2) {
-      setLat(defaultCoordinates[0]);
-      setLng(defaultCoordinates[1]);
+    if (!isOpen) return;
+
+    if (posteToEdit) {
+      setTipo((posteToEdit.tipo as any) === 'poste_cfe' ? 'poste_cfe' : 'poste_propuesto');
+      setCodigo(posteToEdit.codigo || posteToEdit.nombre || '');
+      setMaterial((posteToEdit as any).material || 'Concreto 12m');
+      if (posteToEdit.coordenadas_gps) {
+        setLat(posteToEdit.coordenadas_gps.lat);
+        setLng(posteToEdit.coordenadas_gps.lng);
+      }
+      setErrorMsg(null);
+    } else {
+      setTipo('poste_propuesto');
+      setCodigo(`POSTE-P-${existingPostesCount + 1}`);
+      setMaterial('Concreto 12m');
+      if (defaultCoordinates && defaultCoordinates.length >= 2) {
+        setLat(defaultCoordinates[0]);
+        setLng(defaultCoordinates[1]);
+      }
+      setErrorMsg(null);
     }
-  }, [defaultCoordinates[0], defaultCoordinates[1], isOpen]);
+  }, [isOpen, posteToEdit, defaultCoordinates[0], defaultCoordinates[1], existingPostesCount]);
 
   if (!isOpen) return null;
 
-  // Cambiar prefijo de código sugerido según el tipo
   const handleTipoChange = (newTipo: 'poste_propuesto' | 'poste_cfe') => {
     setTipo(newTipo);
-    if (newTipo === 'poste_propuesto') {
-      setCodigo(`POSTE-P-${existingPostesCount + 1}`);
-    } else {
-      setCodigo(`CFE-${Math.floor(800 + Math.random() * 200)}`);
+    if (!posteToEdit) {
+      if (newTipo === 'poste_propuesto') {
+        setCodigo(`POSTE-P-${existingPostesCount + 1}`);
+      } else {
+        setCodigo(`CFE-${Math.floor(800 + Math.random() * 200)}`);
+      }
     }
   };
 
@@ -82,10 +100,12 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
       return;
     }
 
-    const newPoste: PosteInfraestructura = {
-      id_poste: `poste-custom-${Date.now()}`,
-      nombre: codigo.trim().toUpperCase(),
-      codigo: codigo.trim().toUpperCase(),
+    const cleanCodigo = codigo.trim().toUpperCase();
+
+    const savedPoste: PosteInfraestructura = {
+      id_poste: posteToEdit ? posteToEdit.id_poste : `poste-custom-${Date.now()}`,
+      nombre: cleanCodigo,
+      codigo: cleanCodigo,
       tipo,
       coordenadas_gps: {
         lat: numLat,
@@ -93,9 +113,11 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
       }
     };
 
-    onSavePoste(newPoste);
+    onSavePoste(savedPoste);
     onClose();
   };
+
+  const isEditing = Boolean(posteToEdit);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
@@ -107,9 +129,13 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Agregar Poste de Red</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                {isEditing ? 'Editar Poste de Red' : 'Agregar Poste de Red'}
+              </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Infraestructura de soporte aéreo de planta externa
+                {isEditing
+                  ? 'Modificar parámetros técnicos o coordenadas del poste'
+                  : 'Infraestructura de soporte aéreo de planta externa'}
               </p>
             </div>
           </div>
@@ -148,9 +174,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
                 <span className="w-4 h-4 rounded-full bg-red-600 border-2 border-white shadow-xs shrink-0 mt-0.5" />
                 <div>
                   <div className="text-xs font-bold text-slate-900 dark:text-white">Poste Propuesto</div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                    Proyectado de planta externa (Círculo rojo)
-                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400">Nuevo tendido proyectado</div>
                 </div>
               </button>
 
@@ -159,24 +183,22 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
                 onClick={() => handleTipoChange('poste_cfe')}
                 className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
                   tipo === 'poste_cfe'
-                    ? 'border-slate-600 bg-slate-100 dark:bg-slate-800 ring-2 ring-slate-500/20'
+                    ? 'border-slate-700 bg-slate-100 dark:bg-slate-800 ring-2 ring-slate-500/20'
                     : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                 }`}
               >
-                <span className="w-4 h-4 rounded-full bg-slate-600 text-[8px] text-white flex items-center justify-center font-bold border border-white shrink-0 mt-0.5">
+                <span className="w-4 h-4 rounded-full bg-slate-600 border-2 border-white shadow-xs shrink-0 mt-0.5 flex items-center justify-center text-[7px] text-white font-bold">
                   +
                 </span>
                 <div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">Poste CFE</div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                    Concesión eléctrica existente
-                  </div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white">Poste CFE Existente</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400">Poste con concesión eléctrica</div>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* Código / Nombre del Poste */}
+          {/* Código del Poste */}
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Código / Identificador del Poste *
@@ -184,22 +206,22 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
             <input
               type="text"
               required
-              placeholder={tipo === 'poste_propuesto' ? 'Ej. POSTE-P-145' : 'Ej. CFE-804'}
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono font-bold"
+              placeholder="Ej. POSTE-P-145 o CFE-892"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white uppercase font-mono tracking-wider focus:outline-none focus:border-rose-500"
             />
           </div>
 
-          {/* Material / Altura */}
+          {/* Material y Altura */}
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Material y Altura de Infraestructura
+              Material y Especificación
             </label>
             <select
               value={material}
               onChange={(e) => setMaterial(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-rose-500"
             >
               <option value="Concreto 12m">Concreto Octagonal 12m</option>
               <option value="Concreto 9m">Concreto 9m</option>
@@ -235,7 +257,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
                   required
                   value={lat}
                   onChange={(e) => setLat(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-rose-500 font-mono"
                 />
               </div>
               <div>
@@ -246,7 +268,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
                   required
                   value={lng}
                   onChange={(e) => setLng(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-rose-500 font-mono"
                 />
               </div>
             </div>
@@ -266,7 +288,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
               className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle className="w-4 h-4" />
-              <span>Guardar Poste</span>
+              <span>{isEditing ? 'Guardar Cambios' : 'Guardar Poste'}</span>
             </button>
           </div>
         </form>
@@ -274,4 +296,3 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
     </div>
   );
 };
-
