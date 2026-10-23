@@ -345,6 +345,137 @@ export const KNOWLEDGE_BASE: KnowledgeItem[] = [
     tips: [
       'La versión instalada ocupa menos de 2 MB y se actualiza sola cada vez que te conectas a internet.'
     ]
+  },
+  {
+    id: 'presupuesto_optico_gpon',
+    category: 'tecnico',
+    title: '¿Cómo calcular e interpretar el presupuesto óptico bidireccional (ITU-T G.984.2)?',
+    keywords: [
+      'presupuesto optico', 'itu-t', 'g.984.2', 'clase b+', 'clase c+', 'downstream', 'upstream',
+      '1490', '1310', 'dbm', 'atenuacion', 'perdida', 'empalmes', 'conectores', 'margen', 'semaforo'
+    ],
+    shortAnswer:
+      'El sistema evalúa el presupuesto óptico bidireccional bajo la norma ITU-T G.984.2 (Clases B+ y C+). Modela la atenuación espectral en Downstream (1490 nm a 0.25 dB/km) y Upstream (1310 nm a 0.35 dB/km), restando 1.4 dB fijos por 4 pares de conectores SC/APC, 0.1 dB por empalme térmico y las pérdidas de inserción del splitter.',
+    detailedSteps: [
+      '1. En el Mapa o en el panel de detalle de la Caja NAP, consulta el módulo de Presupuesto Óptico.',
+      '2. Selecciona la Clase de Óptica configurada en la OLT: Clase B+ (sensibilidad ONT -27 dBm / OLT -28 dBm, margen nominal 28.5 dB) o Clase C+ (sensibilidad ONT -30 dBm / OLT -32 dBm, margen nominal 32.0 dB).',
+      '3. El sistema aplica las atenuaciones por longitud de onda: en bajada (Downstream 1490 nm) usa 0.25 dB/km; en subida (Upstream 1310 nm) usa 0.35 dB/km en fibra G.652D.',
+      '4. Suma las pérdidas fijas de acoplamiento: 4 pares de conectores ópticos (4 x 0.35 dB = 1.4 dB) y 0.1 dB por cada empalme por fusión en mufas intermedias.',
+      '5. Se descuenta la pérdida de inserción del splitter óptico de la NAP (ej. 1:8 = 10.5 dB, 1:16 = 13.8 dB, 1:32 = 17.0 dB).',
+      '6. El semáforo de 3 niveles diagnostica el margen: Conforme en Verde (Margen >= 5.0 dB), Precaución en Ámbar (Margen de 3.0 a 4.9 dB) o Crítico en Rojo (Margen < 3.0 dB).'
+    ],
+    tips: [
+      'Para troncales rurales con distancias superiores a 15 km, se aconseja instalar módulos ópticos Clase C+ para mantener un margen de seguridad ante atenuaciones ambientales.',
+      'El análisis upstream evalúa el escenario más desfavorable de transmisión con la ONT emitiendo a su umbral inferior.'
+    ]
+  },
+  {
+    id: 'navegacion_municipios',
+    category: 'red',
+    title: '¿Cómo navegar por municipios y delimitar sus contornos en el mapa?',
+    keywords: [
+      'municipios', 'municipio', 'navegacion', 'menu desplegable', 'desplegable', 'contorno',
+      'ixtlahuaca', 'jocotitlan', 'san jose del rincon', 'san felipe del progreso', 'jiquipilco',
+      'acambay', 'dongu', 'el oro', 'delimitar', 'perimetro', 'poligono', 'marcar', 'desmarcar'
+    ],
+    shortAnswer:
+      'En la barra de herramientas del mapa dispones de un menú desplegable de municipios (Ixtlahuaca, Jocotitlán, San José del Rincón, San Felipe del Progreso, Jiquipilco, Acambay/Dongu y El Oro). Al elegir un municipio, el mapa vuela suavemente a la zona y dibuja el contorno administrativo oficial punteado.',
+    detailedSteps: [
+      '1. Accede al módulo "Mapa de Red".',
+      '2. En el panel de control superior de capas, haz clic en el menú desplegable "Municipio / Delimitación".',
+      '3. Selecciona el municipio deseado (por ejemplo, Jocotitlán o San Felipe del Progreso).',
+      '4. La cámara se trasladará y centrará automáticamente sobre la demarcación con el nivel de zoom óptimo.',
+      '5. El mapa dibujará el perímetro oficial del municipio con un contorno estilizado en trazo discontinuo índigo/azul.',
+      '6. Para desmarcar el contorno y regresar al encuadre general de toda la red, vuelve a seleccionar la opción "Todos los municipios".'
+    ],
+    tips: [
+      'El contorno poligonal es puramente informativo y visual: no bloquea la interacción con cajas NAP, postes ni trazados de fibra.'
+    ]
+  },
+  {
+    id: 'planta_externa_lod_postes',
+    category: 'red',
+    title: '¿Cómo funciona la visualización y optimización LOD de postes y gasas?',
+    keywords: [
+      'postes', 'cfe', 'postes cfe', 'postes propuestos', 'gasas', 'reserva', 'lod',
+      'optimizacion', 'rendimiento', 'fps', 'trabado', 'zoom', 'planta externa', 'capas'
+    ],
+    shortAnswer:
+      'Para mantener el visor a 60 FPS estables y evitar lentitud en computadoras y teléfonos, los postes CFE, postes propuestos y gasas operan con optimización LOD (Level of Detail), mostrándose únicamente al acercarse con zoom de calle (zoom 15 o superior) en el área visible.',
+    detailedSteps: [
+      '1. En el panel de capas de Planta Externa puedes activar o desactivar "Postes CFE", "Postes Propuestos" y "Gasas Técnicas".',
+      '2. En niveles de zoom general o regional (zoom 10 a 14), los postes se mantienen ocultos para no saturar los recursos gráficos del dispositivo.',
+      '3. Al acercarte a una calle o localidad con zoom 15 o superior, los postes y bucles de reserva se renderizan al instante de forma ágil.',
+      '4. Cada capa está agrupada de forma limpia: si desmarcas una casilla, todos sus marcadores se retiran inmediatamente del visor sin dejar elementos fantasma.',
+      '5. Haz clic sobre cualquier poste para consultar su placa CFE, altura en metros, material (concreto/madera) y coordenadas GPS.'
+    ],
+    tips: [
+      'La arquitectura por capas independientes permite trabajar de manera ligera incluso con miles de postes registrados en la base de datos.'
+    ]
+  },
+  {
+    id: 'trazado_cables_colores',
+    category: 'red',
+    title: '¿Cómo trazar nuevas rutas de fibra óptica y elegir colores personalizados?',
+    keywords: [
+      'trazar', 'ruta', 'fibra', 'cable', 'ramal', 'troncal', 'dibujar', 'colores',
+      'personalizado', 'color libre', 'vertices', 'arrastrar puntos'
+    ],
+    shortAnswer:
+      'Puedes trazar libremente cables de fibra troncal o ramales de distribución siguiendo las vialidades, ajustando sus vértices interactivos y asignando cualquier color de la paleta sin que el sistema fuerce o sobreescriba a color café.',
+    detailedSteps: [
+      '1. En la barra superior del Mapa de Red, haz clic en el botón "Trazar Cable / Ruta de Fibra".',
+      '2. Selecciona el tipo de tramo: Troncal (48 a 96 hilos) o Ramal de Distribución (12 a 24 hilos).',
+      '3. Abre el selector de colores y elige el tono representativo del cable (azul, verde, índigo, naranja, morado, rojo, cian, etc.).',
+      '4. Haz clic sobre el mapa a lo largo de postes o calles para fijar los vértices de anclaje de la fibra.',
+      '5. Cada vértice numerado se puede arrastrar para corregir la trayectoria con total precisión.',
+      '6. Haz clic en "Finalizar y Guardar". La ruta se almacenará en PostgreSQL preservando exactamente el color elegido.'
+    ],
+    tips: [
+      'El sistema respeta fielmente el color personalizado seleccionado tanto en la visualización en vivo como al recargar la sesión.'
+    ]
+  },
+  {
+    id: 'gestion_postes_gasas',
+    category: 'red',
+    title: '¿Cómo dar de alta, editar y afinar la posición de postes y gasas de reserva?',
+    keywords: [
+      'agregar poste', 'editar poste', 'gasas', 'reserva tecnica', '30m', '50m',
+      'afinar pin', 'arrastrar pin', 'coordenadas poste', 'mufas', 'infraestructura'
+    ],
+    shortAnswer:
+      'El sistema permite registrar postes CFE, postes proyectados y gasas técnicas (30m y 50m). Cuenta con un pin GPS arrastrable para calibrar la ubicación con exactitud sobre el mapa satelital sin tener que escribir coordenadas manualmente.',
+    detailedSteps: [
+      '1. En la barra de herramientas de Planta Externa, pulsa "+ Agregar Elemento" y elige "Poste" o "Gasa de Reserva".',
+      '2. Para postes: define el tipo (CFE existente o Propuesto), altura (9m, 11m, 12m), referencia y código oficial.',
+      '3. Para gasas: define la longitud de fibra en bucle (30 metros o 50 metros para soporte ante siniestros y maniobra de empalme).',
+      '4. Ubica el marcador en el mapa con un clic o utilizando el sensor GPS de tu dispositivo.',
+      '5. Si requieres afinar la posición milimétricamente, pulsa "Afinar Pin" y arrastra el marcador hasta la coordenada exacta deseada.',
+      '6. Guarda el elemento. Se integrará al instante en la capa correspondiente con sus coordenadas geográficas actualizadas.'
+    ],
+    tips: [
+      'Las gasas técnicas garantizan que las cuadrillas de empalmadores puedan descolgar la mufa al nivel del vehículo de soporte en caso de mantenimiento.'
+    ]
+  },
+  {
+    id: 'auditoria_pon_olt',
+    category: 'tecnico',
+    title: '¿Cómo auditar la capacidad y el ratio de división de los puertos PON de la OLT?',
+    keywords: [
+      'pon', 'olt', 'split ratio', '1:64', '1:128', 'capacidad', 'saturacion pon',
+      'tarjeta olt', 'balanceo', 'auditoria pon', 'puertos pon'
+    ],
+    shortAnswer:
+      'El sistema audita el ratio de división óptico de cada puerto PON (relación recomendada 1:64 o 1:128 según la tarjeta GPON), emitiendo avisos antes de sobrepasar el presupuesto de ancho de banda y la capacidad de abonados.',
+    detailedSteps: [
+      '1. Accede al tablero de distribución GPON o a la sección de Reportes de Capacidad.',
+      '2. Consulta la tarjeta de cada puerto PON con su conteo de splitters, cajas NAP y abonados vinculados.',
+      '3. Para arquitecturas simétricas balanceadas, se recomienda un split ratio máximo de 1:64 por puerto PON.',
+      '4. Si un puerto PON alcanza el 85% de capacidad, se aconseja balancear carga derivando cajas secundarias hacia un puerto PON libre en el ODF.'
+    ],
+    tips: [
+      'El ratio 1:64 asegura que cada suscriptor disponga de ancho de banda suficiente en los 2.488 Gbps de bajada y 1.244 Gbps de subida.'
+    ]
   }
 ];
 
@@ -479,10 +610,74 @@ export const MANUAL_MODULES: ManualModule[] = [
         ]
       }
     ]
+  },
+  {
+    id: 'mod_presupuesto',
+    title: '7. Presupuesto Óptico Bidireccional (ITU-T G.984.2)',
+    subtitle: 'Atenuación espectral 1490nm / 1310nm, splitters y semáforo de margen',
+    iconName: 'Activity',
+    sections: [
+      {
+        heading: 'Cálculo Espectral y Pérdidas de Enlace',
+        content:
+          'Evaluación matemática del balance de potencia óptica en ambos sentidos de transmisión:',
+        points: [
+          'Downstream (1490 nm): Atenuación de 0.25 dB/km en fibra monomodo G.652D desde OLT hacia ONT.',
+          'Upstream (1310 nm): Atenuación de 0.35 dB/km en fibra monomodo G.652D desde ONT hacia OLT.',
+          'Pérdidas de Inserción: Splitters ópticos de primer y segundo nivel (1:2 a 1:64).',
+          'Conectores y Fusiones: 4 pares de conectores SC/APC (1.4 dB de pérdida combinada) y 0.1 dB por empalme térmico.'
+        ]
+      },
+      {
+        heading: 'Semáforo de Salud Óptica y Clases de Transceptor',
+        content:
+          'El sistema contrasta la atenuación total acumulada contra la sensibilidad del receptor:',
+        points: [
+          'Clase B+: Margen dinámico nominal de 28.5 dB (Sensibilidad ONT Rx -27 dBm / OLT Rx -28 dBm).',
+          'Clase C+: Margen dinámico nominal de 32.0 dB (Sensibilidad ONT Rx -30 dBm / OLT Rx -32 dBm).',
+          'Diagnóstico Conforme (Verde): Margen >= 5.0 dB de reserva operativa.',
+          'Diagnóstico Precaución (Ámbar): Margen entre 3.0 y 4.9 dB.',
+          'Diagnóstico Crítico (Rojo): Margen < 3.0 dB con riesgo de pérdida de paquetes o desincronización.'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'mod_planta_externa',
+    title: '8. Planta Externa, Postes y Delimitación Municipal',
+    subtitle: 'Navegación territorial, LOD de postes a 60 FPS y trazado de fibra',
+    iconName: 'Compass',
+    sections: [
+      {
+        heading: 'Navegación y Demarcación por Municipios',
+        content:
+          'El menú desplegable de municipios permite saltar a Ixtlahuaca, Jocotitlán, San José del Rincón, San Felipe del Progreso, Jiquipilco, Acambay/Dongu y El Oro:',
+        points: [
+          'Vuelo y zoom suave a la cabecera municipal con encuadre de la red.',
+          'Demarcación perimetral oficial (polígonos INEGI/OSM) en línea punteada para orientar a cuadrillas en terreno.',
+          'Marcar y desmarcar al instante seleccionando "Todos los municipios".'
+        ]
+      },
+      {
+        heading: 'Optimización LOD y Gestión de Postes',
+        content:
+          'Manejo de micro-infraestructura de postes CFE, postes propuestos y gasas técnicas:',
+        points: [
+          'Activación en zoom de calle (zoom 15 o superior) con renderizado fluido a 60 FPS.',
+          'Aislamiento de capas que evita marcadores fantasma al desactivar casillas.',
+          'Afinación de coordenadas milimétrica con pin arrastrable sobre el mapa satelital.'
+        ]
+      }
+    ]
   }
 ];
 
 export const QUICK_QUESTIONS = [
+  '¿Cómo calcular el presupuesto óptico bidireccional (ITU-T)?',
+  '¿Cómo navegar por municipios y delimitar sus contornos en el mapa?',
+  '¿Cómo funciona la visualización y optimización LOD de postes y gasas?',
+  '¿Cómo trazar nuevas rutas de fibra óptica y elegir colores personalizados?',
+  '¿Cómo dar de alta, editar y afinar la posición de postes y gasas de reserva?',
   '¿Cómo asignar un cliente a un puerto?',
   '¿Cómo eliminar una Caja NAP de forma definitiva?',
   '¿Por qué no aparecía mi caja y cómo sincronizar?',
@@ -506,6 +701,58 @@ export interface PredeterminedCategory {
 }
 
 export const PREDETERMINED_CATEGORIES: PredeterminedCategory[] = [
+  {
+    id: 'cat_presupuesto',
+    name: 'Presupuesto Óptico ITU-T',
+    iconName: 'Activity',
+    description: 'Cálculo espectral 1490/1310nm, atenuación y semáforo de margen',
+    questions: [
+      {
+        question: '¿Cómo calcular e interpretar el presupuesto óptico bidireccional (ITU-T G.984.2)?',
+        summary: 'Atenuación espectral, splitters, conectores y clases B+/C+'
+      },
+      {
+        question: '¿Cuáles son los valores recomendados de potencia óptica (dBm)?',
+        summary: 'Rango óptimo -15 a -25 dBm y umbrales de falla'
+      },
+      {
+        question: '¿Cómo auditar la capacidad y el ratio de división de los puertos PON de la OLT?',
+        summary: 'Split ratio 1:64 y 1:128 y balanceo de tarjetas'
+      }
+    ]
+  },
+  {
+    id: 'cat_municipios',
+    name: 'Municipios y Delimitación',
+    iconName: 'Compass',
+    description: 'Navegación territorial y contornos perimetrales oficiales',
+    questions: [
+      {
+        question: '¿Cómo navegar por municipios y delimitar sus contornos en el mapa?',
+        summary: 'Menú desplegable, salto automático y polígono INEGI'
+      }
+    ]
+  },
+  {
+    id: 'cat_planta_externa',
+    name: 'Planta Externa y Postes (LOD)',
+    iconName: 'Layers',
+    description: 'Postes CFE, propuestos, gasas de reserva y rutas de fibra',
+    questions: [
+      {
+        question: '¿Cómo funciona la visualización y optimización LOD de postes y gasas?',
+        summary: 'Activación en zoom 15+ a 60 FPS sin saturar la pantalla'
+      },
+      {
+        question: '¿Cómo dar de alta, editar y afinar la posición de postes y gasas de reserva?',
+        summary: 'Pin GPS arrastrable y gasas de 30m y 50m'
+      },
+      {
+        question: '¿Cómo trazar nuevas rutas de fibra óptica y elegir colores personalizados?',
+        summary: 'Trazado con vértices libres y paleta de colores sin bloqueo'
+      }
+    ]
+  },
   {
     id: 'cat_naps',
     name: 'Cajas NAP y Topología',
