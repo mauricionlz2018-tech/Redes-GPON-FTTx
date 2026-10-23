@@ -333,7 +333,7 @@ const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal' |
     html: `
       <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.45)); cursor: grab;">
         <div style="background: ${bg}; color: white; font-weight: 900; font-size: 10px; padding: 2px 8px; border-radius: 8px; border: 2px solid white; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 4px;">
-          <span>${type === 'gasa' ? '∞' : type === 'nap' ? '📦' : '+'} ${label}</span>
+          <span>${type === 'gasa' ? '∞' : '+'} ${label}</span>
         </div>
         <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid ${bg}; margin-top: -1px;"></div>
         <div style="width: 6px; height: 6px; border-radius: 50%; background: #0f172a; margin-top: 1px;"></div>
@@ -1034,31 +1034,39 @@ export const GponMap: React.FC<GponMapProps> = ({
         </div>
       )}
 
-      {/* Banner flotante cuando el Modo de Colocación (Click / Arrastre) está activo - Centrado arriba */}
+      {/* Barra de Control Flotante para Ubicación de Elemento (Poste, Mufa, Gasa, NAP) - Mismo diseño elegante que Trazado de Troncal en top-14 */}
       {placementMode && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[450] bg-white/95 dark:bg-slate-900/95 backdrop-blur text-slate-900 dark:text-white px-3.5 py-1.5 rounded-xl shadow-xl border border-slate-300 dark:border-slate-800 flex items-center justify-between gap-3 text-xs font-semibold w-[94%] sm:w-auto max-w-md animate-fadeIn">
-          <div className="flex items-center gap-2 truncate">
-            <MapPin className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-            <span className="truncate text-xs">
-              Ubicar en el mapa:{' '}
-              <strong className="text-sky-700 dark:text-sky-300 font-bold">
-                {placementMode === 'poste'
-                  ? 'Poste'
-                  : placementMode === 'mufa'
-                  ? 'Mufa'
-                  : placementMode === 'troncal'
-                  ? 'Línea Troncal'
-                  : 'Caja NAP'}
-              </strong>
+        <div className="absolute top-14 sm:top-14 left-1/2 -translate-x-1/2 z-[600] bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-1.5 shadow-2xl flex items-center gap-2 sm:gap-3 text-xs text-slate-800 dark:text-slate-100 max-w-[94vw] whitespace-nowrap animate-fadeIn pointer-events-auto">
+          <div className="flex items-center gap-1.5 font-bold">
+            {placementMode === 'poste' && <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />}
+            {placementMode === 'mufa' && <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
+            {placementMode === 'gasa' && <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>}
+            {placementMode === 'nap' && <Box className="w-3.5 h-3.5 text-sky-600 shrink-0" />}
+            <span className="text-slate-900 dark:text-white font-bold">
+              {placementMode === 'poste'
+                ? 'Ubicar Poste:'
+                : placementMode === 'mufa'
+                ? 'Ubicar Mufa:'
+                : placementMode === 'gasa'
+                ? 'Ubicar Gasa:'
+                : 'Ubicar Caja NAP:'}
+            </span>
+            <span className="text-slate-500 dark:text-slate-400 font-normal hidden xs:inline">
+              Haz clic sobre el mapa para colocar
             </span>
           </div>
+
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
+
           {onCancelPlacement && (
             <button
+              type="button"
               onClick={onCancelPlacement}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded transition-colors cursor-pointer"
+              className="px-2 py-1 rounded-lg text-slate-600 dark:text-slate-300 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
               title="Cancelar colocación"
             >
               <X className="w-3.5 h-3.5" />
+              <span>Cancelar</span>
             </button>
           )}
         </div>

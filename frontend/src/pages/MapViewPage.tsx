@@ -1355,6 +1355,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               if (isDrawingRoute) {
                 setIsDrawingRoute(false);
               } else {
+                setPlacementMode(null);
                 setIsDrawingRoute(true);
               }
             }}
@@ -1375,7 +1376,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               e.dataTransfer.setData('text/plain', 'mufa');
               e.dataTransfer.setData('application/gpon-element', 'mufa');
             }}
-            onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
+            onClick={() => {
+              setIsDrawingRoute(false);
+              setPlacementMode(placementMode === 'mufa' ? null : 'mufa');
+            }}
             className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-3 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
               placementMode === 'mufa' ? 'ring-2 ring-amber-500 shadow-md ring-offset-1 animate-pulse' : ''
             }`}
@@ -1393,7 +1397,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               e.dataTransfer.setData('text/plain', 'poste');
               e.dataTransfer.setData('application/gpon-element', 'poste');
             }}
-            onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
+            onClick={() => {
+              setIsDrawingRoute(false);
+              setPlacementMode(placementMode === 'poste' ? null : 'poste');
+            }}
             className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-800 dark:to-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-3 rounded-lg border border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
               placementMode === 'poste' ? 'ring-2 ring-rose-500 shadow-md ring-offset-1 animate-pulse' : ''
             }`}
@@ -1411,7 +1418,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               e.dataTransfer.setData('text/plain', 'gasa');
               e.dataTransfer.setData('application/gpon-element', 'gasa');
             }}
-            onClick={() => setPlacementMode(placementMode === 'gasa' ? null : 'gasa')}
+            onClick={() => {
+              setIsDrawingRoute(false);
+              setPlacementMode(placementMode === 'gasa' ? null : 'gasa');
+            }}
             className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-blue-950/40 text-blue-700 dark:text-blue-300 font-bold text-xs px-3 rounded-lg border border-blue-300 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
               placementMode === 'gasa' ? 'ring-2 ring-blue-500 shadow-md ring-offset-1 animate-pulse' : ''
             }`}
@@ -1430,14 +1440,17 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                 e.dataTransfer.setData('text/plain', 'nap');
                 e.dataTransfer.setData('application/gpon-element', 'nap');
               }}
-              onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
-              className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs px-3.5 rounded-lg shadow-md shadow-sky-950/20 transition-all active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
-                placementMode === 'nap' ? 'ring-2 ring-sky-300 ring-offset-1 animate-pulse' : ''
+              onClick={() => {
+                setIsDrawingRoute(false);
+                setPlacementMode(placementMode === 'nap' ? null : 'nap');
+              }}
+              className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-slate-800 dark:to-blue-950/40 text-sky-700 dark:text-sky-300 font-bold text-xs px-3 rounded-lg border border-sky-300 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
+                placementMode === 'nap' ? 'ring-2 ring-sky-500 shadow-md ring-offset-1 animate-pulse' : ''
               }`}
               title="Arrastra hacia el mapa satelital o haz clic para ubicar una nueva caja NAP"
             >
-              <GripVertical className="w-3 h-3 text-white/70 shrink-0" />
-              <Box className="w-3.5 h-3.5 shrink-0" />
+              <GripVertical className="w-3 h-3 text-sky-500/70 shrink-0" />
+              <Box className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
               <span>+ Caja NAP</span>
             </button>
           )}
@@ -1511,7 +1524,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
               <div className="hidden sm:block h-5 w-px bg-slate-300/80 shrink-0 mx-0.5" />
 
-              {/* Cuando se está trazando troncal, mostrar barra limpia y enfocada para máxima visibilidad */}
+              {/* Cuando se está trazando troncal o ubicando un elemento, mostrar barra limpia y enfocada */}
               {isDrawingRoute ? (
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <div className="flex items-center gap-1.5 bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 px-3 py-1.5 rounded-xl border border-purple-300 dark:border-purple-800 font-bold text-xs shadow-xs animate-pulse">
@@ -1522,6 +1535,40 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                     onClick={handleCancelDrawingRoute}
                     className="bg-white/95 hover:bg-red-50 text-red-600 px-2.5 py-1.5 rounded-xl shadow-xs border border-red-200 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
                     title="Cancelar trazado de fibra"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancelar</span>
+                  </button>
+                </div>
+              ) : placementMode ? (
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold text-xs shadow-xs animate-pulse ${
+                    placementMode === 'poste'
+                      ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800'
+                      : placementMode === 'mufa'
+                      ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                      : placementMode === 'gasa'
+                      ? 'bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800'
+                      : 'bg-sky-100 dark:bg-sky-950/70 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-800'
+                  }`}>
+                    {placementMode === 'poste' && <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />}
+                    {placementMode === 'mufa' && <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
+                    {placementMode === 'gasa' && <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>}
+                    {placementMode === 'nap' && <Box className="w-3.5 h-3.5 text-sky-600 shrink-0" />}
+                    <span>
+                      {placementMode === 'poste'
+                        ? 'Ubicando Poste'
+                        : placementMode === 'mufa'
+                        ? 'Ubicando Mufa'
+                        : placementMode === 'gasa'
+                        ? 'Ubicando Gasa'
+                        : 'Ubicando Caja NAP'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleCancelPlacement}
+                    className="bg-white/95 hover:bg-red-50 text-red-600 px-2.5 py-1.5 rounded-xl shadow-xs border border-red-200 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    title="Cancelar colocación"
                   >
                     <X className="w-3.5 h-3.5" />
                     <span>Cancelar</span>
@@ -1554,7 +1601,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       e.dataTransfer.setData('text/plain', 'troncal');
                       e.dataTransfer.setData('application/gpon-element', 'troncal');
                     }}
-                    onClick={() => setIsDrawingRoute(true)}
+                    onClick={() => {
+                      setPlacementMode(null);
+                      setIsDrawingRoute(true);
+                    }}
                     className="flex items-center gap-1 bg-white/95 hover:bg-purple-50 text-purple-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-purple-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
                     title="Trazar ruta troncal o ramal"
                   >
@@ -1568,7 +1618,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       e.dataTransfer.setData('text/plain', 'mufa');
                       e.dataTransfer.setData('application/gpon-element', 'mufa');
                     }}
-                    onClick={() => setPlacementMode(placementMode === 'mufa' ? null : 'mufa')}
+                    onClick={() => {
+                      setIsDrawingRoute(false);
+                      setPlacementMode(placementMode === 'mufa' ? null : 'mufa');
+                    }}
                     className={`flex items-center gap-1 bg-white/95 hover:bg-amber-50 text-amber-800 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
                       placementMode === 'mufa' ? 'ring-2 ring-amber-500 bg-amber-50' : ''
                     }`}
@@ -1584,7 +1637,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       e.dataTransfer.setData('text/plain', 'poste');
                       e.dataTransfer.setData('application/gpon-element', 'poste');
                     }}
-                    onClick={() => setPlacementMode(placementMode === 'poste' ? null : 'poste')}
+                    onClick={() => {
+                      setIsDrawingRoute(false);
+                      setPlacementMode(placementMode === 'poste' ? null : 'poste');
+                    }}
                     className={`flex items-center gap-1 bg-white/95 hover:bg-rose-50 text-rose-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-rose-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
                       placementMode === 'poste' ? 'ring-2 ring-rose-500 bg-rose-50' : ''
                     }`}
@@ -1600,7 +1656,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       e.dataTransfer.setData('text/plain', 'gasa');
                       e.dataTransfer.setData('application/gpon-element', 'gasa');
                     }}
-                    onClick={() => setPlacementMode(placementMode === 'gasa' ? null : 'gasa')}
+                    onClick={() => {
+                      setIsDrawingRoute(false);
+                      setPlacementMode(placementMode === 'gasa' ? null : 'gasa');
+                    }}
                     className={`flex items-center gap-1 bg-white/95 hover:bg-blue-50 text-blue-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-blue-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
                       placementMode === 'gasa' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
                     }`}
@@ -1617,13 +1676,16 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                         e.dataTransfer.setData('text/plain', 'nap');
                         e.dataTransfer.setData('application/gpon-element', 'nap');
                       }}
-                      onClick={() => setPlacementMode(placementMode === 'nap' ? null : 'nap')}
-                      className={`flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded-xl border border-sky-600 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                        placementMode === 'nap' ? 'ring-2 ring-sky-300 ring-offset-1' : ''
+                      onClick={() => {
+                        setIsDrawingRoute(false);
+                        setPlacementMode(placementMode === 'nap' ? null : 'nap');
+                      }}
+                      className={`flex items-center gap-1 bg-white/95 hover:bg-sky-50 text-sky-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-sky-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                        placementMode === 'nap' ? 'ring-2 ring-sky-500 bg-sky-50' : ''
                       }`}
                       title="Ubicar nueva caja NAP"
                     >
-                      <Box className="w-3.5 h-3.5 shrink-0" />
+                      <Box className="w-3.5 h-3.5 text-sky-600 shrink-0" />
                       <span>+ Caja NAP</span>
                     </button>
                   )}
@@ -1809,6 +1871,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
                   <button
                     onClick={() => {
+                      setPlacementMode(null);
                       setIsDrawingRoute(!isDrawingRoute);
                       setIsExpandedDrawerOpen(false);
                     }}
@@ -1820,6 +1883,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
                   <button
                     onClick={() => {
+                      setIsDrawingRoute(false);
                       setPlacementMode(placementMode === 'mufa' ? null : 'mufa');
                       setIsExpandedDrawerOpen(false);
                     }}
@@ -1831,6 +1895,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
                   <button
                     onClick={() => {
+                      setIsDrawingRoute(false);
                       setPlacementMode(placementMode === 'poste' ? null : 'poste');
                       setIsExpandedDrawerOpen(false);
                     }}
@@ -1842,6 +1907,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
                   <button
                     onClick={() => {
+                      setIsDrawingRoute(false);
                       setPlacementMode(placementMode === 'gasa' ? null : 'gasa');
                       setIsExpandedDrawerOpen(false);
                     }}
@@ -1854,6 +1920,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                   {user?.rol !== 'Tecnico' && (
                     <button
                       onClick={() => {
+                        setIsDrawingRoute(false);
                         setPlacementMode(placementMode === 'nap' ? null : 'nap');
                         setIsExpandedDrawerOpen(false);
                       }}
