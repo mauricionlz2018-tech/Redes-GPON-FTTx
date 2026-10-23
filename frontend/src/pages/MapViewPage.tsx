@@ -1495,19 +1495,19 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               : 'lg:col-span-7 xl:col-span-8 h-[550px] lg:h-[680px]'
           }`}
         >
-          {/* Barra Superior Flotante en Modo Expandido (Restaurar Pantalla + Opciones en Modo Claro) */}
+          {/* Barra Superior Flotante en Modo Expandido (Restaurar Pantalla + Opciones con Soporte Modo Oscuro) */}
           {isMapExpanded && (
             <div className="absolute top-2.5 left-14 sm:left-16 right-28 sm:right-36 z-[450] flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 pointer-events-auto">
-              {/* Botón Salir / Restaurar Pantalla (Modo Claro) */}
+              {/* Botón Salir / Restaurar Pantalla */}
               <button
                 onClick={() => {
                   setIsMapExpanded(false);
                   setIsExpandedDrawerOpen(false);
                 }}
-                className="bg-white/95 hover:bg-slate-50 text-slate-800 px-3 py-1.5 rounded-xl shadow-md border border-slate-300 flex items-center gap-1.5 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                className="bg-white/95 dark:bg-slate-900/95 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 px-3 py-1.5 rounded-xl shadow-md border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
                 title="Volver a la vista normal con paneles"
               >
-                <Minimize2 className="w-3.5 h-3.5 text-sky-600" />
+                <Minimize2 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                 <span className="hidden sm:inline">Restaurar Pantalla</span>
                 <span className="sm:hidden">Salir</span>
               </button>
@@ -1515,25 +1515,25 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               {/* En teléfonos (< sm): Botón directo para abrir Herramientas sin abarrotar la pantalla */}
               <button
                 onClick={() => setIsExpandedDrawerOpen(true)}
-                className="sm:hidden bg-white/95 hover:bg-sky-50 text-sky-700 px-2.5 py-1.5 rounded-xl shadow-md border border-sky-300 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                className="sm:hidden bg-white/95 dark:bg-slate-900/95 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-sky-700 dark:text-sky-300 px-2.5 py-1.5 rounded-xl shadow-md border border-sky-300 dark:border-sky-800 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
                 title="Abrir menú de herramientas de red"
               >
-                <Layers className="w-3.5 h-3.5 text-sky-600" />
+                <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                 <span>Herramientas</span>
               </button>
 
-              <div className="hidden sm:block h-5 w-px bg-slate-300/80 shrink-0 mx-0.5" />
+              <div className="hidden sm:block h-5 w-px bg-slate-300/80 dark:bg-slate-700 shrink-0 mx-0.5" />
 
               {/* Cuando se está trazando troncal o ubicando un elemento, mostrar barra limpia y enfocada */}
               {isDrawingRoute ? (
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <div className="flex items-center gap-1.5 bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 px-3 py-1.5 rounded-xl border border-purple-300 dark:border-purple-800 font-bold text-xs shadow-xs animate-pulse">
-                    <Ruler className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
                     <span>Trazando Línea Troncal</span>
                   </div>
                   <button
                     onClick={handleCancelDrawingRoute}
-                    className="bg-white/95 hover:bg-red-50 text-red-600 px-2.5 py-1.5 rounded-xl shadow-xs border border-red-200 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    className="bg-white/95 dark:bg-slate-900/95 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 px-2.5 py-1.5 rounded-xl shadow-xs border border-red-200 dark:border-red-800 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
                     title="Cancelar trazado de fibra"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -1551,10 +1551,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       ? 'bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800'
                       : 'bg-sky-100 dark:bg-sky-950/70 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-800'
                   }`}>
-                    {placementMode === 'poste' && <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />}
-                    {placementMode === 'mufa' && <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
-                    {placementMode === 'gasa' && <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>}
-                    {placementMode === 'nap' && <Box className="w-3.5 h-3.5 text-sky-600 shrink-0" />}
+                    {placementMode === 'poste' && <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />}
+                    {placementMode === 'mufa' && <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />}
+                    {placementMode === 'gasa' && <span className="font-bold text-blue-600 dark:text-blue-400 text-sm leading-none shrink-0">∞</span>}
+                    {placementMode === 'nap' && <Box className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />}
                     <span>
                       {placementMode === 'poste'
                         ? 'Ubicando Poste'
@@ -1567,7 +1567,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                   </div>
                   <button
                     onClick={handleCancelPlacement}
-                    className="bg-white/95 hover:bg-red-50 text-red-600 px-2.5 py-1.5 rounded-xl shadow-xs border border-red-200 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    className="bg-white/95 dark:bg-slate-900/95 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 px-2.5 py-1.5 rounded-xl shadow-xs border border-red-200 dark:border-red-800 flex items-center gap-1 text-xs font-bold transition-all backdrop-blur shrink-0 cursor-pointer active:scale-95"
                     title="Cancelar colocación"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -1575,23 +1575,23 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                   </button>
                 </div>
               ) : (
-                /* Botones de herramientas completas para tablets y PC (Modo Claro Oficial) */
+                /* Botones de herramientas completas para tablets y PC con Modo Oscuro */
                 <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <button
                     onClick={() => setIsOltModalOpen(true)}
-                    className="flex items-center gap-1 bg-white/95 hover:bg-emerald-50 text-emerald-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-emerald-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    className="flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-800 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors"
                     title="Mapeo Lógico GPON: OLT, Puertos PON, ODF y Trazabilidad"
                   >
-                    <Server className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <Server className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>Mapeo Lógico</span>
                   </button>
 
                   <button
                     onClick={() => setIsLegendModalOpen(true)}
-                    className="flex items-center gap-1 bg-white/95 hover:bg-sky-50 text-sky-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-sky-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    className="flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-sky-300 dark:border-sky-800 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors"
                     title="Ver norma de simbología y metrajes"
                   >
-                    <Layers className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                    <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                     <span>Simbología</span>
                   </button>
 
@@ -1605,10 +1605,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       setPlacementMode(null);
                       setIsDrawingRoute(true);
                     }}
-                    className="flex items-center gap-1 bg-white/95 hover:bg-purple-50 text-purple-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-purple-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95"
+                    className="flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-purple-300 dark:border-purple-800 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors"
                     title="Trazar ruta troncal o ramal"
                   >
-                    <Ruler className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
                     <span>+ Troncal</span>
                   </button>
 
@@ -1622,12 +1622,12 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       setIsDrawingRoute(false);
                       setPlacementMode(placementMode === 'mufa' ? null : 'mufa');
                     }}
-                    className={`flex items-center gap-1 bg-white/95 hover:bg-amber-50 text-amber-800 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                      placementMode === 'mufa' ? 'ring-2 ring-amber-500 bg-amber-50' : ''
+                    className={`flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-800 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors ${
+                      placementMode === 'mufa' ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-950/60' : ''
                     }`}
                     title="Ubicar mufa torpedo"
                   >
-                    <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                     <span>+ Mufa</span>
                   </button>
 
@@ -1641,12 +1641,12 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       setIsDrawingRoute(false);
                       setPlacementMode(placementMode === 'poste' ? null : 'poste');
                     }}
-                    className={`flex items-center gap-1 bg-white/95 hover:bg-rose-50 text-rose-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-rose-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                      placementMode === 'poste' ? 'ring-2 ring-rose-500 bg-rose-50' : ''
+                    className={`flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-rose-300 dark:border-rose-800 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors ${
+                      placementMode === 'poste' ? 'ring-2 ring-rose-500 bg-rose-50 dark:bg-rose-950/60' : ''
                     }`}
                     title="Ubicar poste"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
                     <span>+ Poste</span>
                   </button>
 
@@ -1660,12 +1660,12 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       setIsDrawingRoute(false);
                       setPlacementMode(placementMode === 'gasa' ? null : 'gasa');
                     }}
-                    className={`flex items-center gap-1 bg-white/95 hover:bg-blue-50 text-blue-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-blue-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                      placementMode === 'gasa' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                    className={`flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-blue-300 dark:border-blue-800 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors ${
+                      placementMode === 'gasa' ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/60' : ''
                     }`}
                     title="Ubicar gasa de reserva técnica"
                   >
-                    <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>
+                    <span className="font-bold text-blue-600 dark:text-blue-400 text-sm leading-none shrink-0">∞</span>
                     <span>+ Gasa</span>
                   </button>
 
@@ -1680,12 +1680,12 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                         setIsDrawingRoute(false);
                         setPlacementMode(placementMode === 'nap' ? null : 'nap');
                       }}
-                      className={`flex items-center gap-1 bg-white/95 hover:bg-sky-50 text-sky-700 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-sky-300 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
-                        placementMode === 'nap' ? 'ring-2 ring-sky-500 bg-sky-50' : ''
+                      className={`flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-sky-300 dark:border-sky-800 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors ${
+                        placementMode === 'nap' ? 'ring-2 ring-sky-500 bg-sky-50 dark:bg-sky-950/60' : ''
                       }`}
                       title="Ubicar nueva caja NAP"
                     >
-                      <Box className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                      <Box className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                       <span>+ Caja NAP</span>
                     </button>
                   )}
@@ -1699,10 +1699,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                           handleRequestRoute(selectedNap);
                         }
                       }}
-                      className={`flex items-center gap-1 font-bold text-xs px-2.5 py-1.5 rounded-xl border shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 ${
+                      className={`flex items-center gap-1 font-bold text-xs px-2.5 py-1.5 rounded-xl border shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors ${
                         isRouteActive
                           ? 'bg-indigo-600 text-white border-indigo-600'
-                          : 'bg-white/95 hover:bg-indigo-50 text-indigo-700 border-indigo-300'
+                          : 'bg-white/95 dark:bg-slate-900/95 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800'
                       }`}
                       title="Calcular ruta a la caja seleccionada"
                     >
@@ -1715,17 +1715,17 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             </div>
           )}
 
-          {/* Pestaña lateral flotante centrada verticalmente (Modo Claro) */}
+          {/* Pestaña lateral flotante centrada verticalmente */}
           {isMapExpanded && (
             <button
               onClick={() => setIsExpandedDrawerOpen(!isExpandedDrawerOpen)}
-              className={`absolute top-1/2 -translate-y-1/2 right-0 z-[450] bg-white/95 hover:bg-slate-50 text-slate-800 pl-3 pr-2.5 py-3 rounded-l-2xl shadow-xl border-y border-l border-slate-300 flex items-center gap-2 text-xs font-bold transition-all duration-300 backdrop-blur cursor-pointer hover:border-sky-400 ${
+              className={`absolute top-1/2 -translate-y-1/2 right-0 z-[450] bg-white/95 dark:bg-slate-900/95 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 pl-3 pr-2.5 py-3 rounded-l-2xl shadow-xl border-y border-l border-slate-300 dark:border-slate-700 flex items-center gap-2 text-xs font-bold transition-all duration-300 backdrop-blur cursor-pointer hover:border-sky-400 dark:hover:border-sky-500 ${
                 isExpandedDrawerOpen ? 'translate-x-full opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'
               }`}
               title={isExpandedDrawerOpen ? 'Ocultar panel' : 'Deslizar panel de opciones y puertos'}
             >
-              <ChevronLeft className="w-4 h-4 text-sky-600 animate-pulse" />
-              <Layers className="w-4 h-4 text-sky-600" />
+              <ChevronLeft className="w-4 h-4 text-sky-600 dark:text-sky-400 animate-pulse" />
+              <Layers className="w-4 h-4 text-sky-600 dark:text-sky-400" />
               <span className="hidden sm:inline font-bold">Opciones y Puertos</span>
               <span className="sm:hidden font-bold">Menú</span>
             </button>
@@ -1832,16 +1832,16 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               : 'lg:col-span-5 xl:col-span-4 space-y-4 scroll-mt-24'
           }
         >
-          {/* Cabecera del Cajón en Modo Expandido (Modo Claro) */}
+          {/* Cabecera del Cajón en Modo Expandido con Modo Oscuro */}
           {isMapExpanded && (
-            <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-sky-600" />
-                <span className="font-bold text-xs text-slate-800">Panel de Herramientas y Puertos</span>
+                <Layers className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <span className="font-bold text-xs text-slate-800 dark:text-slate-100">Panel de Herramientas y Puertos</span>
               </div>
               <button
                 onClick={() => setIsExpandedDrawerOpen(false)}
-                className="px-2.5 py-1 rounded-lg hover:bg-slate-200 text-slate-700 hover:text-slate-900 transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                className="px-2.5 py-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
                 title="Ocultar y ver mapa completo"
               >
                 <span>Ocultar</span>
@@ -1850,11 +1850,11 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             </div>
           )}
 
-          <div className={isMapExpanded ? 'flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 bg-white' : 'space-y-4'}>
-            {/* Sección de Herramientas de Red para Móvil y Escritorio (Modo Claro) */}
+          <div className={isMapExpanded ? 'flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 bg-white dark:bg-slate-950' : 'space-y-4'}>
+            {/* Sección de Herramientas de Red para Móvil y Escritorio */}
             {isMapExpanded && (
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 shadow-2xs">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+              <div className="bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-3 space-y-2 shadow-2xs">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
                   Herramientas Rápidas de Red
                 </span>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -1863,9 +1863,9 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       setIsLegendModalOpen(true);
                       setIsExpandedDrawerOpen(false);
                     }}
-                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-sky-50 text-sky-700 rounded-lg border border-slate-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                    className="flex items-center gap-1.5 p-2 bg-white dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-sky-700 dark:text-sky-300 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold shadow-2xs text-left cursor-pointer transition-colors"
                   >
-                    <Layers className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                    <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                     <span>Simbología</span>
                   </button>
 
@@ -1875,9 +1875,9 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       setIsDrawingRoute(!isDrawingRoute);
                       setIsExpandedDrawerOpen(false);
                     }}
-                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-purple-50 text-purple-700 rounded-lg border border-purple-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                    className="flex items-center gap-1.5 p-2 bg-white dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800/60 text-xs font-bold shadow-2xs text-left cursor-pointer transition-colors"
                   >
-                    <Ruler className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
                     <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal'}</span>
                   </button>
 
@@ -1887,9 +1887,9 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       setPlacementMode(placementMode === 'mufa' ? null : 'mufa');
                       setIsExpandedDrawerOpen(false);
                     }}
-                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-amber-50 text-amber-800 rounded-lg border border-amber-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                    className="flex items-center gap-1.5 p-2 bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-lg border border-amber-200 dark:border-amber-800/60 text-xs font-bold shadow-2xs text-left cursor-pointer transition-colors"
                   >
-                    <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                     <span>+ Mufa</span>
                   </button>
 
@@ -1899,9 +1899,9 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       setPlacementMode(placementMode === 'poste' ? null : 'poste');
                       setIsExpandedDrawerOpen(false);
                     }}
-                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-rose-50 text-rose-700 rounded-lg border border-rose-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                    className="flex items-center gap-1.5 p-2 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded-lg border border-rose-200 dark:border-rose-800/60 text-xs font-bold shadow-2xs text-left cursor-pointer transition-colors"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
                     <span>+ Poste</span>
                   </button>
 
@@ -1911,9 +1911,9 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                       setPlacementMode(placementMode === 'gasa' ? null : 'gasa');
                       setIsExpandedDrawerOpen(false);
                     }}
-                    className="flex items-center gap-1.5 p-2 bg-white hover:bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-xs font-bold shadow-2xs text-left cursor-pointer"
+                    className="flex items-center gap-1.5 p-2 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800/60 text-xs font-bold shadow-2xs text-left cursor-pointer transition-colors"
                   >
-                    <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>
+                    <span className="font-bold text-blue-600 dark:text-blue-400 text-sm leading-none shrink-0">∞</span>
                     <span>+ Gasa</span>
                   </button>
 
@@ -1924,7 +1924,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                         setPlacementMode(placementMode === 'nap' ? null : 'nap');
                         setIsExpandedDrawerOpen(false);
                       }}
-                      className="col-span-2 flex items-center justify-center gap-1.5 p-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg border border-sky-600 text-xs font-bold shadow-sm cursor-pointer"
+                      className="col-span-2 flex items-center justify-center gap-1.5 p-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg border border-sky-600 text-xs font-bold shadow-sm cursor-pointer transition-colors"
                     >
                       <Box className="w-4 h-4 shrink-0" />
                       <span>+ Caja NAP</span>
