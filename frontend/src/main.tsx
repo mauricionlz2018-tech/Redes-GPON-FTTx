@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import 'leaflet/dist/leaflet.css';
 import App from './App';
 import './index.css';
 
@@ -9,8 +10,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </React.StrictMode>
 );
 
-// Registrar Service Worker para instalación como App PWA en Android, iOS y Laptops
-if ('serviceWorker' in navigator && !import.meta.env.DEV) {
+// Registrar Service Worker para instalación como App PWA en Android, iOS, Laptops y modo sin conexión
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')

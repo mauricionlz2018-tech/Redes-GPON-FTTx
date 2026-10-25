@@ -105,7 +105,12 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
         await enqueueAssignment(payload);
       }
     } catch (err: any) {
-      console.warn('Backend con latencia o sin conexión, asignación persistida localmente:', err);
+      console.warn('Backend con latencia o sin conexión, encolando asignación localmente:', err);
+      try {
+        await enqueueAssignment(payload);
+      } catch (enqueueErr) {
+        console.error('Error al encolar asignación en Dexie:', enqueueErr);
+      }
     } finally {
       setLoading(false);
       onAssignedSuccess();
