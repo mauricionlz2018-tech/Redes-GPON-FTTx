@@ -1038,8 +1038,7 @@ export const OltOdfLogicalModal: React.FC<OltOdfLogicalModalProps> = ({
         </div>
 
         {/* Pie del Modal con estilo idéntico a los otros modales */}
-        <div className="bg-slate-50 dark:bg-slate-950 px-3.5 sm:px-6 py-2.5 sm:py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 shrink-0">
-          <span className="hidden sm:inline">Sistema de Mapeo Lógico y Físico GPON FTTx</span>
+        <div className="bg-slate-50 dark:bg-slate-950 px-3.5 sm:px-6 py-2.5 sm:py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end text-xs text-slate-500 dark:text-slate-400 shrink-0">
           <button
             onClick={onClose}
             className="w-full sm:w-auto px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer text-center"

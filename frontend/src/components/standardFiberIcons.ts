@@ -37,7 +37,6 @@ export const FIBER_DESIGN_COLORS = {
 
 /**
  * 1. Divisor Óptico 1:8 Troncal
- * Triángulo azul apuntando a la izquierda con 8 pines de color de salida en el lado derecho.
  */
 export const createSplitterTroncalIcon = (label?: string) => {
   return L.divIcon({
@@ -45,11 +44,8 @@ export const createSplitterTroncalIcon = (label?: string) => {
     html: `
       <div class="relative flex items-center justify-center filter drop-shadow-md hover:scale-125 transition-transform cursor-pointer" title="Divisor Óptico 1:8 Troncal ${label || ''}">
         <svg width="34" height="28" viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Triángulo azul orientado a la izquierda -->
           <polygon points="26,2 6,14 26,26" fill="#1e88e5" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round" />
-          <!-- Entrada izquierda -->
           <line x1="2" y1="14" x2="6" y2="14" stroke="#ffffff" stroke-width="2" />
-          <!-- 8 pines de salida colorimétricos a la derecha -->
           <line x1="26" y1="4" x2="32" y2="4" stroke="#2563eb" stroke-width="1.5" />
           <line x1="26" y1="7" x2="32" y2="7" stroke="#f97316" stroke-width="1.5" />
           <line x1="26" y1="10" x2="32" y2="10" stroke="#16a34a" stroke-width="1.5" />
@@ -70,7 +66,6 @@ export const createSplitterTroncalIcon = (label?: string) => {
 
 /**
  * 2. Divisor Óptico 1:8 NAP
- * Triángulo magenta con un cuadrado interior y 8 pines de color.
  */
 export const createSplitterNapIcon = (label?: string) => {
   return L.divIcon({
@@ -78,13 +73,9 @@ export const createSplitterNapIcon = (label?: string) => {
     html: `
       <div class="relative flex items-center justify-center filter drop-shadow-md hover:scale-125 transition-transform cursor-pointer" title="Divisor Óptico 1:8 NAP ${label || ''}">
         <svg width="34" height="28" viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Triángulo magenta -->
           <polygon points="26,2 6,14 26,26" fill="#d81b60" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round" />
-          <!-- Cuadro interior blanco / transparente representativo del módulo NAP -->
           <rect x="15" y="10" width="7" height="8" fill="#ffffff" stroke="#d81b60" stroke-width="1" rx="1" />
-          <!-- Entrada -->
           <line x1="2" y1="14" x2="6" y2="14" stroke="#ffffff" stroke-width="2" />
-          <!-- 8 pines de salida a clientes -->
           <line x1="26" y1="4" x2="32" y2="4" stroke="#2563eb" stroke-width="1.5" />
           <line x1="26" y1="7" x2="32" y2="7" stroke="#f97316" stroke-width="1.5" />
           <line x1="26" y1="10" x2="32" y2="10" stroke="#16a34a" stroke-width="1.5" />
@@ -104,19 +95,29 @@ export const createSplitterNapIcon = (label?: string) => {
 };
 
 /**
- * 3. Caja NAP Normalizada con Semáforo Cromático
- * Rectángulo con diseño estándar de ingeniería de planta externa
+ * 3. Caja NAP Normalizada con Semáforo Cromático (Con caché de instancia para fluidez a 60 FPS)
  */
+const napIconCache = new Map<string, L.DivIcon>();
+
 export const createNapStandardIcon = (nap: NapBox, isSelected: boolean, isRouteDestination: boolean) => {
   const metricas = nap.metricas;
   const pct = metricas ? metricas.porcentajeSaturacion : 0;
 
-  // Color del triángulo según el semáforo de saturación
+  // Semáforo cromático estándar
+  let tier = 'green';
   let triColor = '#10b981'; // Verde (<80%)
   if (pct >= 100) {
+    tier = 'red';
     triColor = '#ef4444'; // Rojo (100%)
   } else if (pct >= 80) {
+    tier = 'amber';
     triColor = '#f59e0b'; // Ámbar (>=80%)
+  }
+
+  const cacheKey = `${tier}_${isSelected ? 1 : 0}_${isRouteDestination ? 1 : 0}`;
+  const cached = napIconCache.get(cacheKey);
+  if (cached) {
+    return cached;
   }
 
   const ringStyle = isRouteDestination
@@ -125,15 +126,12 @@ export const createNapStandardIcon = (nap: NapBox, isSelected: boolean, isRouteD
     ? 'scale-135 filter drop-shadow-[0_0_8px_rgba(14,165,233,0.9)]'
     : 'filter drop-shadow-md hover:scale-125';
 
-  return L.divIcon({
+  const icon = L.divIcon({
     className: 'custom-standard-nap-marker',
     html: `
-      <div class="relative flex items-center justify-center cursor-pointer transition-all duration-200 ${ringStyle}" title="${nap.identificador} (${pct}% saturación - Clic para ver detalles)">
-        <!-- Triángulo estándar de ingeniería FTTx -->
+      <div class="relative flex items-center justify-center cursor-pointer transition-all duration-200 ${ringStyle}">
         <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Triángulo orientado con borde blanco -->
           <polygon points="13,2 24,22 2,22" fill="${triColor}" stroke="#ffffff" stroke-width="2" stroke-linejoin="round" />
-          <!-- Cuadro interior representativo del puerto de acceso -->
           <rect x="10" y="12" width="6" height="6" rx="1" fill="#ffffff" />
         </svg>
       </div>
@@ -142,32 +140,36 @@ export const createNapStandardIcon = (nap: NapBox, isSelected: boolean, isRouteD
     iconAnchor: [13, 13],
     popupAnchor: [0, -14]
   });
+
+  napIconCache.set(cacheKey, icon);
+  return icon;
 };
 
 /**
- * 4. Cierre de Empalme / Mufa Torpedo
- * Forma torpedo azul cilíndrico estriado con símbolo de fusión óptica ><
+ * 4. Cierre de Empalme / Mufa Torpedo (Con caché de instancia)
  */
+const mufaIconCache = new Map<string, L.DivIcon>();
+
 export const createMufaTorpedoIcon = (empalme?: EmpalmeClosure) => {
-  const cap = empalme?.capacidad_hilos || 48;
-  return L.divIcon({
+  const nombre = empalme?.nombre || 'MUFA';
+  if (mufaIconCache.has(nombre)) {
+    return mufaIconCache.get(nombre)!;
+  }
+
+  const icon = L.divIcon({
     className: 'custom-mufa-torpedo-marker',
     html: `
-      <div class="relative flex flex-col items-center group cursor-pointer hover:scale-125 transition-transform" title="Cierre de Empalme / Mufa Torpedo: ${empalme?.nombre || 'Mufa'}">
+      <div class="relative flex flex-col items-center group cursor-pointer hover:scale-125 transition-transform" title="Cierre de Empalme / Mufa Torpedo: ${nombre}">
         <svg width="36" height="24" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Cuerpo de torpedo redondeado azul -->
           <rect x="4" y="4" width="28" height="16" rx="8" fill="#0284c7" stroke="#ffffff" stroke-width="1.8" />
-          <!-- Estrías del domo -->
           <line x1="12" y1="4" x2="12" y2="20" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 1" />
           <line x1="24" y1="4" x2="24" y2="20" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 1" />
-          <!-- Símbolo de Fusión Óptica en moño: >< -->
           <path d="M14 8 L22 16 M14 16 L22 8" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" />
-          <!-- Puntos de entrada / salida de cables -->
           <circle cx="2" cy="12" r="1.5" fill="#ffffff" />
           <circle cx="34" cy="12" r="1.5" fill="#ffffff" />
         </svg>
         <div class="text-[9px] font-bold text-slate-800 bg-sky-50 border border-sky-300 px-1 py-0.2 rounded shadow-xs -mt-0.5 whitespace-nowrap">
-          ${empalme?.nombre || 'MUFA'}
+          ${nombre}
         </div>
       </div>
     `,
@@ -175,19 +177,26 @@ export const createMufaTorpedoIcon = (empalme?: EmpalmeClosure) => {
     iconAnchor: [20, 18],
     popupAnchor: [0, -20]
   });
+
+  mufaIconCache.set(nombre, icon);
+  return icon;
 };
 
 /**
- * 5. Gasa / Reserva Técnica de Cable
- * Símbolo de infinito '∞' azul con los metros rotulados (e.g. 30m, 50m)
+ * 5. Gasa / Reserva Técnica de Cable (Con caché de instancia)
  */
+const gasaIconCache = new Map<string, L.DivIcon>();
+
 export const createGasaReservaIcon = (gasa?: GasaReserva) => {
   const metraje = gasa?.longitud_metros ? `${gasa.longitud_metros}m` : gasa?.metros_reserva ? `${gasa.metros_reserva}m` : '30m';
-  return L.divIcon({
+  if (gasaIconCache.has(metraje)) {
+    return gasaIconCache.get(metraje)!;
+  }
+
+  const icon = L.divIcon({
     className: 'custom-gasa-reserva-marker',
     html: `
       <div class="relative flex flex-col items-center group cursor-pointer hover:scale-125 transition-transform" title="Gasa de Reserva Técnica: ${gasa?.nombre || metraje}">
-        <!-- Símbolo de bucle/infinito ∞ -->
         <div class="w-7 h-7 rounded-full bg-blue-600 border-2 border-white shadow-md flex items-center justify-center text-white font-bold text-sm leading-none">
           ∞
         </div>
@@ -200,9 +209,16 @@ export const createGasaReservaIcon = (gasa?: GasaReserva) => {
     iconAnchor: [15, 18],
     popupAnchor: [0, -20]
   });
+
+  gasaIconCache.set(metraje, icon);
+  return icon;
 };
 
+/**
+ * 6. Poste Propuesto (Con caché de instancia)
+ */
 const postePropuestoIconCache = new Map<string, L.DivIcon>();
+
 export const createPostePropuestoIcon = (codigo?: string) => {
   const key = codigo || 'default';
   if (!postePropuestoIconCache.has(key)) {
@@ -226,7 +242,11 @@ export const createPostePropuestoIcon = (codigo?: string) => {
   return postePropuestoIconCache.get(key)!;
 };
 
+/**
+ * 7. Poste CFE Existente (Con caché de instancia)
+ */
 const posteCfeIconCache = new Map<string, L.DivIcon>();
+
 export const createPosteCfeIcon = (codigo?: string) => {
   const key = codigo || 'default';
   if (!posteCfeIconCache.has(key)) {
@@ -251,24 +271,28 @@ export const createPosteCfeIcon = (codigo?: string) => {
 };
 
 /**
- * 8. ODF / Central Office (Cabecera)
+ * 8. ODF / Central Office (Cabecera, con caché de instancia)
  */
-export const createOdfStandardIcon = (nombre?: string) => {
-  return L.divIcon({
-    className: 'custom-odf-marker',
-    html: `
-      <div class="relative flex items-center justify-center w-10 h-10 bg-gradient-to-br from-sky-600 to-blue-700 border-2 border-white rounded-xl shadow-xl text-white hover:scale-110 transition-transform" title="Cabecera OLT / ODF Central">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h10"/>
-        </svg>
-        <span class="absolute -bottom-4 text-[9px] font-black text-white bg-blue-900 border border-blue-400 px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap">
-          OLT/ODF
-        </span>
-      </div>
-    `,
-    iconSize: [42, 42],
-    iconAnchor: [21, 21],
-    popupAnchor: [0, -24]
-  });
-};
+let odfIconSingleton: L.DivIcon | null = null;
 
+export const createOdfStandardIcon = (_nombre?: string) => {
+  if (!odfIconSingleton) {
+    odfIconSingleton = L.divIcon({
+      className: 'custom-odf-marker',
+      html: `
+        <div class="relative flex items-center justify-center w-10 h-10 bg-gradient-to-br from-sky-600 to-blue-700 border-2 border-white rounded-xl shadow-xl text-white hover:scale-110 transition-transform" title="Cabecera OLT / ODF Central">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h10"/>
+          </svg>
+          <span class="absolute -bottom-4 text-[9px] font-black text-white bg-blue-900 border border-blue-400 px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap">
+            OLT/ODF
+          </span>
+        </div>
+      `,
+      iconSize: [42, 42],
+      iconAnchor: [21, 21],
+      popupAnchor: [0, -24]
+    });
+  }
+  return odfIconSingleton;
+};
