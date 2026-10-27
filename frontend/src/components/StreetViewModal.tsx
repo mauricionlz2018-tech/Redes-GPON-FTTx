@@ -8,7 +8,9 @@ import {
   Globe,
   Camera,
   MapPin,
-  Satellite
+  Satellite,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 
 interface StreetViewModalProps {
@@ -28,6 +30,7 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [viewMode, setViewMode] = useState<'streetview' | 'satellite'>('streetview');
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Cerrar con tecla Escape
   useEffect(() => {
@@ -44,6 +47,7 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
     if (isOpen) {
       setViewMode('streetview');
       setCopied(false);
+      setIsFullscreen(false);
     }
   }, [isOpen, coordinates]);
 
@@ -73,16 +77,24 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[100000] flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn"
+      className={`fixed inset-0 z-[100000] flex items-center justify-center bg-slate-950/85 backdrop-blur-md animate-fadeIn ${
+        isFullscreen ? 'p-0' : 'p-2 sm:p-4 md:p-6'
+      }`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="street-view-modal-title"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget && !isFullscreen) onClose();
       }}
     >
-      <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh] my-auto transition-colors animate-scaleUp">
-        {/* Cabecera limpia y responsiva */}
+      <div
+        className={`bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 shadow-2xl overflow-hidden flex flex-col transition-all duration-200 animate-scaleUp ${
+          isFullscreen
+            ? 'w-screen h-screen max-w-none max-h-none rounded-none border-0'
+            : 'w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl h-[88vh] sm:h-[90vh] max-h-[94vh] rounded-2xl my-auto'
+        }`}
+      >
+        {/* Cabecera amplia y responsiva */}
         <div className="bg-slate-100 dark:bg-slate-800/90 px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <div className="p-2 sm:p-2.5 bg-amber-500 text-slate-950 font-black rounded-xl shadow-xs flex items-center justify-center shrink-0">
@@ -102,17 +114,37 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
               )}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shrink-0"
-            aria-label="Cerrar vista Street View"
-          >
-            <X className="w-5 h-5" />
-          </button>
+
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Botón Pantalla Completa / Expandir */}
+            <button
+              type="button"
+              onClick={() => setIsFullscreen((prev) => !prev)}
+              className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              title={isFullscreen ? 'Restaurar tamaño' : 'Pantalla completa'}
+              aria-label={isFullscreen ? 'Restaurar tamaño' : 'Pantalla completa'}
+            >
+              {isFullscreen ? (
+                <Minimize2 className="w-4 h-4 sm:w-5 sm:h-5" />
+              ) : (
+                <Maximize2 className="w-4 h-4 sm:w-5 sm:h-5" />
+              )}
+            </button>
+
+            {/* Botón Cerrar */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              aria-label="Cerrar vista Street View"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Barra de Coordenadas, Selector de Modo (Street View vs Satélite) y Copia Rápida */}
-        <div className="bg-slate-50 dark:bg-slate-800/50 px-3 sm:px-6 py-2 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="bg-slate-50 dark:bg-slate-800/50 px-3 sm:px-6 py-2 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
           <div className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200 font-medium truncate">
             <MapPin className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400 shrink-0" />
             <span className="hidden sm:inline">GPS:</span>
@@ -171,8 +203,8 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
           </div>
         </div>
 
-        {/* Visualizador Embebido Adaptativo */}
-        <div className="relative flex-1 h-[42vh] min-h-[220px] max-h-[380px] bg-slate-950 flex flex-col items-center justify-center overflow-hidden shrink">
+        {/* Visualizador Embebido Amplio y Adaptativo */}
+        <div className="relative flex-1 w-full bg-slate-950 flex flex-col items-center justify-center overflow-hidden min-h-[350px]">
           <iframe
             key={viewMode}
             title={viewMode === 'streetview' ? 'Visualizador Street View' : 'Visualizador Satélite'}
@@ -217,4 +249,3 @@ export const StreetViewModal: React.FC<StreetViewModalProps> = ({
 
   return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : null;
 };
-
