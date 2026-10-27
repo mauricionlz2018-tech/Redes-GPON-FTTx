@@ -85,6 +85,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         rol: 'Soporte',
         nombre: 'Ing. Daniel Benítez (Monitoreo NOC)',
         passwords: ['admin123', ...(customPass ? [customPass] : [])]
+      },
+      'oscarmendoza@gpon.com': {
+        rol: 'Admin',
+        nombre: 'Oscar Mendoza (Admin)',
+        passwords: ['oscargpon', 'admin123', ...(customPass ? [customPass] : [])]
+      },
+      'oscarmendoza': {
+        rol: 'Admin',
+        nombre: 'Oscar Mendoza (Admin)',
+        passwords: ['oscargpon', 'admin123', ...(customPass ? [customPass] : [])]
       }
     };
 
@@ -137,7 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await api.post(
         '/auth/login',
         { credencial_acceso, password },
-        { timeout: 6000 }
+        { timeout: 35000 }
       );
 
       if (response.data.success) {
