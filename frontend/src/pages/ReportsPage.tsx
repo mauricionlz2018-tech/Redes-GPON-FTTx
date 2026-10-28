@@ -13,10 +13,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   BarChart3,
-  Loader2,
   Search,
-  X,
-  Eye
+  X
 } from 'lucide-react';
 import { TablePagination } from '../components/TablePagination';
 
@@ -27,7 +25,6 @@ export const ReportsPage: React.FC = () => {
     return cached.length > 0 ? cached : mockNaps;
   });
   const [loading, setLoading] = useState(false);
-  const [downloadingTheme, setDownloadingTheme] = useState<'light' | 'dark' | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Estados de paginación y búsqueda para la Matriz de Estado (20 registros por página)
@@ -56,35 +53,6 @@ export const ReportsPage: React.FC = () => {
     };
     loadNaps();
   }, []);
-
-  // Descargar PDF generado con PDFKit en el backend con fallback inteligente a Vista Previa Ejecutiva
-  const handleDownloadPdf = async (pdfTheme: 'light' | 'dark' = 'light') => {
-    try {
-      setDownloadingTheme(pdfTheme);
-      const response = await api.get('/reportes/saturacion-pdf', {
-        params: { theme: pdfTheme },
-        responseType: 'blob',
-        timeout: 10000
-      });
-
-      // Crear enlace de descarga en el navegador
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `reporte_gpon_saturacion_${new Date().toISOString().slice(0, 10)}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-    } catch (error) {
-      console.warn('Backend no disponible o demorado para PDF directo. Abriendo Vista Previa Ejecutiva con opción de Guardar como PDF / Imprimir...', error);
-      // Abrir automáticamente la vista previa ejecutiva de alta resolución con impresión nativa a PDF
-      setIsPreviewOpen(true);
-    } finally {
-      setDownloadingTheme(null);
-    }
-  };
 
   // Métricas acumuladas
   const totalNaps = naps.length;
@@ -124,7 +92,7 @@ export const ReportsPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Encabezado y Acción de Descarga con selección de Tema */}
+      {/* Encabezado y Acción de Descarga con único botón */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 transition-colors">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -136,28 +104,14 @@ export const ReportsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Acciones de Vista Previa y Descarga */}
-        <div className="flex flex-wrap items-center gap-2 print:hidden">
+        {/* Único botón: Descargar Reporte PDF (abre la vista previa del reporte para revisión y descarga) */}
+        <div className="flex items-center gap-2 print:hidden">
           <button
             onClick={() => setIsPreviewOpen(true)}
-            className="flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-semibold py-2 px-3.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-            title="Ver vista previa oficial del reporte con diseño ejecutivo y opción de impresión/guardar PDF"
+            className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+            title="Abrir vista previa del reporte ejecutivo y descargar en PDF"
           >
-            <Eye className="w-3.5 h-3.5 text-sky-500" />
-            <span>Vista Previa del Reporte</span>
-          </button>
-
-          <button
-            onClick={() => handleDownloadPdf('light')}
-            disabled={!!downloadingTheme}
-            className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-xs transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
-            title="Descargar reporte ejecutivo oficial en formato PDF"
-          >
-            {downloadingTheme ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-            ) : (
-              <Download className="w-3.5 h-3.5" />
-            )}
+            <Download className="w-3.5 h-3.5" />
             <span>Descargar Reporte PDF</span>
           </button>
         </div>
@@ -352,12 +306,11 @@ export const ReportsPage: React.FC = () => {
         />
       </div>
 
-      {/* Modal de Vista Previa Oficial e Imprimible del Reporte Ejecutivo */}
+      {/* Modal de Vista Previa Oficial con Descarga PDF e Impresión */}
       <ReportPreviewModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         naps={naps}
-        onDirectDownloadPdf={() => handleDownloadPdf('light')}
       />
     </div>
   );
