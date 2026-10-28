@@ -247,3 +247,4 @@ export function generateClientPdfReport({
     filename || `reporte_gpon_saturacion_${now.toISOString().slice(0, 10)}.pdf`;
   doc.save(finalName);
 }
+

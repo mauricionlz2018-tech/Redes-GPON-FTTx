@@ -72,7 +72,7 @@ const STEP_GUIDES: StepGuide[] = [
       'Para centrar la vista y demarcar los límites territoriales de una jurisdicción operativa:',
     steps: [
       'En la barra superior de herramientas del mapa, localiza el menú desplegable "Municipio / Delimitación".',
-      'Selecciona el municipio deseado (Ixtlahuaca, Jocotitlán, San José del Rincón, San Felipe del Progreso, Jiquipilco, Acambay/Dongu o El Oro).',
+      'Selecciona el municipio deseado (Ixtlahuaca, Jocotitlán, Atlacomulco, San José del Rincón, San Felipe del Progreso, Jiquipilco, Acambay/Dongu o El Oro).',
       'El visor Leaflet volará suavemente a la cabecera municipal ajustando el nivel de zoom óptimo de forma automática.',
       'Se dibujará el contorno perimetral oficial (polígono administrativo INEGI/OSM) en línea punteada índigo para delimitar la zona.',
       'Para desmarcar el contorno y regresar al encuadre general de toda la red, vuelve a seleccionar la opción "Todos los municipios".'

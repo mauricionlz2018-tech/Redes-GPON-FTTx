@@ -375,11 +375,11 @@ export const KNOWLEDGE_BASE: KnowledgeItem[] = [
     title: '¿Cómo navegar por municipios y delimitar sus contornos en el mapa?',
     keywords: [
       'municipios', 'municipio', 'navegacion', 'menu desplegable', 'desplegable', 'contorno',
-      'ixtlahuaca', 'jocotitlan', 'san jose del rincon', 'san felipe del progreso', 'jiquipilco',
+      'ixtlahuaca', 'jocotitlan', 'atlacomulco', 'san jose del rincon', 'san felipe del progreso', 'jiquipilco',
       'acambay', 'dongu', 'el oro', 'delimitar', 'perimetro', 'poligono', 'marcar', 'desmarcar'
     ],
     shortAnswer:
-      'En la barra de herramientas del mapa dispones de un menú desplegable de municipios (Ixtlahuaca, Jocotitlán, San José del Rincón, San Felipe del Progreso, Jiquipilco, Acambay/Dongu y El Oro). Al elegir un municipio, el mapa vuela suavemente a la zona y dibuja el contorno administrativo oficial punteado.',
+      'En la barra de herramientas del mapa dispones de un menú desplegable de municipios (Ixtlahuaca, Jocotitlán, Atlacomulco, San José del Rincón, San Felipe del Progreso, Jiquipilco, Acambay/Dongu y El Oro). Al elegir un municipio, el mapa vuela suavemente a la zona y dibuja el contorno administrativo oficial punteado.',
     detailedSteps: [
       '1. Accede al módulo "Mapa de Red".',
       '2. En el panel de control superior de capas, haz clic en el menú desplegable "Municipio / Delimitación".',
@@ -651,7 +651,7 @@ export const MANUAL_MODULES: ManualModule[] = [
       {
         heading: 'Navegación y Demarcación por Municipios',
         content:
-          'El menú desplegable de municipios permite saltar a Ixtlahuaca, Jocotitlán, San José del Rincón, San Felipe del Progreso, Jiquipilco, Acambay/Dongu y El Oro:',
+          'El menú desplegable de municipios permite saltar a Ixtlahuaca, Jocotitlán, Atlacomulco, San José del Rincón, San Felipe del Progreso, Jiquipilco, Acambay/Dongu y El Oro:',
         points: [
           'Vuelo y zoom suave a la cabecera municipal con encuadre de la red.',
           'Demarcación perimetral oficial (polígonos INEGI/OSM) en línea punteada para orientar a cuadrillas en terreno.',
