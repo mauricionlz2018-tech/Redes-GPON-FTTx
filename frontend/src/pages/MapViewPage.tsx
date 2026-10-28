@@ -39,6 +39,7 @@ import {
   X,
   GripVertical,
   Download,
+  Upload,
   Maximize2,
   Minimize2,
   ChevronRight,
@@ -60,6 +61,8 @@ import {
   getTroncalDesignMetrics
 } from '../data/mockGponData';
 import { exportGponNetworkToKmz } from '../utils/kmzExport';
+import { KmzImportModal } from '../components/KmzImportModal';
+import { parseKmzOrKmlFile, ParsedKmzResult, ParsedKmzItem } from '../utils/kmzParser';
 
 
 import {
@@ -364,6 +367,203 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     localStorage.setItem(key, JSON.stringify(Array.from(ids)));
   } catch {}
 };
+
+  // Estados y referencias para importación de KMZ / KML con vista previa y deduplicación
+  const [kmzImportData, setKmzImportData] = useState<ParsedKmzResult | null>(null);
+  const [isKmzModalOpen, setIsKmzModalOpen] = useState(false);
+  const [isParsingKmz, setIsParsingKmz] = useState(false);
+  const kmzFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleKmzFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsParsingKmz(true);
+      setFeedbackNotice({
+        type: 'success',
+        message: `Leyendo archivo "${file.name}" y analizando capas geodésicas...`
+      });
+
+      const activeRoutes = [...troncalIxtJocRoutes, ...customRoutes].filter(
+        (r) => !deletedRouteIds.includes(r.id_ruta)
+      );
+      const activeEmpalmes = [...troncalMufas, ...customEmpalmes].filter(
+        (m) => !deletedMufaIds.includes(m.id_empalme)
+      );
+      const activePostes = [
+        ...troncalPostesCfe,
+        ...troncalPostesPropuestos,
+        ...customPostes
+      ].filter((p) => !deletedPosteIds.includes(p.id_poste));
+
+      const parsed = await parseKmzOrKmlFile(file, activeRoutes, activeEmpalmes, activePostes);
+
+      if (parsed.items.length === 0) {
+        setFeedbackNotice({
+          type: 'error',
+          message: 'No se encontraron elementos geográficos (rutas o puntos) válidos en el archivo KMZ/KML.'
+        });
+        setTimeout(() => setFeedbackNotice(null), 5000);
+        return;
+      }
+
+      setKmzImportData(parsed);
+      setIsKmzModalOpen(true);
+      setFeedbackNotice(null);
+    } catch (err: any) {
+      console.error('Error al procesar archivo KMZ/KML:', err);
+      setFeedbackNotice({
+        type: 'error',
+        message: err?.message || 'Error al procesar el archivo KMZ/KML.'
+      });
+      setTimeout(() => setFeedbackNotice(null), 6000);
+    } finally {
+      setIsParsingKmz(false);
+      if (kmzFileInputRef.current) {
+        kmzFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleConfirmKmzImport = async (itemsToImport: ParsedKmzItem[]) => {
+    if (itemsToImport.length === 0) return;
+
+    const routeItems = itemsToImport.filter((it) => it.categoria === 'ruta');
+    const pointItems = itemsToImport.filter((it) => it.categoria === 'punto');
+
+    // 1. Procesar rutas
+    if (routeItems.length > 0) {
+      const newRoutes: FiberRoute[] = routeItems.map((item, idx) => {
+        const isTroncal = item.tipo === 'troncal' || !item.nombre.toLowerCase().includes('ramal');
+        const coords = item.coordenadas as [number, number][];
+        return {
+          id_ruta: `route_kmz_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+          nombre: item.nombre,
+          vertices: coords.length,
+          color: isTroncal ? '#ea580c' : '#8b5cf6',
+          grosor: isTroncal ? 4 : 3,
+          tipo: isTroncal ? 'troncal' : 'ramal',
+          subtipo: isTroncal ? 'Troncal 48H' : 'Ramal 24H',
+          hilos: isTroncal ? 48 : 24,
+          coordenadas: coords,
+          distancia_km: item.distanciaKm || 0,
+          distancia_metros: item.distanciaMetros || 0,
+          origen: 'KMZ Importado',
+          destino: 'KMZ Importado',
+          estado: 'operativa'
+        };
+      });
+
+      setCustomRoutes((prev) => {
+        const updated = [...newRoutes, ...prev];
+        try {
+          localStorage.setItem('gpon_custom_routes', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      for (const r of newRoutes) {
+        api.post('/infra/routes', r).catch(() => {});
+        broadcastRealtimeEvent({ type: 'INFRA_CREATED', category: 'route', item: r });
+      }
+    }
+
+    // 2. Procesar Mufas
+    const mufaItems = pointItems.filter((it) => it.tipo === 'mufa');
+    if (mufaItems.length > 0) {
+      const newMufas: EmpalmeClosure[] = mufaItems.map((item, idx) => {
+        const coords = item.coordenadas as { lat: number; lng: number };
+        return {
+          id_empalme: `mufa_kmz_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+          nombre: item.nombre,
+          tipo_cierre: 'Cierre de Empalme FTTx',
+          capacidad_hilos: 48,
+          estado: 'optimo',
+          coordenadas_gps: coords
+        };
+      });
+
+      setCustomEmpalmes((prev) => {
+        const updated = [...newMufas, ...prev];
+        try {
+          localStorage.setItem('gpon_custom_empalmes', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      for (const m of newMufas) {
+        api.post('/infra/empalmes', m).catch(() => {});
+        broadcastRealtimeEvent({ type: 'INFRA_CREATED', category: 'mufa', item: m });
+      }
+    }
+
+    // 3. Procesar Postes
+    const posteItems = pointItems.filter(
+      (it) => it.tipo === 'poste_cfe' || it.tipo === 'poste_propuesto'
+    );
+    if (posteItems.length > 0) {
+      const newPostes: PosteInfraestructura[] = posteItems.map((item, idx) => {
+        const coords = item.coordenadas as { lat: number; lng: number };
+        const isCfe = item.tipo === 'poste_cfe';
+        return {
+          id_poste: `poste_kmz_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+          nombre: item.nombre,
+          codigo: item.nombre,
+          tipo: isCfe ? 'poste_cfe' : 'poste_propuesto',
+          coordenadas_gps: coords
+        };
+      });
+
+      setCustomPostes((prev) => {
+        const updated = [...newPostes, ...prev];
+        try {
+          localStorage.setItem('gpon_custom_postes', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      for (const p of newPostes) {
+        api.post('/infra/postes', p).catch(() => {});
+        broadcastRealtimeEvent({ type: 'INFRA_CREATED', category: 'poste', item: p });
+      }
+    }
+
+    // 4. Procesar Gasas
+    const gasaItems = pointItems.filter((it) => it.tipo === 'gasa');
+    if (gasaItems.length > 0) {
+      const newGasas: GasaReserva[] = gasaItems.map((item, idx) => {
+        const coords = item.coordenadas as { lat: number; lng: number };
+        return {
+          id_gasa: `gasa_kmz_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+          nombre: item.nombre,
+          metros_reserva: 20,
+          longitud_metros: 20,
+          tipo_cable: 'Troncal 48H',
+          coordenadas_gps: coords
+        };
+      });
+
+      setCustomGasas((prev) => {
+        const updated = [...newGasas, ...prev];
+        try {
+          localStorage.setItem('gpon_custom_gasas', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      for (const g of newGasas) {
+        api.post('/infra/gasas', g).catch(() => {});
+        broadcastRealtimeEvent({ type: 'INFRA_CREATED', category: 'gasa', item: g });
+      }
+    }
+
+    setFeedbackNotice({
+      type: 'success',
+      message: `Se importaron ${itemsToImport.length} elementos geográficos a la red satelital con éxito.`
+    });
+    setTimeout(() => setFeedbackNotice(null), 5000);
+  };
 
   const [isExportingKmz, setIsExportingKmz] = useState(false);
 
@@ -1292,6 +1492,27 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               <Maximize2 className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden sm:inline">Expandir Mapa</span>
               <span className="sm:hidden">Expandir</span>
+            </button>
+
+            {/* Selector de archivo KMZ / KML oculto */}
+            <input
+              type="file"
+              ref={kmzFileInputRef}
+              accept=".kmz,.kml"
+              onChange={handleKmzFileSelect}
+              className="hidden"
+            />
+
+            {/* Botón Subir KMZ con Vista Previa */}
+            <button
+              onClick={() => kmzFileInputRef.current?.click()}
+              disabled={isParsingKmz}
+              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold px-2 sm:px-3 rounded-lg border border-teal-500 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial whitespace-nowrap"
+              title="Subir archivo KMZ o KML de Google Earth para vista previa, edición y agregación a la red"
+            >
+              <Upload className={`w-3.5 h-3.5 shrink-0 ${isParsingKmz ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isParsingKmz ? 'Cargando...' : 'Subir KMZ'}</span>
+              <span className="sm:hidden">{isParsingKmz ? 'KMZ...' : 'Subir'}</span>
             </button>
 
             <button
@@ -2276,6 +2497,17 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             : [19.645, -99.82]
         }
         existingGasasCount={troncalGasas.length + customGasas.length}
+      />
+
+      {/* Modal de Vista Previa, Edición y Deduplicación para Importar KMZ / KML */}
+      <KmzImportModal
+        isOpen={isKmzModalOpen}
+        onClose={() => {
+          setIsKmzModalOpen(false);
+          setKmzImportData(null);
+        }}
+        importData={kmzImportData}
+        onConfirmImport={handleConfirmKmzImport}
       />
     </div>
   );

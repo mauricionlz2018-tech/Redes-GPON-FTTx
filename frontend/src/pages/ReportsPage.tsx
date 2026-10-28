@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { NapBox } from '../types';
 import { mockNaps } from '../data/mockGponData';
 import api from '../api/client';
+import { getCachedNapsSync, saveCachedNaps } from '../services/realtimeSync';
+import { ReportPreviewModal } from '../components/ReportPreviewModal';
 import {
   FileText,
   Download,
@@ -12,18 +14,21 @@ import {
   AlertTriangle,
   BarChart3,
   Loader2,
-  Sun,
-  Moon,
-  Printer,
   Search,
-  X
+  X,
+  Eye
 } from 'lucide-react';
 import { TablePagination } from '../components/TablePagination';
 
 export const ReportsPage: React.FC = () => {
-  const [naps, setNaps] = useState<NapBox[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Carga instantánea de NAPs desde caché local en 0ms para evitar mostrar 0 mientras se conecta al servidor
+  const [naps, setNaps] = useState<NapBox[]>(() => {
+    const cached = getCachedNapsSync();
+    return cached.length > 0 ? cached : mockNaps;
+  });
+  const [loading, setLoading] = useState(false);
   const [downloadingTheme, setDownloadingTheme] = useState<'light' | 'dark' | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Estados de paginación y búsqueda para la Matriz de Estado (20 registros por página)
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,12 +41,15 @@ export const ReportsPage: React.FC = () => {
         const res = await api.get('/naps');
         if (res.data.success && res.data.data.length > 0) {
           setNaps(res.data.data);
+          saveCachedNaps(res.data.data);
         } else {
-          setNaps(mockNaps);
+          const cached = getCachedNapsSync();
+          setNaps(cached.length > 0 ? cached : mockNaps);
         }
       } catch (e) {
-        console.warn('Backend no disponible, cargando datos mock en Reportes...');
-        setNaps(mockNaps);
+        console.warn('Backend no disponible, cargando datos locales/mock en Reportes...');
+        const cached = getCachedNapsSync();
+        setNaps(cached.length > 0 ? cached : mockNaps);
       } finally {
         setLoading(false);
       }
@@ -49,13 +57,14 @@ export const ReportsPage: React.FC = () => {
     loadNaps();
   }, []);
 
-  // Descargar PDF generado con PDFKit en el backend con soporte para Tema Claro y Oscuro
-  const handleDownloadPdf = async (pdfTheme: 'light' | 'dark') => {
+  // Descargar PDF generado con PDFKit en el backend con fallback inteligente a Vista Previa Ejecutiva
+  const handleDownloadPdf = async (pdfTheme: 'light' | 'dark' = 'light') => {
     try {
       setDownloadingTheme(pdfTheme);
       const response = await api.get('/reportes/saturacion-pdf', {
         params: { theme: pdfTheme },
-        responseType: 'blob'
+        responseType: 'blob',
+        timeout: 10000
       });
 
       // Crear enlace de descarga en el navegador
@@ -69,8 +78,9 @@ export const ReportsPage: React.FC = () => {
       link.remove();
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
-      console.error('Error descargando reporte PDF:', error);
-      alert('Error al generar o descargar el reporte PDF.');
+      console.warn('Backend no disponible o demorado para PDF directo. Abriendo Vista Previa Ejecutiva con opción de Guardar como PDF / Imprimir...', error);
+      // Abrir automáticamente la vista previa ejecutiva de alta resolución con impresión nativa a PDF
+      setIsPreviewOpen(true);
     } finally {
       setDownloadingTheme(null);
     }
@@ -126,12 +136,21 @@ export const ReportsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Acciones de Descarga */}
+        {/* Acciones de Vista Previa y Descarga */}
         <div className="flex flex-wrap items-center gap-2 print:hidden">
+          <button
+            onClick={() => setIsPreviewOpen(true)}
+            className="flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-semibold py-2 px-3.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+            title="Ver vista previa oficial del reporte con diseño ejecutivo y opción de impresión/guardar PDF"
+          >
+            <Eye className="w-3.5 h-3.5 text-sky-500" />
+            <span>Vista Previa del Reporte</span>
+          </button>
+
           <button
             onClick={() => handleDownloadPdf('light')}
             disabled={!!downloadingTheme}
-            className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-sm transition-all disabled:opacity-50 active:scale-95"
+            className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-xs transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
             title="Descargar reporte ejecutivo oficial en formato PDF"
           >
             {downloadingTheme ? (
@@ -146,7 +165,7 @@ export const ReportsPage: React.FC = () => {
 
       {/* Tarjetas KPI de la Red */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Cajas NAP Activas</span>
             <div className="p-2 bg-sky-500/10 text-sky-600 dark:text-sky-400 rounded-lg">
@@ -157,7 +176,7 @@ export const ReportsPage: React.FC = () => {
           <span className="text-[11px] text-slate-500 dark:text-slate-400">Distribuidas en San José del Rincón</span>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total de Puertos</span>
             <div className="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg">
@@ -168,7 +187,7 @@ export const ReportsPage: React.FC = () => {
           <span className="text-[11px] text-slate-500 dark:text-slate-400">Capacidad splitter 1:16</span>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Abonados Conectados</span>
             <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
@@ -179,7 +198,7 @@ export const ReportsPage: React.FC = () => {
           <span className="text-[11px] text-slate-500 dark:text-slate-400">Puertos libres: {totalLibres}</span>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Saturación Global</span>
             <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">
@@ -205,7 +224,7 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Tabla Detallada de Saturación por Caja NAP */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-xl transition-colors">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs dark:shadow-xl transition-colors">
         <div className="px-4 py-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 transition-colors">
           <div>
             <span className="font-semibold text-xs text-slate-800 dark:text-white uppercase tracking-wider block">
@@ -332,6 +351,14 @@ export const ReportsPage: React.FC = () => {
           pageSizeOptions={[10, 20, 50, 100]}
         />
       </div>
+
+      {/* Modal de Vista Previa Oficial e Imprimible del Reporte Ejecutivo */}
+      <ReportPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        naps={naps}
+        onDirectDownloadPdf={() => handleDownloadPdf('light')}
+      />
     </div>
   );
 };
