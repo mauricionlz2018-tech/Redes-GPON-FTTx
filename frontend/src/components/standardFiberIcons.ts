@@ -296,3 +296,38 @@ export const createOdfStandardIcon = (_nombre?: string) => {
   }
   return odfIconSingleton;
 };
+
+/**
+ * 8. Brazo de Extensión para Cajas NAP y Postes
+ */
+const brazoIconCache = new Map<string, L.DivIcon>();
+
+export const createBrazoExtensionIcon = (codigoOrBrazo?: string | { codigo?: string }) => {
+  const codigo = typeof codigoOrBrazo === 'string' ? codigoOrBrazo : codigoOrBrazo?.codigo;
+  const cacheKey = codigo || 'default';
+  if (brazoIconCache.has(cacheKey)) {
+    return brazoIconCache.get(cacheKey)!;
+  }
+
+  const icon = L.divIcon({
+    className: 'custom-brazo-extension-icon',
+    html: `
+      <div class="relative flex flex-col items-center justify-center filter drop-shadow-md hover:scale-125 transition-transform cursor-pointer" title="Brazo de Extensión ${codigo || ''}">
+        <div style="background: linear-gradient(135deg, #d97706, #ea580c); border: 2px solid #ffffff; width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </div>
+        <span class="mt-0.5 text-[8.5px] font-black text-amber-900 bg-amber-100/95 border border-amber-300 px-1 rounded shadow-xs whitespace-nowrap">
+          ${codigo || 'BRAZO'}
+        </span>
+      </div>
+    `,
+    iconSize: [32, 38],
+    iconAnchor: [16, 19],
+    popupAnchor: [0, -20]
+  });
+
+  brazoIconCache.set(cacheKey, icon);
+  return icon;
+};

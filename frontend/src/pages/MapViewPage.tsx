@@ -11,10 +11,11 @@ import { CreateRouteModal } from '../components/CreateRouteModal';
 import { CreateMufaModal } from '../components/CreateMufaModal';
 import { CreatePosteModal } from '../components/CreatePosteModal';
 import { CreateGasaModal } from '../components/CreateGasaModal';
+import { CreateBrazoModal } from '../components/CreateBrazoModal';
 import { DeleteElementModal } from '../components/DeleteElementModal';
 import { OltOdfLogicalModal } from '../components/OltOdfLogicalModal';
 import { useAuth } from '../context/AuthContext';
-import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
+import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura, BrazoExtension } from '../types';
 import { offlineDb } from '../db/offlineDb';
 import api from '../api/client';
 import {
@@ -45,7 +46,8 @@ import {
   ChevronRight,
   ChevronLeft,
   Cpu,
-  Server
+  Server,
+  Wrench
 } from 'lucide-react';
 
 import {
@@ -58,6 +60,7 @@ import {
   troncalGasas,
   troncalPostesCfe,
   troncalPostesPropuestos,
+  mockBrazosExtension,
   getTroncalDesignMetrics
 } from '../data/mockGponData';
 import { exportGponNetworkToKmz } from '../utils/kmzExport';
@@ -178,26 +181,28 @@ export const MapViewPage: React.FC = () => {
     distanceKm?: number;
   }>({ isOpen: false });
 
-  // Estados de Planta Externa: Simbología, Metrajes y Creación de Rutas/Mufas/Gasas/Postes
+  // Estados de Planta Externa: Simbología, Metrajes y Creación de Rutas/Mufas/Gasas/Postes/Brazos
   const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
   const [isOltModalOpen, setIsOltModalOpen] = useState(false);
   const [isCreateRouteOpen, setIsCreateRouteOpen] = useState(false);
   const [isCreateMufaOpen, setIsCreateMufaOpen] = useState(false);
   const [isCreatePosteOpen, setIsCreatePosteOpen] = useState(false);
   const [isCreateGasaOpen, setIsCreateGasaOpen] = useState(false);
+  const [isCreateBrazoOpen, setIsCreateBrazoOpen] = useState(false);
 
   // Estados de Edición de Infraestructura
   const [editingRoute, setEditingRoute] = useState<FiberRoute | null>(null);
   const [editingMufa, setEditingMufa] = useState<EmpalmeClosure | null>(null);
   const [editingPoste, setEditingPoste] = useState<PosteInfraestructura | null>(null);
   const [editingGasa, setEditingGasa] = useState<GasaReserva | null>(null);
+  const [editingBrazo, setEditingBrazo] = useState<BrazoExtension | null>(null);
   const [editingNap, setEditingNap] = useState<NapBox | null>(null);
 
   // Estados para Drag & Drop y Colocación Interactiva de Elementos
-  const [placementMode, setPlacementMode] = useState<'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | null>(null);
+  const [placementMode, setPlacementMode] = useState<'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo' | null>(null);
   const [droppedCoordinates, setDroppedCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [tempPlacementPin, setTempPlacementPin] = useState<{
-    type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa';
+    type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo';
     lat: number;
     lng: number;
   } | null>(null);
@@ -232,7 +237,7 @@ export const MapViewPage: React.FC = () => {
     setRouteDraftPoints([]);
   };
 
-  const handlePlaceElement = (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa', latlng: { lat: number; lng: number }) => {
+  const handlePlaceElement = (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo', latlng: { lat: number; lng: number }) => {
     setDroppedCoordinates(latlng);
     setPlacementMode(null);
     if (type === 'poste') {
@@ -247,6 +252,9 @@ export const MapViewPage: React.FC = () => {
     } else if (type === 'gasa') {
       setTempPlacementPin({ type, ...latlng });
       setIsCreateGasaOpen(true);
+    } else if (type === 'brazo') {
+      setTempPlacementPin({ type, ...latlng });
+      setIsCreateBrazoOpen(true);
     } else if (type === 'troncal') {
       setTempPlacementPin(null);
       setIsDrawingRoute(true);
@@ -288,6 +296,14 @@ export const MapViewPage: React.FC = () => {
       return [];
     }
   });
+  const [customBrazos, setCustomBrazos] = useState<BrazoExtension[]>(() => {
+    try {
+      const saved = localStorage.getItem('gpon_custom_brazos');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [customPostes, setCustomPostes] = useState<PosteInfraestructura[]>(() => {
     try {
       const saved = localStorage.getItem('gpon_custom_postes');
@@ -297,9 +313,9 @@ export const MapViewPage: React.FC = () => {
     }
   });
 
-  // Estados de control para eliminación de elementos (Troncales, Mufas, Postes, Gasas)
+  // Estados de control para eliminación de elementos (Troncales, Mufas, Postes, Gasas, Brazos)
   const [deletingElement, setDeletingElement] = useState<{
-    type: 'troncal' | 'mufa' | 'poste' | 'gasa';
+    type: 'troncal' | 'mufa' | 'poste' | 'gasa' | 'brazo';
     id: string;
     name: string;
     details?: string;
@@ -328,6 +344,15 @@ export const MapViewPage: React.FC = () => {
   const [deletedGasaIds, setDeletedGasaIds] = useState<string[]>(() => {
     try {
       const s = localStorage.getItem('gpon_deleted_gasa_ids');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [deletedBrazoIds, setDeletedBrazoIds] = useState<string[]>(() => {
+    try {
+      const s = localStorage.getItem('gpon_deleted_brazo_ids');
       return s ? JSON.parse(s) : [];
     } catch {
       return [];
@@ -751,6 +776,38 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     fetchData(false);
   };
 
+  const handleSaveBrazo = async (newBrazo: BrazoExtension) => {
+    setCustomBrazos((prev) => {
+      const updated = [newBrazo, ...prev.filter((b) => b.id_brazo !== newBrazo.id_brazo)];
+      try {
+        localStorage.setItem('gpon_custom_brazos', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setDeletedBrazoIds((prev) => {
+      const updated = prev.filter((id) => id !== newBrazo.id_brazo);
+      try {
+        localStorage.setItem('gpon_deleted_brazo_ids', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    try {
+      await api.post('/infra/brazos', newBrazo);
+      const known = getKnownServerIds('gpon_known_server_brazo_ids');
+      known.add(newBrazo.id_brazo);
+      saveKnownServerIds('gpon_known_server_brazo_ids', known);
+    } catch (e) {
+      console.warn('Brazo guardado localmente; se sincronizará automáticamente:', e);
+    }
+    broadcastRealtimeEvent({ type: 'INFRA_CREATED', category: 'brazo', item: newBrazo });
+    setFeedbackNotice({
+      type: 'success',
+      message: `Brazo de extensión "${newBrazo.nombre}" (${newBrazo.longitud_metros || 1.2}m) registrado exitosamente.`
+    });
+    setTimeout(() => setFeedbackNotice(null), 6000);
+    fetchData(false);
+  };
+
   // Comparador de datos profundo para detectar cambios reales (puertos, métricas, coordenadas, clientes)
   const haveItemsChanged = <T extends Record<string, any>>(prev: T[], next: T[], idKey: string): boolean => {
     return haveDeepItemsChanged(prev, next, idKey);
@@ -761,7 +818,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     try {
       if (isInitial) setLoading(true);
 
-      let napsRes: any, odfRes: any, postesRes: any, mufasRes: any, routesRes: any, gasasRes: any;
+      let napsRes: any, odfRes: any, postesRes: any, mufasRes: any, routesRes: any, gasasRes: any, brazosRes: any;
 
       // 1. Intentar sincronización global unificada en 1 sola petición HTTP (ultrarrápida < 200ms)
       let networkData: any = null;
@@ -781,9 +838,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         mufasRes = { data: { success: true, data: networkData.mufas || [] } };
         routesRes = { data: { success: true, data: networkData.routes || [] } };
         gasasRes = { data: { success: true, data: networkData.gasas || [] } };
+        brazosRes = { data: { success: true, data: networkData.brazos || [] } };
       } else {
         // Peticiones aisladas e individuales como fallback de resiliencia
-        [napsRes, odfRes, postesRes, mufasRes, routesRes, gasasRes] = await Promise.all([
+        [napsRes, odfRes, postesRes, mufasRes, routesRes, gasasRes, brazosRes] = await Promise.all([
           api.get('/naps').catch((err) => {
             console.warn('Fallo al obtener NAPs:', err);
             return { data: { success: false, data: [] } };
@@ -806,6 +864,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           }),
           api.get('/infra/gasas').catch((err) => {
             console.warn('Fallo al obtener gasas:', err);
+            return { data: { success: false, data: [] } };
+          }),
+          api.get('/infra/brazos').catch((err) => {
+            console.warn('Fallo al obtener brazos:', err);
             return { data: { success: false, data: [] } };
           })
         ]);
@@ -1030,12 +1092,59 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           return mergedGasas;
         });
       }
+
+      // 5. Sincronización Bidireccional de Brazos de Extensión con Neon DB
+      const localBrazos: BrazoExtension[] = (() => {
+        try {
+          const s = localStorage.getItem('gpon_custom_brazos');
+          return s ? JSON.parse(s) : [];
+        } catch {
+          return [];
+        }
+      })();
+
+      if (brazosRes.data?.success && Array.isArray(brazosRes.data.data)) {
+        const serverBrazos: BrazoExtension[] = brazosRes.data.data;
+        const serverIds = new Set(serverBrazos.map((b) => b.id_brazo));
+        const knownBrazoIds = getKnownServerIds('gpon_known_server_brazo_ids');
+
+        const unsyncedBrazos = localBrazos.filter(
+          (loc) => !serverIds.has(loc.id_brazo) && !knownBrazoIds.has(loc.id_brazo) && !deletedBrazoIds.includes(loc.id_brazo)
+        );
+
+        if (unsyncedBrazos.length > 0) {
+          for (const unsynced of unsyncedBrazos) {
+            api.post('/infra/brazos', unsynced)
+              .then(() => {
+                knownBrazoIds.add(unsynced.id_brazo);
+                saveKnownServerIds('gpon_known_server_brazo_ids', knownBrazoIds);
+              })
+              .catch((e) => console.warn('Error subiendo brazo local:', e));
+          }
+        }
+
+        serverBrazos.forEach((b) => knownBrazoIds.add(b.id_brazo));
+        saveKnownServerIds('gpon_known_server_brazo_ids', knownBrazoIds);
+
+        const mergedBrazos = [
+          ...serverBrazos.filter((b) => !deletedBrazoIds.includes(b.id_brazo)),
+          ...unsyncedBrazos
+        ];
+
+        setCustomBrazos((prev) => {
+          if (!haveItemsChanged(prev, mergedBrazos, 'id_brazo')) return prev;
+          try {
+            localStorage.setItem('gpon_custom_brazos', JSON.stringify(mergedBrazos));
+          } catch {}
+          return mergedBrazos;
+        });
+      }
     } catch (err) {
       console.warn('Sincronización con backend parcial o en caché offline:', err);
     } finally {
       if (isInitial) setLoading(false);
     }
-  }, [deletedRouteIds, deletedMufaIds, deletedPosteIds, deletedGasaIds, deletedNapIds]);
+  }, [deletedRouteIds, deletedMufaIds, deletedPosteIds, deletedGasaIds, deletedBrazoIds, deletedNapIds]);
 
 
   // Sincronización en tiempo real reactiva y polling optimizado entre pestañas y dispositivos
@@ -1106,6 +1215,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           setCustomEmpalmes((prev) => [event.item, ...prev.filter((m) => m.id_empalme !== event.item.id_empalme)]);
         } else if (event.category === 'gasa') {
           setCustomGasas((prev) => [event.item, ...prev.filter((g) => g.id_gasa !== event.item.id_gasa)]);
+        } else if (event.category === 'brazo') {
+          setCustomBrazos((prev) => [event.item, ...prev.filter((b) => b.id_brazo !== event.item.id_brazo)]);
         } else if (event.category === 'route') {
           setCustomRoutes((prev) => [event.item, ...prev.filter((r) => r.id_ruta !== event.item.id_ruta)]);
         }
@@ -1116,6 +1227,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           setCustomEmpalmes((prev) => prev.filter((m) => m.id_empalme !== event.id));
         } else if (event.category === 'gasa') {
           setCustomGasas((prev) => prev.filter((g) => g.id_gasa !== event.id));
+        } else if (event.category === 'brazo') {
+          setCustomBrazos((prev) => prev.filter((b) => b.id_brazo !== event.id));
         } else if (event.category === 'route') {
           setCustomRoutes((prev) => prev.filter((r) => r.id_ruta !== event.id));
         }
@@ -1387,6 +1500,27 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         setFeedbackNotice({
           type: 'success',
           message: `Gasa de reserva técnica "${name}" eliminada correctamente.`
+        });
+      } else if (type === 'brazo') {
+        try {
+          await api.delete(`/infra/brazos/${id}`);
+        } catch (e) {
+          console.warn('Error eliminando brazo en backend:', e);
+        }
+        setDeletedBrazoIds((prev) => {
+          const next = Array.from(new Set([...prev, id]));
+          localStorage.setItem('gpon_deleted_brazo_ids', JSON.stringify(next));
+          return next;
+        });
+        setCustomBrazos((prev) => {
+          const next = prev.filter((b) => b.id_brazo !== id);
+          localStorage.setItem('gpon_custom_brazos', JSON.stringify(next));
+          return next;
+        });
+        broadcastRealtimeEvent({ type: 'INFRA_DELETED', category: 'brazo', id });
+        setFeedbackNotice({
+          type: 'success',
+          message: `Brazo de extensión "${name}" eliminado correctamente.`
         });
       }
 
@@ -1660,6 +1794,27 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             <span>+ Gasa</span>
           </button>
 
+          {/* Botón para registrar nuevo brazo de extensión para NAP (Arrastrable hacia el mapa) */}
+          <button
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData('text/plain', 'brazo');
+              e.dataTransfer.setData('application/gpon-element', 'brazo');
+            }}
+            onClick={() => {
+              setIsDrawingRoute(false);
+              setPlacementMode(placementMode === 'brazo' ? null : 'brazo');
+            }}
+            className={`flex items-center justify-center gap-1.5 h-9 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-amber-950/40 text-amber-800 dark:text-amber-200 font-bold text-xs px-3 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-slate-700 transition-all shadow-xs active:scale-95 cursor-grab active:cursor-grabbing shrink-0 ${
+              placementMode === 'brazo' ? 'ring-2 ring-amber-500 shadow-md ring-offset-1 animate-pulse' : ''
+            }`}
+            title="Arrastra hacia el mapa o haz clic para ubicar un nuevo brazo de extensión para montaje de caja NAP en poste"
+          >
+            <GripVertical className="w-3 h-3 text-amber-500/70 shrink-0" />
+            <Wrench className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>+ Brazo Extensión</span>
+          </button>
+
           {/* Botón para registrar nueva caja NAP con icono de cajita */}
           {user?.rol !== 'Tecnico' && (
             <button
@@ -1897,6 +2052,25 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                     <span>+ Gasa</span>
                   </button>
 
+                  <button
+                    draggable={true}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', 'brazo');
+                      e.dataTransfer.setData('application/gpon-element', 'brazo');
+                    }}
+                    onClick={() => {
+                      setIsDrawingRoute(false);
+                      setPlacementMode(placementMode === 'brazo' ? null : 'brazo');
+                    }}
+                    className={`flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-800 dark:text-amber-200 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-800 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors ${
+                      placementMode === 'brazo' ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-950/60' : ''
+                    }`}
+                    title="Ubicar brazo de extensión para caja NAP"
+                  >
+                    <Wrench className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span>+ Brazo Ext.</span>
+                  </button>
+
                   {user?.rol !== 'Tecnico' && (
                     <button
                       draggable={true}
@@ -1985,6 +2159,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             empalmes={customEmpalmes}
             customPostes={customPostes}
             customGasas={customGasas}
+            brazos={mockBrazosExtension}
+            customBrazos={customBrazos}
             onDeleteNapRequest={(nap) => setDeletingNap(nap)}
             onDeleteRouteRequest={(route) =>
               setDeletingElement({
@@ -2018,15 +2194,28 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                 details: `Reserva técnica: ${gasa.longitud_metros || gasa.metros_reserva || 30} metros.`
               })
             }
+            onDeleteBrazoRequest={(brazo) =>
+              setDeletingElement({
+                type: 'brazo',
+                id: brazo.id_brazo,
+                name: brazo.nombre,
+                details: `Código: ${brazo.codigo} | Longitud: ${brazo.longitud_metros || 1.2}m | NAP: ${brazo.id_nap_asociada || 'Sin asignar'}`
+              })
+            }
             onEditRouteRequest={(route) => setEditingRoute(route)}
             onEditMufaRequest={(mufa) => setEditingMufa(mufa)}
             onEditPosteRequest={(poste) => setEditingPoste(poste)}
             onEditGasaRequest={(gasa) => setEditingGasa(gasa)}
+            onEditBrazoRequest={(brazo) => {
+              setEditingBrazo(brazo);
+              setIsCreateBrazoOpen(true);
+            }}
             onEditNapRequest={(nap) => setEditingNap(nap)}
             deletedRouteIds={deletedRouteIds}
             deletedMufaIds={deletedMufaIds}
             deletedPosteIds={deletedPosteIds}
             deletedGasaIds={deletedGasaIds}
+            deletedBrazoIds={deletedBrazoIds}
             
             placementMode={placementMode}
             onPlaceElement={handlePlaceElement}
@@ -2148,6 +2337,25 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                   >
                     <span className="font-bold text-blue-600 dark:text-blue-400 text-sm leading-none shrink-0">∞</span>
                     <span>+ Gasa</span>
+                  </button>
+
+                  <button
+                    draggable={true}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', 'brazo');
+                      e.dataTransfer.setData('application/gpon-element', 'brazo');
+                    }}
+                    onClick={() => {
+                      setIsDrawingRoute(false);
+                      setPlacementMode(placementMode === 'brazo' ? null : 'brazo');
+                    }}
+                    className={`flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-800 dark:text-amber-200 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-800 shadow-xs backdrop-blur shrink-0 cursor-pointer active:scale-95 transition-colors ${
+                      placementMode === 'brazo' ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-950/60' : ''
+                    }`}
+                    title="Ubicar brazo de extensión para caja NAP"
+                  >
+                    <Wrench className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span>+ Brazo Ext.</span>
                   </button>
 
                   {user?.rol !== 'Tecnico' && (
@@ -2497,6 +2705,39 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             : [19.645, -99.82]
         }
         existingGasasCount={troncalGasas.length + customGasas.length}
+      />
+
+      {/* Modal para Crear y Registrar Nuevo Brazo de Extensión para NAP, o Editar uno existente */}
+      <CreateBrazoModal
+        isOpen={isCreateBrazoOpen || !!editingBrazo}
+        onClose={() => {
+          setIsCreateBrazoOpen(false);
+          setEditingBrazo(null);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
+        onSaveBrazo={(brazo) => {
+          handleSaveBrazo(brazo);
+          setIsCreateBrazoOpen(false);
+          setEditingBrazo(null);
+          setTempPlacementPin(null);
+          setDroppedCoordinates(null);
+        }}
+        brazoToEdit={editingBrazo}
+        availableNaps={naps}
+        defaultCoordinates={
+          editingBrazo?.coordenadas_gps
+            ? [editingBrazo.coordenadas_gps.lat, editingBrazo.coordenadas_gps.lng]
+            : droppedCoordinates
+            ? [droppedCoordinates.lat, droppedCoordinates.lng]
+            : selectedNap?.coordenadas_gps
+            ? [
+                Number(selectedNap.coordenadas_gps.lat.toFixed(6)),
+                Number(selectedNap.coordenadas_gps.lng.toFixed(6))
+              ]
+            : [19.645, -99.82]
+        }
+        existingBrazosCount={mockBrazosExtension.length + customBrazos.length}
       />
 
       {/* Modal de Vista Previa, Edición y Deduplicación para Importar KMZ / KML */}

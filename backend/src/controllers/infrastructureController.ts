@@ -4,6 +4,7 @@ import {
   InfrastructureMufa,
   InfrastructureRoute,
   InfrastructureGasa,
+  InfrastructureBrazo,
   NapBox,
   NapPort,
   Client,
@@ -284,12 +285,115 @@ export const deleteGasa = async (req: Request, res: Response) => {
   }
 };
 
+// ============================
+// Controladores de Brazos de Extensión para Cajas NAP y Postes
+// ============================
+export const listBrazos = async (req: Request, res: Response) => {
+  try {
+    const brazos = await InfrastructureBrazo.findAll({
+      order: [['createdAt', 'DESC']]
+    });
+    res.json({ success: true, data: brazos });
+  } catch (error: any) {
+    console.error('Error al listar brazos de extensión:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createBrazo = async (req: Request, res: Response) => {
+  try {
+    const {
+      id_brazo,
+      codigo,
+      nombre,
+      longitud_metros,
+      tipo,
+      material,
+      id_nap_asociada,
+      id_poste_asociado,
+      coordenadas_gps,
+      estado,
+      descripcion
+    } = req.body;
+
+    if (!codigo || !coordenadas_gps || coordenadas_gps.lat === undefined || coordenadas_gps.lng === undefined) {
+      res.status(400).json({
+        success: false,
+        message: 'Faltan campos obligatorios para registrar el brazo de extensión (código, coordenadas_gps).'
+      });
+      return;
+    }
+
+    const brazoId = id_brazo || `brazo-custom-${Date.now()}`;
+    const existing = await InfrastructureBrazo.findByPk(brazoId);
+
+    if (existing) {
+      await existing.update({
+        codigo,
+        nombre: nombre || `Brazo de Extensión ${codigo}`,
+        longitud_metros: longitud_metros || 1.2,
+        tipo: tipo || 'brazo_extension_nap',
+        material: material || 'Acero Galvanizado por Inmersión',
+        id_nap_asociada: id_nap_asociada || null,
+        id_poste_asociado: id_poste_asociado || null,
+        coordenadas_gps,
+        estado: estado || 'instalado',
+        descripcion
+      });
+      broadcastNetworkChange('BRAZO_CHANGED', { action: 'update', brazo: existing });
+      res.status(200).json({ success: true, message: `Brazo ${codigo} actualizado correctamente.`, data: existing });
+      return;
+    }
+
+    const newBrazo = await InfrastructureBrazo.create({
+      id_brazo: brazoId,
+      codigo,
+      nombre: nombre || `Brazo de Extensión ${codigo}`,
+      longitud_metros: longitud_metros || 1.2,
+      tipo: tipo || 'brazo_extension_nap',
+      material: material || 'Acero Galvanizado por Inmersión',
+      id_nap_asociada: id_nap_asociada || null,
+      id_poste_asociado: id_poste_asociado || null,
+      coordenadas_gps,
+      estado: estado || 'instalado',
+      descripcion
+    });
+
+    broadcastNetworkChange('BRAZO_CHANGED', { action: 'create', brazo: newBrazo });
+    res.status(201).json({
+      success: true,
+      message: `Brazo de extensión ${codigo} guardado exitosamente en Neon.`,
+      data: newBrazo
+    });
+  } catch (error: any) {
+    console.error('Error al registrar brazo de extensión:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteBrazo = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deletedCount = await InfrastructureBrazo.destroy({
+      where: { id_brazo: id }
+    });
+    broadcastNetworkChange('BRAZO_CHANGED', { action: 'delete', id });
+    res.json({
+      success: true,
+      message: deletedCount > 0 ? 'Brazo de extensión eliminado exitosamente.' : 'Elemento no encontrado.'
+    });
+  } catch (error: any) {
+    console.error('Error al eliminar brazo de extensión:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ==============================================================
 // SINCRONIZACIÓN GLOBAL UNIFICADA (Una sola petición HTTP ultrarrápida)
 // ==============================================================
 export const getNetworkSync = async (req: Request, res: Response) => {
   try {
-    const [naps, odfs, postes, mufas, routes, gasas] = await Promise.all([
+    const [naps, odfs, postes, mufas, routes, gasas, brazos] = await Promise.all([
       NapBox.findAll({
         include: [
           {
@@ -323,7 +427,8 @@ export const getNetworkSync = async (req: Request, res: Response) => {
       InfrastructurePoste.findAll({ order: [['createdAt', 'DESC']] }),
       InfrastructureMufa.findAll({ order: [['createdAt', 'DESC']] }),
       InfrastructureRoute.findAll({ order: [['createdAt', 'DESC']] }),
-      InfrastructureGasa.findAll({ order: [['createdAt', 'DESC']] })
+      InfrastructureGasa.findAll({ order: [['createdAt', 'DESC']] }),
+      InfrastructureBrazo.findAll({ order: [['createdAt', 'DESC']] })
     ]);
 
     const enrichedNaps = naps.map((nap) => {
@@ -362,6 +467,7 @@ export const getNetworkSync = async (req: Request, res: Response) => {
         mufas,
         routes,
         gasas,
+        brazos,
         timestamp: Date.now()
       }
     });
