@@ -48,6 +48,9 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
 
     const payload = {
       id_puerto: port.id_puerto,
+      id_nap: nap.id_nap,
+      nap_identificador: nap.identificador,
+      indice_puerto: port.indice_puerto,
       ...formData,
       potencia_rx_estimada: Number(formData.potencia_rx_estimada) || -19.5
     };

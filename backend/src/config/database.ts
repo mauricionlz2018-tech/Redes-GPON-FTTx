@@ -14,16 +14,27 @@ export const sequelize = process.env.DATABASE_URL
       dialect: 'postgres',
       logging: process.env.NODE_ENV === 'development' ? (msg) => console.log(`[SQL] ${msg}`) : false,
       pool: {
-        max: 20,
+        max: 10,
         min: 0,
-        acquire: 30000,
+        acquire: 60000,
         idle: 10000
       },
       dialectOptions: {
         ssl: {
           require: true,
           rejectUnauthorized: false
-        }
+        },
+        keepAlive: true
+      },
+      retry: {
+        max: 5,
+        match: [
+          /ConnectionError/,
+          /SequelizeConnectionError/,
+          /SequelizeConnectionRefusedError/,
+          /ECONNRESET/,
+          /ETIMEDOUT/
+        ]
       }
     })
   : new Sequelize(dbName, dbUser, dbPassword, {
