@@ -111,14 +111,21 @@ const ViewportListener: React.FC<{
   const map = useMap();
   useEffect(() => {
     const update = () => {
-      onViewportChange(map.getBounds(), map.getZoom());
+      try {
+        const b = map.getBounds();
+        if (b && b.isValid()) {
+          onViewportChange(b, map.getZoom());
+        }
+      } catch {}
     };
     update();
     map.on('moveend', update);
     map.on('zoomend', update);
+    map.on('resize', update);
     return () => {
       map.off('moveend', update);
       map.off('zoomend', update);
+      map.off('resize', update);
     };
   }, [map, onViewportChange]);
   return null;
@@ -128,7 +135,7 @@ const ViewportListener: React.FC<{
 const MapResizeController: React.FC = () => {
   const map = useMap();
   useEffect(() => {
-    // Invalidate size immediately and after DOM/layout stabilization
+    // Forzar redibujado inmediato y tras estabilización del DOM
     const timers = [
       setTimeout(() => map.invalidateSize(), 50),
       setTimeout(() => map.invalidateSize(), 250),
@@ -140,13 +147,26 @@ const MapResizeController: React.FC = () => {
       map.invalidateSize();
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        map.invalidateSize();
+        setTimeout(() => map.invalidateSize(), 60);
+        setTimeout(() => map.invalidateSize(), 250);
+        setTimeout(() => map.invalidateSize(), 600);
+      }
+    };
+
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleResize);
+    window.addEventListener('focus', handleResize);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       timers.forEach(clearTimeout);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener('focus', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [map]);
 
@@ -873,7 +893,7 @@ export const GponMap: React.FC<GponMapProps> = ({
   // Cajas NAP con renderizado selectivo para evitar bloqueos en dispositivos móviles:
   const visibleNaps = useMemo(() => {
     if (!showNaps) return [];
-    if (!bufferedBounds || currentZoom < 13) return naps;
+    if (!bufferedBounds || !bufferedBounds.isValid() || currentZoom < 13) return naps;
     return naps.filter((nap) => {
       if (!nap.coordenadas_gps) return false;
       if (selectedNap?.id_nap === nap.id_nap) return true;

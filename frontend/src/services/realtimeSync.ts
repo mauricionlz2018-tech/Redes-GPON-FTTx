@@ -224,10 +224,24 @@ export const haveDeepItemsChanged = <T extends Record<string, any>>(
   next: T[],
   idKey: string
 ): boolean => {
+  if (prev === next) return false;
+  if (!prev || !next) return true;
   if (prev.length !== next.length) return true;
+
+  const prevMap = new Map<string, T>();
   for (let i = 0; i < prev.length; i++) {
-    if (prev[i][idKey] !== next[i][idKey]) return true;
-    if (JSON.stringify(prev[i]) !== JSON.stringify(next[i])) return true;
+    const item = prev[i];
+    const key = String(item[idKey] ?? i);
+    prevMap.set(key, item);
+  }
+
+  for (let i = 0; i < next.length; i++) {
+    const nextItem = next[i];
+    const key = String(nextItem[idKey] ?? i);
+    const prevItem = prevMap.get(key);
+    if (!prevItem) return true;
+
+    if (JSON.stringify(prevItem) !== JSON.stringify(nextItem)) return true;
   }
   return false;
 };

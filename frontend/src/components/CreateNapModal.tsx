@@ -187,7 +187,7 @@ export const CreateNapModal: React.FC<CreateNapModalProps> = ({
         return;
       }
 
-      const localId = `nap-local-${Date.now()}`;
+      const localId = `local-nap-${Date.now()}`;
       const defaultPorts: NapPort[] = Array.from({ length: Number(totalPuertos) }, (_, i) => ({
         id_puerto: `port-local-${Date.now()}-${i + 1}`,
         id_nap: localId,

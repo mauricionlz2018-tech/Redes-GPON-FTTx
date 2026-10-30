@@ -191,7 +191,7 @@ export const updateGpsCoordinates = async (req: Request, res: Response) => {
 const createNapSchema = z.object({
   identificador: z.string().min(3).max(50),
   zona: z.string().min(2).max(100),
-  id_puerto_pon: z.string().uuid().optional(),
+  id_puerto_pon: z.string().uuid().optional().nullable().or(z.literal('')),
   total_puertos: z.number().int().min(8).max(32).default(16),
   direccion_texto: z.string().min(3).max(255),
   coordenadas_gps: z.object({
@@ -219,10 +219,15 @@ export const createNap = async (req: Request, res: Response) => {
     let id_puerto_pon = parseResult.data.id_puerto_pon;
 
     // Si no se proporcionó id_puerto_pon, asignar el primer puerto PON disponible
-    if (!id_puerto_pon) {
+    if (!id_puerto_pon || id_puerto_pon === '') {
       const defaultPon = await PonPort.findOne({ transaction: t });
       if (defaultPon) {
         id_puerto_pon = defaultPon.id_puerto_pon;
+      } else {
+        const anyNap = await NapBox.findOne({ transaction: t });
+        if (anyNap && anyNap.id_puerto_pon) {
+          id_puerto_pon = anyNap.id_puerto_pon;
+        }
       }
     }
 
@@ -429,12 +434,33 @@ export const updateNap = async (req: Request, res: Response) => {
 
     await nap.save();
 
-    broadcastNetworkChange('NAP_CHANGED', { action: 'update', nap });
+    const updatedWithPorts = await NapBox.findByPk(nap.id_nap, {
+      include: [{ model: NapPort, as: 'puertos' }]
+    });
+    const ports = (updatedWithPorts?.puertos || []) as any[];
+    const total = nap.total_puertos || 16;
+    const libres = ports.filter((p: any) => p.estado === 'Libre').length;
+    const ocupados = ports.filter((p: any) => p.estado === 'Ocupado').length;
+    const danados = ports.filter((p: any) => p.estado === 'Dañado').length;
+    const porcentajeSaturacion = Math.round((ocupados / total) * 100);
+
+    const fullData = {
+      ...(updatedWithPorts ? updatedWithPorts.toJSON() : nap.toJSON()),
+      metricas: {
+        total,
+        libres,
+        ocupados,
+        danados,
+        porcentajeSaturacion
+      }
+    };
+
+    broadcastNetworkChange('NAP_CHANGED', { action: 'update', nap: fullData });
 
     res.json({
       success: true,
       message: `Caja NAP '${nap.identificador}' actualizada correctamente.`,
-      data: nap
+      data: fullData
     });
   } catch (error: any) {
     console.error('Error al actualizar caja NAP:', error);

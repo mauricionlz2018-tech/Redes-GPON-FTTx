@@ -296,6 +296,15 @@ export const MapViewPage: React.FC = () => {
       return [];
     }
   });
+  const [customNaps, setCustomNaps] = useState<NapBox[]>(() => {
+    try {
+      const saved = localStorage.getItem('gpon_custom_naps');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const isFetchingRef = useRef<boolean>(false);
 
   // Estados de control para eliminación de elementos (Troncales, Mufas, Postes, Gasas)
   const [deletingElement, setDeletingElement] = useState<{
@@ -758,6 +767,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
   // Cargar NAPs, ODF e Infraestructura (Postes, Mufas, Rutas) sincronizada
   const fetchData = useCallback(async (isInitial = false) => {
+    if (isFetchingRef.current && !isInitial) return;
+    isFetchingRef.current = true;
     try {
       if (isInitial) setLoading(true);
 
@@ -811,20 +822,90 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         ]);
       }
 
+      // 0. Sincronización Bidireccional de Cajas NAP
+      const localNaps: NapBox[] = (() => {
+        try {
+          const s = localStorage.getItem('gpon_custom_naps');
+          return s ? JSON.parse(s) : [];
+        } catch {
+          return [];
+        }
+      })();
+
       if (napsRes.data?.success && Array.isArray(napsRes.data.data) && napsRes.data.data.length > 0) {
+        const serverNaps: NapBox[] = napsRes.data.data;
+        const serverIds = new Set(serverNaps.map((n) => n.id_nap.toLowerCase()));
+        const serverIdents = new Set(serverNaps.map((n) => (n.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, '')));
+        const knownNapIds = getKnownServerIds('gpon_known_server_nap_ids');
+
+        // Subir a la base de datos en Neon cualquier caja creada fuera de línea
+        const unsyncedNaps = localNaps.filter(
+          (loc) => (loc.id_nap.startsWith('local-') || loc.id_nap.startsWith('nap-local-')) &&
+                   !knownNapIds.has(loc.id_nap) &&
+                   !deletedNapIds.includes(loc.id_nap)
+        );
+
+        if (unsyncedNaps.length > 0) {
+          for (const unsynced of unsyncedNaps) {
+            api.post('/naps', {
+              identificador: unsynced.identificador,
+              zona: unsynced.zona,
+              direccion_texto: unsynced.direccion_texto,
+              total_puertos: unsynced.total_puertos,
+              coordenadas_gps: unsynced.coordenadas_gps
+            })
+              .then((res) => {
+                knownNapIds.add(unsynced.id_nap);
+                if (res.data?.data?.id_nap) {
+                  knownNapIds.add(res.data.data.id_nap);
+                }
+                saveKnownServerIds('gpon_known_server_nap_ids', knownNapIds);
+              })
+              .catch((e) => {
+                console.warn('Sincronización diferida de NAP al servidor:', e);
+              });
+          }
+        }
+
+        // Mapeo para sobreponer ediciones locales sobre datos antiguos del servidor
+        const customNapMap = new Map<string, NapBox>();
+        localNaps.forEach((cn) => {
+          if (!deletedNapIds.includes(cn.id_nap)) {
+            customNapMap.set(cn.id_nap.toLowerCase(), cn);
+            if (cn.identificador) {
+              customNapMap.set((cn.identificador).toLowerCase().replace(/[^a-z0-9]/g, ''), cn);
+            }
+          }
+        });
+
+        // Aplicar cualquier edición local sobre las cajas del servidor
+        const mergedServerNaps = serverNaps
+          .filter((sn) => !deletedNapIds.includes(sn.id_nap))
+          .map((sn) => {
+            const localOverride = customNapMap.get(sn.id_nap.toLowerCase()) || 
+                                  customNapMap.get((sn.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+            if (localOverride) {
+              return {
+                ...sn,
+                ...localOverride,
+                puertos: localOverride.puertos || sn.puertos,
+                metricas: localOverride.metricas || sn.metricas
+              };
+            }
+            return sn;
+          });
+
+        // Mantener cajas creadas localmente que aún no están en el servidor
+        const localOnly = localNaps.filter((loc) => {
+          if (deletedNapIds.includes(loc.id_nap)) return false;
+          const idMatch = serverIds.has(loc.id_nap.toLowerCase());
+          const identMatch = serverIdents.has((loc.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+          return !idMatch && !identMatch;
+        });
+
+        const mergedNaps = [...mergedServerNaps, ...localOnly];
+
         setNaps((prev) => {
-          const serverNaps: NapBox[] = napsRes.data.data;
-          const serverIds = new Set(serverNaps.map((n) => n.id_nap.toLowerCase()));
-          const serverIdents = new Set(serverNaps.map((n) => (n.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, '')));
-          
-          // Preservar únicamente NAPs creadas fuera de línea con prefijo local-
-          const localOnly = prev.filter((p) => 
-            p.id_nap.startsWith('local-') && 
-            !serverIds.has(p.id_nap.toLowerCase()) && 
-            !serverIdents.has((p.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, '')) &&
-            !deletedNapIds.includes(p.id_nap)
-          );
-          const mergedNaps = [...serverNaps, ...localOnly];
           if (!haveDeepItemsChanged(prev, mergedNaps, 'id_nap')) return prev;
           saveCachedNaps(mergedNaps);
           return mergedNaps;
@@ -1033,6 +1114,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     } catch (err) {
       console.warn('Sincronización con backend parcial o en caché offline:', err);
     } finally {
+      isFetchingRef.current = false;
       if (isInitial) setLoading(false);
     }
   }, [deletedRouteIds, deletedMufaIds, deletedPosteIds, deletedGasaIds, deletedNapIds]);
@@ -1048,12 +1130,22 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         // Notificación SSE remota de Mac u otro dispositivo -> actualizar mapa inmediatamente (<200ms)
         fetchData(false);
       } else if (event.type === 'NAP_CREATED') {
+        setCustomNaps((prev) => {
+          const updated = [event.nap, ...prev.filter((n) => n.id_nap !== event.nap.id_nap && n.identificador !== event.nap.identificador)];
+          try { localStorage.setItem('gpon_custom_naps', JSON.stringify(updated)); } catch {}
+          return updated;
+        });
         setNaps((prev) => {
           const updated = [event.nap, ...prev.filter((n) => n.id_nap !== event.nap.id_nap)];
           saveCachedNaps(updated);
           return updated;
         });
       } else if (event.type === 'NAP_UPDATED') {
+        setCustomNaps((prev) => {
+          const updated = [event.nap, ...prev.filter((n) => n.id_nap !== event.nap.id_nap && n.identificador !== event.nap.identificador)];
+          try { localStorage.setItem('gpon_custom_naps', JSON.stringify(updated)); } catch {}
+          return updated;
+        });
         setNaps((prev) => {
           const updated = prev.map((n) => (n.id_nap === event.nap.id_nap ? event.nap : n));
           saveCachedNaps(updated);
@@ -1061,6 +1153,11 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         });
         setSelectedNap((curr) => (curr?.id_nap === event.nap.id_nap ? event.nap : curr));
       } else if (event.type === 'NAP_DELETED') {
+        setCustomNaps((prev) => {
+          const updated = prev.filter((n) => n.id_nap !== event.id_nap);
+          try { localStorage.setItem('gpon_custom_naps', JSON.stringify(updated)); } catch {}
+          return updated;
+        });
         setNaps((prev) => {
           const updated = prev.filter((n) => n.id_nap !== event.id_nap);
           saveCachedNaps(updated);
@@ -1122,18 +1219,19 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       }
     });
 
-    // 2. Refrescar silenciosamente al regresar a la ventana
+    // 2. Refrescar silenciosamente al regresar a la ventana y restablecer viewport Leaflet
     const handleFocus = () => {
+      window.dispatchEvent(new Event('resize'));
       fetchData(false);
     };
     window.addEventListener('focus', handleFocus);
 
-    // 3. Polling activo a 4s cuando la pestaña está visible (utiliza endpoint unificado ultrarrápido)
+    // 3. Polling activo a 30s cuando la pestaña está visible (eventos en tiempo real SSE / BroadcastChannel sincronizan al instante)
     const syncTimer = setInterval(() => {
       if (document.visibilityState === 'visible') {
         fetchData(false);
       }
-    }, 4000);
+    }, 30000);
 
     return () => {
       unsubscribe();
@@ -1259,6 +1357,13 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       }
 
       // Actualizar estado en memoria y caché persistente
+      setCustomNaps((prev) => {
+        const updated = prev.filter((n) => n.id_nap !== targetNap.id_nap && n.identificador !== targetNap.identificador);
+        try {
+          localStorage.setItem('gpon_custom_naps', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
       setNaps((prev) => {
         const updated = prev.filter((n) => n.id_nap !== targetNap.id_nap && n.identificador !== targetNap.identificador);
         saveCachedNaps(updated);
@@ -2276,6 +2381,13 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           napToEdit={editingNap}
           existingNaps={naps}
           onCreatedSuccess={(savedNap) => {
+            setCustomNaps((prev) => {
+              const updated = [savedNap, ...prev.filter((n) => n.id_nap !== savedNap.id_nap && n.identificador !== savedNap.identificador)];
+              try {
+                localStorage.setItem('gpon_custom_naps', JSON.stringify(updated));
+              } catch {}
+              return updated;
+            });
             setNaps((prev) => {
               const updated = [savedNap, ...prev.filter((n) => n.id_nap !== savedNap.id_nap)];
               saveCachedNaps(updated);
