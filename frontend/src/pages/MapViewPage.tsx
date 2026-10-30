@@ -847,6 +847,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
         if (unsyncedNaps.length > 0) {
           for (const unsynced of unsyncedNaps) {
+            knownNapIds.add(unsynced.id_nap);
+            saveKnownServerIds('gpon_known_server_nap_ids', knownNapIds);
             api.post('/naps', {
               identificador: unsynced.identificador,
               zona: unsynced.zona,
@@ -855,11 +857,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               coordenadas_gps: unsynced.coordenadas_gps
             })
               .then((res) => {
-                knownNapIds.add(unsynced.id_nap);
                 if (res.data?.data?.id_nap) {
                   knownNapIds.add(res.data.data.id_nap);
+                  saveKnownServerIds('gpon_known_server_nap_ids', knownNapIds);
                 }
-                saveKnownServerIds('gpon_known_server_nap_ids', knownNapIds);
               })
               .catch((e) => {
                 console.warn('Sincronización diferida de NAP al servidor:', e);
@@ -1219,23 +1220,29 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       }
     });
 
-    // 2. Refrescar silenciosamente al regresar a la ventana y restablecer viewport Leaflet
-    const handleFocus = () => {
-      window.dispatchEvent(new Event('resize'));
-      fetchData(false);
+    // 2. Refrescar silenciosamente al regresar de otra pestaña (con debounce de 15s para no saturar al interactuar)
+    let lastVisibilitySync = 0;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const now = Date.now();
+        if (now - lastVisibilitySync > 15000) {
+          lastVisibilitySync = now;
+          fetchData(false);
+        }
+      }
     };
-    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // 3. Polling activo a 30s cuando la pestaña está visible (eventos en tiempo real SSE / BroadcastChannel sincronizan al instante)
+    // 3. Polling de respaldo a 35s cuando la pestaña está activa
     const syncTimer = setInterval(() => {
       if (document.visibilityState === 'visible') {
         fetchData(false);
       }
-    }, 30000);
+    }, 35000);
 
     return () => {
       unsubscribe();
-      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(syncTimer);
     };
   }, [fetchData]);

@@ -49,8 +49,12 @@ export const NetworkProvider: React.FC<{ children: React.ReactNode }> = ({ child
           }
         } catch (err: any) {
           console.error(`Error sincronizando item #${item.id}:`, err);
-          // Si fue error de conflicto (409) o validación (400), registrar intento
-          if (item.id) {
+          // Si el servidor indica conflicto (409) o ya se intentó 3 veces, descartar de la cola para no bloquear el botón Sync
+          if (err?.response?.status === 409 || err?.response?.status === 400 || (item.intentos && item.intentos >= 2)) {
+            if (item.id) {
+              await offlineDb.pending_mutations.delete(item.id);
+            }
+          } else if (item.id) {
             await offlineDb.pending_mutations.update(item.id, {
               intentos: (item.intentos || 0) + 1
             });

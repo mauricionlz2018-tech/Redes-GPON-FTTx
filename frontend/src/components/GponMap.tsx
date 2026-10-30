@@ -121,11 +121,9 @@ const ViewportListener: React.FC<{
     update();
     map.on('moveend', update);
     map.on('zoomend', update);
-    map.on('resize', update);
     return () => {
       map.off('moveend', update);
       map.off('zoomend', update);
-      map.off('resize', update);
     };
   }, [map, onViewportChange]);
   return null;
@@ -135,37 +133,34 @@ const ViewportListener: React.FC<{
 const MapResizeController: React.FC = () => {
   const map = useMap();
   useEffect(() => {
-    // Forzar redibujado inmediato y tras estabilización del DOM
     const timers = [
-      setTimeout(() => map.invalidateSize(), 50),
-      setTimeout(() => map.invalidateSize(), 250),
-      setTimeout(() => map.invalidateSize(), 600),
-      setTimeout(() => map.invalidateSize(), 1200)
+      setTimeout(() => map.invalidateSize(), 80),
+      setTimeout(() => map.invalidateSize(), 300)
     ];
 
     const handleResize = () => {
       map.invalidateSize();
     };
 
+    let visTimer: any = null;
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        map.invalidateSize();
-        setTimeout(() => map.invalidateSize(), 60);
-        setTimeout(() => map.invalidateSize(), 250);
-        setTimeout(() => map.invalidateSize(), 600);
+        clearTimeout(visTimer);
+        visTimer = setTimeout(() => {
+          map.invalidateSize();
+        }, 100);
       }
     };
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleResize);
-    window.addEventListener('focus', handleResize);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       timers.forEach(clearTimeout);
+      clearTimeout(visTimer);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
-      window.removeEventListener('focus', handleResize);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [map]);
@@ -1908,7 +1903,16 @@ export const GponMap: React.FC<GponMapProps> = ({
         {showNaps && (
           <LayerGroup key="layer-naps">
             {visibleNaps.map((nap) => {
-            if (!nap.coordenadas_gps) return null;
+            if (
+              !nap ||
+              !nap.coordenadas_gps ||
+              typeof nap.coordenadas_gps.lat !== 'number' ||
+              typeof nap.coordenadas_gps.lng !== 'number' ||
+              isNaN(nap.coordenadas_gps.lat) ||
+              isNaN(nap.coordenadas_gps.lng)
+            ) {
+              return null;
+            }
             const isSelected = selectedNap?.id_nap === nap.id_nap;
             const isRouteDestination = Boolean(activeRoute && selectedNap?.id_nap === nap.id_nap);
             const icon = createNapStandardIcon(nap, isSelected, isRouteDestination);

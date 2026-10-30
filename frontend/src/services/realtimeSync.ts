@@ -270,13 +270,17 @@ export const initMultiDeviceSse = () => {
       console.log('⚡ [SSE GPON] Conectado en tiempo real con el servidor central');
     };
 
+    let sseRefreshDebounce: any = null;
     source.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data);
         if (payload.type && payload.type !== 'CONNECTED') {
           console.log(`⚡ [SSE Evento Remoto recibido]: ${payload.type}`, payload);
-          // Notificar inmediatamente a la aplicación para actualizar mapa y datos sin espera
-          broadcastRealtimeEvent({ type: 'DATA_REFRESH_REQUESTED' });
+          // Debounce para evitar ráfagas simultáneas de recarga que colapsen el renderizado
+          clearTimeout(sseRefreshDebounce);
+          sseRefreshDebounce = setTimeout(() => {
+            broadcastRealtimeEvent({ type: 'DATA_REFRESH_REQUESTED' });
+          }, 800);
         }
       } catch (err) {}
     };
