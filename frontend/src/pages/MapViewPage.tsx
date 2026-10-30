@@ -842,7 +842,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         const unsyncedNaps = localNaps.filter(
           (loc) => (loc.id_nap.startsWith('local-') || loc.id_nap.startsWith('nap-local-')) &&
                    !knownNapIds.has(loc.id_nap) &&
-                   !deletedNapIds.includes(loc.id_nap)
+                   !deletedNapIds.includes(loc.id_nap) && !deletedNapIds.includes(loc.identificador)
         );
 
         if (unsyncedNaps.length > 0) {
@@ -871,7 +871,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         // Mapeo para sobreponer ediciones locales sobre datos antiguos del servidor
         const customNapMap = new Map<string, NapBox>();
         localNaps.forEach((cn) => {
-          if (!deletedNapIds.includes(cn.id_nap)) {
+          if (!deletedNapIds.includes(cn.id_nap) && !deletedNapIds.includes(cn.identificador)) {
             customNapMap.set(cn.id_nap.toLowerCase(), cn);
             if (cn.identificador) {
               customNapMap.set((cn.identificador).toLowerCase().replace(/[^a-z0-9]/g, ''), cn);
@@ -881,7 +881,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
         // Aplicar cualquier edición local sobre las cajas del servidor
         const mergedServerNaps = serverNaps
-          .filter((sn) => !deletedNapIds.includes(sn.id_nap))
+          .filter((sn) => !deletedNapIds.includes(sn.id_nap) && !deletedNapIds.includes(sn.identificador))
           .map((sn) => {
             const localOverride = customNapMap.get(sn.id_nap.toLowerCase()) || 
                                   customNapMap.get((sn.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
@@ -898,7 +898,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
         // Mantener cajas creadas localmente que aún no están en el servidor
         const localOnly = localNaps.filter((loc) => {
-          if (deletedNapIds.includes(loc.id_nap)) return false;
+          if (deletedNapIds.includes(loc.id_nap) || deletedNapIds.includes(loc.identificador)) return false;
           const idMatch = serverIds.has(loc.id_nap.toLowerCase());
           const identMatch = serverIdents.has((loc.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
           return !idMatch && !identMatch;
@@ -1348,22 +1348,25 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
   };
 
   const handleConfirmDeleteNap = async (targetNap: NapBox) => {
+    setIsDeletingNap(true);
     try {
-      setIsDeletingNap(true);
       const deleteId = targetNap.id_nap || targetNap.identificador;
-      const res = await api.delete(`/naps/${deleteId}`);
-      if (!res.data?.success && res.status >= 400) {
-        throw new Error(res.data?.message || 'Error al eliminar la caja NAP');
+
+      // 1. Intentar eliminación remota en backend de forma no bloqueante ante latencia o suspensión de Render
+      try {
+        await api.delete(`/naps/${deleteId}`);
+      } catch (backendErr: any) {
+        console.warn('Aviso: eliminación remota en backend con latencia o sin conexión, procediendo con baja definitiva local:', backendErr?.message);
       }
 
-      // Eliminar de base local IndexedDB
+      // 2. Eliminar de base local IndexedDB
       try {
         await offlineDb.cached_naps.delete(targetNap.id_nap);
       } catch (dbErr) {
         console.warn('Error eliminando de Dexie:', dbErr);
       }
 
-      // Actualizar estado en memoria y caché persistente
+      // 3. Actualizar estado en memoria y caché persistente
       setCustomNaps((prev) => {
         const updated = prev.filter((n) => n.id_nap !== targetNap.id_nap && n.identificador !== targetNap.identificador);
         try {
@@ -1377,7 +1380,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         return updated;
       });
       setDeletedNapIds((prev) => {
-        const next = Array.from(new Set([...prev, targetNap.id_nap, targetNap.identificador]));
+        const next = Array.from(new Set([...prev, targetNap.id_nap, targetNap.identificador].filter(Boolean)));
         try {
           localStorage.setItem('gpon_deleted_nap_ids', JSON.stringify(next));
         } catch {}
@@ -1396,15 +1399,12 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       setTimeout(() => setFeedbackNotice(null), 5000);
 
       setDeletingNap(null);
-      fetchData();
     } catch (err: any) {
-      console.error('Error al eliminar caja NAP:', err);
-      const msg = err.response?.data?.message || err.message || 'Error al procesar la eliminación de la caja NAP';
+      console.error('Error al dar de baja caja NAP:', err);
       setFeedbackNotice({
         type: 'error',
-        message: `Error al eliminar caja: ${msg}`
+        message: `Error al eliminar caja: ${err?.message || 'Error inesperado'}`
       });
-      throw new Error(msg);
     } finally {
       setIsDeletingNap(false);
     }

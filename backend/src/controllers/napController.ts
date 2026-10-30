@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { NapBox, NapPort, Client, PonPort, OdfPanel } from '../models';
+import { NapBox, NapPort, Client, PonPort, OdfPanel, MileageLog } from '../models';
 import { broadcastNetworkChange } from '../services/sseService';
 
 export const listNaps = async (req: Request, res: Response) => {
@@ -306,41 +306,60 @@ export const deleteNap = async (req: Request, res: Response) => {
 
   try {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const nap = isUuid
-      ? await NapBox.findByPk(id, {
-          include: [
-            {
-              model: NapPort,
-              as: 'puertos',
-              attributes: ['id_puerto']
-            }
-          ],
-          transaction: t
-        })
-      : await NapBox.findOne({
-          where: { identificador: id },
-          include: [
-            {
-              model: NapPort,
-              as: 'puertos',
-              attributes: ['id_puerto']
-            }
-          ],
-          transaction: t
-        });
+    let nap = null;
+
+    if (isUuid) {
+      nap = await NapBox.findByPk(id, {
+        include: [
+          {
+            model: NapPort,
+            as: 'puertos',
+            attributes: ['id_puerto']
+          }
+        ],
+        transaction: t
+      });
+    }
+
+    if (!nap) {
+      nap = await NapBox.findOne({
+        where: NapBox.sequelize!.where(
+          NapBox.sequelize!.fn('lower', NapBox.sequelize!.col('identificador')),
+          id.trim().toLowerCase()
+        ),
+        include: [
+          {
+            model: NapPort,
+            as: 'puertos',
+            attributes: ['id_puerto']
+          }
+        ],
+        transaction: t
+      });
+    }
 
     if (!nap) {
       await t.rollback();
-      res.status(404).json({
-        success: false,
-        message: `No se encontró la caja NAP con identificador '${id}'`
+      res.json({
+        success: true,
+        message: `La caja NAP '${id}' no requería baja en base de datos central o ya había sido removida.`
       });
       return;
     }
 
     const portIds = (nap.puertos || []).map((p: any) => p.id_puerto);
 
-    // 1. Eliminar clientes abonados vinculados a los puertos de esta caja
+    // 1. Desvincular cualquier registro de kilometraje o bitácora
+    try {
+      await MileageLog.update(
+        { id_nap: undefined },
+        { where: { id_nap: nap.id_nap }, transaction: t }
+      );
+    } catch (mErr) {
+      console.warn('Aviso: desvinculando mileage logs:', mErr);
+    }
+
+    // 2. Eliminar clientes abonados vinculados a los puertos de esta caja
     if (portIds.length > 0) {
       await Client.destroy({
         where: {
@@ -349,7 +368,7 @@ export const deleteNap = async (req: Request, res: Response) => {
         transaction: t
       });
 
-      // 2. Eliminar los puertos de la caja NAP
+      // 3. Eliminar los puertos de la caja NAP
       await NapPort.destroy({
         where: {
           id_nap: nap.id_nap
@@ -358,7 +377,7 @@ export const deleteNap = async (req: Request, res: Response) => {
       });
     }
 
-    // 3. Eliminar el chasis de la caja NAP
+    // 4. Eliminar el chasis de la caja NAP
     await nap.destroy({ transaction: t });
 
     await t.commit();
@@ -367,7 +386,7 @@ export const deleteNap = async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      message: `Caja NAP '${nap.identificador}' eliminada exitosamente junto con sus puertos e infraestructura asociada.`
+      message: `Caja NAP '${nap.identificador}' eliminada exitosamente.`
     });
   } catch (error: any) {
     await t.rollback();

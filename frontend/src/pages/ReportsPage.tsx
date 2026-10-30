@@ -18,11 +18,57 @@ import {
 } from 'lucide-react';
 import { TablePagination } from '../components/TablePagination';
 
+
+const getCleanNaps = (rawNaps: NapBox[]): NapBox[] => {
+  let deletedIds: string[] = [];
+  try {
+    const del = localStorage.getItem('gpon_deleted_nap_ids');
+    if (del) deletedIds = JSON.parse(del);
+  } catch {}
+
+  let customNaps: NapBox[] = [];
+  try {
+    const cust = localStorage.getItem('gpon_custom_naps');
+    if (cust) customNaps = JSON.parse(cust);
+  } catch {}
+
+  const isDeleted = (n: NapBox) =>
+    deletedIds.includes(n.id_nap) || Boolean(n.identificador && deletedIds.includes(n.identificador));
+
+  const customMap = new Map<string, NapBox>();
+  customNaps.filter((c) => !isDeleted(c)).forEach((c) => {
+    customMap.set(c.id_nap.toLowerCase(), c);
+    if (c.identificador) {
+      customMap.set(c.identificador.toLowerCase().replace(/[^a-z0-9]/g, ''), c);
+    }
+  });
+
+  const merged = rawNaps
+    .filter((n) => !isDeleted(n))
+    .map((n) => {
+      const local = customMap.get(n.id_nap.toLowerCase()) ||
+                    (n.identificador ? customMap.get(n.identificador.toLowerCase().replace(/[^a-z0-9]/g, '')) : null);
+      return local ? { ...n, ...local } : n;
+    });
+
+  const rawIds = new Set(rawNaps.map((n) => n.id_nap.toLowerCase()));
+  const rawIdents = new Set(rawNaps.map((n) => (n.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, '')));
+  const localOnly = customNaps.filter((c) => {
+    if (isDeleted(c)) return false;
+    const idMatch = rawIds.has(c.id_nap.toLowerCase());
+    const identMatch = rawIdents.has((c.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+    return !idMatch && !identMatch;
+  });
+
+  return [...merged, ...localOnly];
+};
+
 export const ReportsPage: React.FC = () => {
   // Carga instantánea de NAPs desde caché local en 0ms para evitar mostrar 0 mientras se conecta al servidor
   const [naps, setNaps] = useState<NapBox[]>(() => {
     const cached = getCachedNapsSync();
-    return cached.length > 0 ? cached : mockNaps;
+    const initial = cached.length > 0 ? cached : mockNaps;
+    return getCleanNaps(initial);
   });
   const [loading, setLoading] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -37,11 +83,13 @@ export const ReportsPage: React.FC = () => {
       try {
         const res = await api.get('/naps');
         if (res.data.success && res.data.data.length > 0) {
-          setNaps(res.data.data);
-          saveCachedNaps(res.data.data);
+          const clean = getCleanNaps(res.data.data);
+          setNaps(clean);
+          saveCachedNaps(clean);
         } else {
           const cached = getCachedNapsSync();
-          setNaps(cached.length > 0 ? cached : mockNaps);
+          const clean = getCleanNaps(cached.length > 0 ? cached : mockNaps);
+          setNaps(clean);
         }
       } catch (e) {
         console.warn('Backend no disponible, cargando datos locales/mock en Reportes...');
