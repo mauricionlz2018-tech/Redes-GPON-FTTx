@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, AlertTriangle, X, Ruler, GitCommit, MapPin, Wrench } from 'lucide-react';
+import { Trash2, AlertTriangle, X, Ruler, GitCommit, MapPin } from 'lucide-react';
 
 interface DeleteElementModalProps {
   isOpen: boolean;
@@ -7,7 +7,7 @@ interface DeleteElementModalProps {
   onConfirm: () => Promise<void>;
   title: string;
   elementName: string;
-  elementType: 'troncal' | 'mufa' | 'poste' | 'gasa' | 'brazo';
+  elementType: 'troncal' | 'mufa' | 'poste' | 'gasa';
   details?: string;
   isDeleting: boolean;
 }
@@ -34,8 +34,6 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
         return <MapPin className="w-5 h-5 text-rose-600 dark:text-rose-400" />;
       case 'gasa':
         return <span className="font-bold text-blue-600 text-lg leading-none">∞</span>;
-      case 'brazo':
-        return <Wrench className="w-5 h-5 text-amber-600 dark:text-amber-400" />;
     }
   };
 
@@ -49,8 +47,6 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
         return 'Poste de Infraestructura';
       case 'gasa':
         return 'Gasa de Reserva Técnica';
-      case 'brazo':
-        return 'Brazo de Extensión para NAP';
     }
   };
 

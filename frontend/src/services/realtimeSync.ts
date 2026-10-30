@@ -9,8 +9,8 @@ export type RealtimeEvent =
   | { type: 'CLIENT_ASSIGNED'; client: Client; nap?: NapBox }
   | { type: 'CLIENT_UPDATED'; client: Client }
   | { type: 'CLIENT_RELEASED'; id_puerto: string; id_nap: string }
-  | { type: 'INFRA_CREATED'; category: 'route' | 'mufa' | 'poste' | 'gasa' | 'brazo'; item: any }
-  | { type: 'INFRA_DELETED'; category: 'route' | 'mufa' | 'poste' | 'gasa' | 'brazo'; id: string }
+  | { type: 'INFRA_CREATED'; category: 'route' | 'mufa' | 'poste' | 'gasa'; item: any }
+  | { type: 'INFRA_DELETED'; category: 'route' | 'mufa' | 'poste' | 'gasa'; id: string }
   | { type: 'USER_CREATED'; user: User }
   | { type: 'USER_UPDATED'; user: User }
   | { type: 'USER_DELETED'; id_usuario: string }

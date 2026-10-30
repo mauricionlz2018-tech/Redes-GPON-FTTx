@@ -11,7 +11,6 @@ import { InfrastructurePoste } from './InfrastructurePoste';
 import { InfrastructureMufa } from './InfrastructureMufa';
 import { InfrastructureRoute } from './InfrastructureRoute';
 import { InfrastructureGasa } from './InfrastructureGasa';
-import { InfrastructureBrazo } from './InfrastructureBrazo';
 
 // Relaciones ODF -> PON Ports
 OdfPanel.hasMany(PonPort, { foreignKey: 'id_odf', as: 'puertos_pon', onDelete: 'CASCADE' });
@@ -49,9 +48,6 @@ InfrastructureRoute.sync({ alter: false }).catch((err) => {
 InfrastructureGasa.sync({ alter: false }).catch((err) => {
   console.warn('Aviso: sincronización de tabla infrastructure_gasas diferida:', err?.message);
 });
-InfrastructureBrazo.sync({ alter: false }).catch((err) => {
-  console.warn('Aviso: sincronización de tabla infrastructure_brazos diferida:', err?.message);
-});
 
 export {
   sequelize,
@@ -66,6 +62,7 @@ export {
   InfrastructurePoste,
   InfrastructureMufa,
   InfrastructureRoute,
-  InfrastructureGasa,
-  InfrastructureBrazo
+  InfrastructureGasa
 };
+
+

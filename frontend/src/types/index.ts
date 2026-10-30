@@ -142,18 +142,3 @@ export interface PosteInfraestructura {
   tipo: 'poste_cfe' | 'poste_propuesto' | string;
   coordenadas_gps: GpsCoordinates;
 }
-
-export interface BrazoExtension {
-  id_brazo: string;
-  nombre: string;
-  codigo: string;
-  longitud_metros: number;
-  tipo?: string;
-  material?: string;
-  id_nap_asociada?: string;
-  id_poste_asociado?: string;
-  coordenadas_gps: GpsCoordinates;
-  estado?: 'optimo' | 'instalado' | 'mantenimiento' | string;
-  descripcion?: string;
-  is_custom?: boolean;
-}

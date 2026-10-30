@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, Circle, Polygon, LayerGroup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
-import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura, BrazoExtension } from '../types';
+import { NapBox, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
 import {
   Network,
   Server,
@@ -30,8 +30,7 @@ import {
   Ruler,
   Box,
   Cpu,
-  Pencil,
-  Wrench
+  Pencil
 } from 'lucide-react';
 
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
@@ -44,14 +43,12 @@ import {
   troncalMufas,
   troncalGasas,
   troncalPostesPropuestos,
-  troncalPostesCfe,
-  mockBrazosExtension
+  troncalPostesCfe
 } from '../data/mockGponData';
 import {
   createNapStandardIcon,
   createMufaTorpedoIcon,
   createGasaReservaIcon,
-  createBrazoExtensionIcon,
   createPostePropuestoIcon,
   createPosteCfeIcon,
   createOdfStandardIcon,
@@ -72,8 +69,6 @@ interface GponMapProps {
   empalmes?: EmpalmeClosure[];
   gasas?: GasaReserva[];
   customGasas?: GasaReserva[];
-  brazos?: BrazoExtension[];
-  customBrazos?: BrazoExtension[];
   postesPropuestos?: PosteInfraestructura[];
   postesCfe?: PosteInfraestructura[];
   customPostes?: PosteInfraestructura[];
@@ -82,23 +77,20 @@ interface GponMapProps {
   onDeleteMufaRequest?: (mufa: EmpalmeClosure) => void;
   onDeletePosteRequest?: (poste: PosteInfraestructura) => void;
   onDeleteGasaRequest?: (gasa: GasaReserva) => void;
-  onDeleteBrazoRequest?: (brazo: BrazoExtension) => void;
   onEditRouteRequest?: (route: FiberRoute) => void;
   onEditMufaRequest?: (mufa: EmpalmeClosure) => void;
   onEditPosteRequest?: (poste: PosteInfraestructura) => void;
   onEditGasaRequest?: (gasa: GasaReserva) => void;
-  onEditBrazoRequest?: (brazo: BrazoExtension) => void;
   onEditNapRequest?: (nap: NapBox) => void;
   deletedRouteIds?: string[];
   deletedMufaIds?: string[];
   deletedPosteIds?: string[];
   deletedGasaIds?: string[];
-  deletedBrazoIds?: string[];
   onOpenMileageCapture?: (nap: NapBox, distanceKm?: number) => void;
-  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo' | null;
-  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo', latlng: { lat: number; lng: number }) => void;
+  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | null;
+  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa', latlng: { lat: number; lng: number }) => void;
   onCancelPlacement?: () => void;
-  tempPlacementPin?: { type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo'; lat: number; lng: number } | null;
+  tempPlacementPin?: { type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa'; lat: number; lng: number } | null;
   onUpdateTempPin?: (latlng: { lat: number; lng: number }) => void;
   isDrawingRoute?: boolean;
   routeDraftPoints?: [number, number][];
@@ -321,7 +313,7 @@ const createGpsUserBeaconIcon = () => {
 };
 
 // Icono animado del Pin Temporal para ajuste fino arrastrable de elementos nuevos
-const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo') => {
+const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa') => {
   const bg =
     type === 'poste'
       ? '#e11d48'
@@ -331,8 +323,6 @@ const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal' |
       ? '#9333ea'
       : type === 'gasa'
       ? '#2563eb'
-      : type === 'brazo'
-      ? '#b45309'
       : '#0284c7';
   const label =
     type === 'poste'
@@ -343,8 +333,6 @@ const createTempPlacementPinIcon = (type: 'poste' | 'mufa' | 'nap' | 'troncal' |
       ? 'TRONCAL'
       : type === 'gasa'
       ? 'GASA (∞)'
-      : type === 'brazo'
-      ? 'BRAZO EXT'
       : 'CAJA NAP';
   return L.divIcon({
     className: 'temp-placement-pin-wrapper',
@@ -405,8 +393,8 @@ function calculatePointsDistance(coords: [number, number][]): { metros: number; 
 
 // Controlador de Eventos de Clic y Soltado (Drag & Drop) sobre el Lienzo de Leaflet
 const MapEventsAndDropListener: React.FC<{
-  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo' | null;
-  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo', latlng: { lat: number; lng: number }) => void;
+  placementMode?: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | null;
+  onPlaceElement?: (type: 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa', latlng: { lat: number; lng: number }) => void;
   isDrawingRoute?: boolean;
   onAddRoutePoint?: (latlng: [number, number]) => void;
 }> = ({ placementMode, onPlaceElement, isDrawingRoute, onAddRoutePoint }) => {
@@ -443,12 +431,12 @@ const MapEventsAndDropListener: React.FC<{
     const handleDrop = (e: DragEvent) => {
       e.preventDefault();
       const rawType = e.dataTransfer?.getData('application/gpon-element') || e.dataTransfer?.getData('text/plain');
-      if (rawType === 'poste' || rawType === 'mufa' || rawType === 'nap' || rawType === 'troncal' || rawType === 'gasa' || rawType === 'brazo') {
+      if (rawType === 'poste' || rawType === 'mufa' || rawType === 'nap' || rawType === 'troncal' || rawType === 'gasa') {
         const rect = container.getBoundingClientRect();
         const clientPoint = L.point(e.clientX - rect.left, e.clientY - rect.top);
         const latlng = map.containerPointToLatLng(clientPoint);
         if (onPlaceElement) {
-          onPlaceElement(rawType as 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa' | 'brazo', {
+          onPlaceElement(rawType as 'poste' | 'mufa' | 'nap' | 'troncal' | 'gasa', {
             lat: Number(latlng.lat.toFixed(6)),
             lng: Number(latlng.lng.toFixed(6))
           });
@@ -482,8 +470,6 @@ export const GponMap: React.FC<GponMapProps> = ({
   empalmes = [],
   gasas = troncalGasas,
   customGasas = [],
-  brazos = mockBrazosExtension,
-  customBrazos = [],
   postesPropuestos = troncalPostesPropuestos,
   postesCfe = troncalPostesCfe,
   customPostes = [],
@@ -492,18 +478,15 @@ export const GponMap: React.FC<GponMapProps> = ({
   onDeleteMufaRequest,
   onDeletePosteRequest,
   onDeleteGasaRequest,
-  onDeleteBrazoRequest,
   onEditRouteRequest,
   onEditMufaRequest,
   onEditPosteRequest,
   onEditGasaRequest,
-  onEditBrazoRequest,
   onEditNapRequest,
   deletedRouteIds = [],
   deletedMufaIds = [],
   deletedPosteIds = [],
   deletedGasaIds = [],
-  deletedBrazoIds = [],
   onOpenMileageCapture,
   placementMode,
   onPlaceElement,
@@ -590,7 +573,6 @@ export const GponMap: React.FC<GponMapProps> = ({
   const [showFiberRoutes, setShowFiberRoutes] = useState(true);
   const [showEmpalmes, setShowEmpalmes] = useState(true);
   const [showGasas, setShowGasas] = useState(true);
-  const [showBrazos, setShowBrazos] = useState(true);
   const [showPostesPropuestos, setShowPostesPropuestos] = useState(true);
   const [showPostesCfe, setShowPostesCfe] = useState(true); // Activo por defecto con virtualización a 60 FPS
   const [showNaps, setShowNaps] = useState(true);
@@ -828,18 +810,6 @@ export const GponMap: React.FC<GponMapProps> = ({
     });
   }, [gasas, customGasas, deletedGasaIds]);
 
-  // Combinar brazos iniciales con brazos personalizados creados por el usuario (Filtrando eliminados)
-  const allBrazos = useMemo(() => {
-    const brazoMap: Record<string, BrazoExtension> = {};
-    (brazos || mockBrazosExtension || []).forEach((b) => { brazoMap[b.id_brazo] = b; });
-    (customBrazos || []).forEach((cb) => { brazoMap[cb.id_brazo] = cb; });
-    return Object.values(brazoMap).filter((b) => {
-      if (deletedBrazoIds.includes(b.id_brazo)) return false;
-      if (!b.coordenadas_gps || typeof b.coordenadas_gps.lat !== 'number' || typeof b.coordenadas_gps.lng !== 'number') return false;
-      return !isNaN(b.coordenadas_gps.lat) && !isNaN(b.coordenadas_gps.lng);
-    });
-  }, [brazos, customBrazos, deletedBrazoIds]);
-
   // Virtualización por Vista (Viewport Culling & LOD Ultra-Optimizado):
   // A nivel regional y de carretera los postes y gasas se ocultan para mantener el mapa fluido a 60 FPS sin saturación ni tirones.
   const visiblePostesPropuestos = useMemo(() => {
@@ -899,20 +869,6 @@ export const GponMap: React.FC<GponMapProps> = ({
     const budget = isMobile ? 20 : 40;
     return inView.slice(0, budget);
   }, [showGasas, allGasas, bufferedBounds, currentZoom, isMobile]);
-
-  // Virtualización de Brazos de Extensión por Nivel de Detalle (LOD):
-  const visibleBrazos = useMemo(() => {
-    if (!showBrazos) return [];
-    const minZoom = isMobile ? 15 : 14;
-    if (currentZoom < minZoom || !bufferedBounds) {
-      return [];
-    }
-    const inView = allBrazos.filter((b) =>
-      bufferedBounds.contains([b.coordenadas_gps.lat, b.coordenadas_gps.lng])
-    );
-    const budget = isMobile ? 25 : 50;
-    return inView.slice(0, budget);
-  }, [showBrazos, allBrazos, bufferedBounds, currentZoom, isMobile]);
 
   // Cajas NAP con renderizado selectivo para evitar bloqueos en dispositivos móviles:
   const visibleNaps = useMemo(() => {
@@ -1080,7 +1036,6 @@ export const GponMap: React.FC<GponMapProps> = ({
             {placementMode === 'poste' && <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />}
             {placementMode === 'mufa' && <GitCommit className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
             {placementMode === 'gasa' && <span className="font-bold text-blue-600 text-sm leading-none shrink-0">∞</span>}
-            {placementMode === 'brazo' && <Wrench className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
             {placementMode === 'nap' && <Box className="w-3.5 h-3.5 text-sky-600 shrink-0" />}
             <span className="text-slate-900 dark:text-white font-bold">
               {placementMode === 'poste'
@@ -1089,8 +1044,6 @@ export const GponMap: React.FC<GponMapProps> = ({
                 ? 'Ubicar Mufa:'
                 : placementMode === 'gasa'
                 ? 'Ubicar Gasa:'
-                : placementMode === 'brazo'
-                ? 'Ubicar Brazo Extensión:'
                 : 'Ubicar Caja NAP:'}
             </span>
             <span className="text-slate-500 dark:text-slate-400 font-normal hidden xs:inline">
@@ -1252,33 +1205,6 @@ export const GponMap: React.FC<GponMapProps> = ({
                       ) : (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                           {visibleGasas.length} en pantalla
-                        </span>
-                      )}
-                    </span>
-                  )}
-                </span>
-              </label>
-
-              {/* Brazos de Extensión */}
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60 p-1 rounded">
-                <input
-                  type="checkbox"
-                  checked={showBrazos}
-                  onChange={(e) => setShowBrazos(e.target.checked)}
-                  className="rounded text-amber-600 focus:ring-amber-500 cursor-pointer"
-                />
-                <Wrench className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                <span className="flex-1">
-                  Brazos de Extensión ({allBrazos.length})
-                  {showBrazos && (
-                    <span className="text-[10px] block">
-                      {currentZoom < (isMobile ? 15 : 14) ? (
-                        <span className="text-amber-600 dark:text-amber-400 font-medium">
-                          Acércate a la calle (zoom {isMobile ? 15 : 14}+)
-                        </span>
-                      ) : (
-                        <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                          {visibleBrazos.length} en pantalla
                         </span>
                       )}
                     </span>
@@ -1742,85 +1668,6 @@ export const GponMap: React.FC<GponMapProps> = ({
               </Marker>
             );
           })}
-          </LayerGroup>
-        )}
-
-        {/* 6.1 Marcadores de Brazos de Extensión para Cajas NAP y Postes */}
-        {showBrazos && (
-          <LayerGroup key="layer-brazos">
-            {visibleBrazos.map((brazo) => {
-              const icon = createBrazoExtensionIcon(brazo);
-              const longitud = brazo.longitud_metros || 1.2;
-              return (
-                <Marker
-                  key={brazo.id_brazo}
-                  position={[brazo.coordenadas_gps.lat, brazo.coordenadas_gps.lng]}
-                  icon={icon}
-                >
-                  <Popup>
-                    <div className="p-1 max-w-[240px]">
-                      <div className="font-bold text-amber-700 dark:text-amber-400 text-sm mb-1 flex items-center gap-1.5">
-                        <Wrench className="w-4 h-4 shrink-0 text-amber-600" />
-                        <span>{brazo.nombre}</span>
-                      </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-300 mb-1">
-                        Código: <strong className="text-slate-900 dark:text-white font-mono">{brazo.codigo}</strong>
-                      </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-300 mb-1">
-                        Longitud Brazo: <strong className="text-amber-700 dark:text-amber-300">{longitud} Metros</strong>
-                      </div>
-                      {brazo.id_nap_asociada && (
-                        <div className="text-xs text-sky-700 dark:text-sky-300 font-semibold mb-1 flex items-center gap-1">
-                          <Box className="w-3.5 h-3.5 shrink-0" />
-                          <span>Caja NAP: {brazo.id_nap_asociada}</span>
-                        </div>
-                      )}
-                      <p className="text-[11px] text-slate-500">{brazo.material || 'Acero Galvanizado CFE'}</p>
-                      <div className="text-[10px] text-slate-400 font-mono mt-1">
-                        {brazo.coordenadas_gps.lat.toFixed(5)}, {brazo.coordenadas_gps.lng.toFixed(5)}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setStreetViewData({
-                            isOpen: true,
-                            coordinates: brazo.coordenadas_gps,
-                            title: brazo.nombre,
-                            subtitle: `Brazo de Extensión (${longitud}m) - Inspección en calle`
-                          })
-                        }
-                        className="mt-2 w-full bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/70 dark:hover:bg-amber-900 text-amber-950 dark:text-amber-200 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-amber-400 dark:border-amber-700 font-bold cursor-pointer"
-                      >
-                        <Camera className="w-3 h-3 text-amber-800 dark:text-amber-400" />
-                        <span>Ver en Street View</span>
-                      </button>
-                      {onEditBrazoRequest && (
-                        <button
-                          type="button"
-                          onClick={() => onEditBrazoRequest(brazo)}
-                          className="mt-1.5 w-full bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-amber-300 dark:border-amber-800 font-semibold cursor-pointer"
-                          title="Editar parámetros o coordenadas de este brazo de extensión"
-                        >
-                          <Pencil className="w-3 h-3" />
-                          <span>Editar Brazo</span>
-                        </button>
-                      )}
-                      {onDeleteBrazoRequest && (
-                        <button
-                          type="button"
-                          onClick={() => onDeleteBrazoRequest(brazo)}
-                          className="mt-1.5 w-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[11px] py-1 px-2 rounded-md transition-colors flex items-center justify-center gap-1 border border-red-200 dark:border-red-800 font-semibold cursor-pointer"
-                          title="Eliminar este brazo de extensión"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          <span>Eliminar Brazo</span>
-                        </button>
-                      )}
-                    </div>
-                  </Popup>
-                </Marker>
-              );
-            })}
           </LayerGroup>
         )}
 

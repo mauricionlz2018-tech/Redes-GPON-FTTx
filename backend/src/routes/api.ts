@@ -31,9 +31,6 @@ import {
   listGasas,
   createGasa,
   deleteGasa,
-  listBrazos,
-  createBrazo,
-  deleteBrazo,
   getNetworkSync
 } from '../controllers/infrastructureController';
 import { registerSseClient } from '../services/sseService';
@@ -148,10 +145,6 @@ router.delete('/infra/routes/:id', authenticateToken, requireRoles(['Admin', 'So
 router.get('/infra/gasas', authenticateToken, listGasas);
 router.post('/infra/gasas', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createGasa);
 router.delete('/infra/gasas/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, deleteGasa);
-
-router.get('/infra/brazos', authenticateToken, listBrazos);
-router.post('/infra/brazos', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, createBrazo);
-router.delete('/infra/brazos/:id', authenticateToken, requireRoles(['Admin', 'Soporte', 'Tecnico']), writeLimiter, deleteBrazo);
 
 export default router;
 
