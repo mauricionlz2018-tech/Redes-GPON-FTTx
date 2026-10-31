@@ -1,6 +1,7 @@
 import { NapBox, Client, User } from '../types';
 import { mockNaps } from '../data/mockGponData';
 import { offlineDb } from '../db/offlineDb';
+import { safeJsonStringify, sanitizeNap, sanitizeNaps } from '../utils/safeJson';
 
 export type RealtimeEvent =
   | { type: 'NAP_CREATED'; nap: NapBox }
@@ -83,7 +84,7 @@ export const broadcastRealtimeEvent = (event: RealtimeEvent) => {
   try {
     localStorage.setItem(
       'gpon_realtime_event_signal',
-      JSON.stringify({ ...event, _timestamp: Date.now() })
+      safeJsonStringify({ ...event, _timestamp: Date.now() })
     );
   } catch {}
 };
@@ -127,14 +128,14 @@ export const getCachedNapsSync = (): NapBox[] => {
  */
 export const saveCachedNaps = async (naps: NapBox[]) => {
   try {
-    localStorage.setItem(NAPS_CACHE_KEY, JSON.stringify(naps));
+    localStorage.setItem(NAPS_CACHE_KEY, safeJsonStringify(sanitizeNaps(naps)));
   } catch (e) {
     console.warn('No se pudo guardar naps en localStorage:', e);
   }
 
   try {
     await offlineDb.cached_naps.clear();
-    await offlineDb.cached_naps.bulkPut(naps);
+    await offlineDb.cached_naps.bulkPut(sanitizeNaps(naps));
   } catch (e) {
     console.warn('No se pudo guardar en Dexie offlineDb:', e);
   }
@@ -151,11 +152,11 @@ export const putCachedNapImmediate = async (newOrUpdatedNap: NapBox) => {
     : [newOrUpdatedNap, ...current];
 
   try {
-    localStorage.setItem(NAPS_CACHE_KEY, JSON.stringify(updatedList));
+    localStorage.setItem(NAPS_CACHE_KEY, safeJsonStringify(sanitizeNaps(updatedList)));
   } catch {}
 
   try {
-    await offlineDb.cached_naps.put(newOrUpdatedNap);
+    await offlineDb.cached_naps.put(sanitizeNap(newOrUpdatedNap));
   } catch {}
 
   return updatedList;
@@ -198,7 +199,7 @@ export const getCachedClientsSync = (): Client[] => {
  */
 export const saveCachedClients = (clients: Client[]) => {
   try {
-    localStorage.setItem(CLIENTS_CACHE_KEY, JSON.stringify(clients));
+    localStorage.setItem(CLIENTS_CACHE_KEY, safeJsonStringify(clients));
   } catch {}
 };
 
@@ -241,7 +242,7 @@ export const haveDeepItemsChanged = <T extends Record<string, any>>(
     const prevItem = prevMap.get(key);
     if (!prevItem) return true;
 
-    if (JSON.stringify(prevItem) !== JSON.stringify(nextItem)) return true;
+    if (safeJsonStringify(prevItem) !== safeJsonStringify(nextItem)) return true;
   }
   return false;
 };

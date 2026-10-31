@@ -68,7 +68,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
       potencia_rx_estimada: Number(formData.potencia_rx_estimada) || -19.5,
       puerto_nap: {
         ...port,
-        caja_nap: nap
+        caja_nap: { id_nap: nap.id_nap, identificador: nap.identificador, zona: nap.zona, direccion_texto: nap.direccion_texto, coordenadas_gps: nap.coordenadas_gps, total_puertos: nap.total_puertos } as any
       }
     };
 

@@ -65,6 +65,7 @@ import { KmzImportModal } from '../components/KmzImportModal';
 import { parseKmzOrKmlFile, ParsedKmzResult, ParsedKmzItem } from '../utils/kmzParser';
 
 
+import { safeJsonStringify, sanitizeNap, sanitizeNaps } from '../utils/safeJson';
 import {
   getCachedNapsSync,
   saveCachedNaps,
@@ -1048,7 +1049,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       } else if (event.type === 'NAP_CREATED') {
         setCustomNaps((prev) => {
           const updated = [event.nap, ...prev.filter((n) => n.id_nap !== event.nap.id_nap && n.identificador !== event.nap.identificador)];
-          try { localStorage.setItem('gpon_custom_naps', JSON.stringify(updated)); } catch {}
+          try { localStorage.setItem('gpon_custom_naps', safeJsonStringify(sanitizeNaps(updated))); } catch {}
           return updated;
         });
         setNaps((prev) => {
@@ -1059,7 +1060,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       } else if (event.type === 'NAP_UPDATED') {
         setCustomNaps((prev) => {
           const updated = [event.nap, ...prev.filter((n) => n.id_nap !== event.nap.id_nap && n.identificador !== event.nap.identificador)];
-          try { localStorage.setItem('gpon_custom_naps', JSON.stringify(updated)); } catch {}
+          try { localStorage.setItem('gpon_custom_naps', safeJsonStringify(sanitizeNaps(updated))); } catch {}
           return updated;
         });
         setNaps((prev) => {
@@ -1071,7 +1072,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       } else if (event.type === 'NAP_DELETED') {
         setCustomNaps((prev) => {
           const updated = prev.filter((n) => n.id_nap !== event.id_nap);
-          try { localStorage.setItem('gpon_custom_naps', JSON.stringify(updated)); } catch {}
+          try { localStorage.setItem('gpon_custom_naps', safeJsonStringify(sanitizeNaps(updated))); } catch {}
           return updated;
         });
         setNaps((prev) => {
@@ -1285,7 +1286,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       setCustomNaps((prev) => {
         const updated = prev.filter((n) => n.id_nap !== targetNap.id_nap && n.identificador !== targetNap.identificador);
         try {
-          localStorage.setItem('gpon_custom_naps', JSON.stringify(updated));
+          localStorage.setItem('gpon_custom_naps', safeJsonStringify(sanitizeNaps(updated)));
         } catch {}
         return updated;
       });
@@ -2306,7 +2307,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             setCustomNaps((prev) => {
               const updated = [savedNap, ...prev.filter((n) => n.id_nap !== savedNap.id_nap && n.identificador !== savedNap.identificador)];
               try {
-                localStorage.setItem('gpon_custom_naps', JSON.stringify(updated));
+                localStorage.setItem('gpon_custom_naps', safeJsonStringify(sanitizeNaps(updated)));
               } catch {}
               return updated;
             });
