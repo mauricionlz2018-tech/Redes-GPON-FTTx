@@ -33,8 +33,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     if (error.response && error.response.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
-      console.warn('Sesión expirada o token no válido. Recuperando sesión maestra...');
-      localStorage.removeItem('gpon_token');
+      console.warn('Sesión expirada o token no válido. Reintentando con credencial de respaldo...');
       if (originalRequest.headers) {
         originalRequest.headers.Authorization = 'Bearer demo-jwt-token';
       }

@@ -23,40 +23,53 @@ const getCleanNaps = (rawNaps: NapBox[]): NapBox[] => {
   let deletedIds: string[] = [];
   try {
     const del = localStorage.getItem('gpon_deleted_nap_ids');
-    if (del) deletedIds = JSON.parse(del);
+    if (del) {
+      const parsed = JSON.parse(del);
+      if (Array.isArray(parsed)) deletedIds = parsed.filter(Boolean);
+    }
   } catch {}
 
   let customNaps: NapBox[] = [];
   try {
     const cust = localStorage.getItem('gpon_custom_naps');
-    if (cust) customNaps = JSON.parse(cust);
+    if (cust) {
+      const parsed = JSON.parse(cust);
+      if (Array.isArray(parsed)) customNaps = parsed.filter(Boolean);
+    }
   } catch {}
 
-  const isDeleted = (n: NapBox) =>
-    deletedIds.includes(n.id_nap) || Boolean(n.identificador && deletedIds.includes(n.identificador));
+  const safeId = (id?: any) => (id ? String(id).toLowerCase().trim() : '');
+  const safeIdent = (ident?: any) => (ident ? String(ident).toLowerCase().replace(/[^a-z0-9]/g, '').trim() : '');
+
+  const isDeleted = (n: NapBox) => {
+    if (!n) return true;
+    if (n.id_nap && deletedIds.includes(n.id_nap)) return true;
+    if (n.identificador && deletedIds.includes(n.identificador)) return true;
+    return false;
+  };
 
   const customMap = new Map<string, NapBox>();
   customNaps.filter((c) => !isDeleted(c)).forEach((c) => {
-    customMap.set(c.id_nap.toLowerCase(), c);
-    if (c.identificador) {
-      customMap.set(c.identificador.toLowerCase().replace(/[^a-z0-9]/g, ''), c);
-    }
+    const kId = safeId(c.id_nap);
+    if (kId) customMap.set(kId, c);
+    const kIdent = safeIdent(c.identificador);
+    if (kIdent) customMap.set(kIdent, c);
   });
 
-  const merged = rawNaps
+  const merged = (rawNaps || [])
     .filter((n) => !isDeleted(n))
     .map((n) => {
-      const local = customMap.get(n.id_nap.toLowerCase()) ||
-                    (n.identificador ? customMap.get(n.identificador.toLowerCase().replace(/[^a-z0-9]/g, '')) : null);
+      const local = (n.id_nap ? customMap.get(safeId(n.id_nap)) : undefined) ||
+                    (n.identificador ? customMap.get(safeIdent(n.identificador)) : undefined);
       return local ? { ...n, ...local } : n;
     });
 
-  const rawIds = new Set(rawNaps.map((n) => n.id_nap.toLowerCase()));
-  const rawIdents = new Set(rawNaps.map((n) => (n.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, '')));
+  const rawIds = new Set((rawNaps || []).map((n) => safeId(n.id_nap)).filter(Boolean));
+  const rawIdents = new Set((rawNaps || []).map((n) => safeIdent(n.identificador)).filter(Boolean));
   const localOnly = customNaps.filter((c) => {
     if (isDeleted(c)) return false;
-    const idMatch = rawIds.has(c.id_nap.toLowerCase());
-    const identMatch = rawIdents.has((c.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+    const idMatch = c.id_nap ? rawIds.has(safeId(c.id_nap)) : false;
+    const identMatch = c.identificador ? rawIdents.has(safeIdent(c.identificador)) : false;
     return !idMatch && !identMatch;
   });
 

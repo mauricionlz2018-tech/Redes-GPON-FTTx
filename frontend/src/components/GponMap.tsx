@@ -757,7 +757,7 @@ export const GponMap: React.FC<GponMapProps> = ({
     mockFiberRoutes.forEach((sr) => { routeMap[sr.id_ruta] = sr; });
     (fiberRoutes || []).forEach((fr) => { routeMap[fr.id_ruta] = fr; });
     return Object.values(routeMap).filter((r) => {
-      if (deletedRouteIds.includes(r.id_ruta)) return false;
+      if (!r?.id_ruta || !Array.isArray(deletedRouteIds) || deletedRouteIds.includes(r.id_ruta)) return false;
       if (!r.coordenadas || !Array.isArray(r.coordenadas) || r.coordenadas.length < 2) return false;
       return r.coordenadas.every(
         (pt) => Array.isArray(pt) && pt.length >= 2 && typeof pt[0] === 'number' && !isNaN(pt[0]) && typeof pt[1] === 'number' && !isNaN(pt[1])
@@ -771,7 +771,7 @@ export const GponMap: React.FC<GponMapProps> = ({
     troncalMufas.forEach((tm) => { empalmeMap[tm.id_empalme] = tm; });
     (empalmes || []).forEach((em) => { empalmeMap[em.id_empalme] = em; });
     return Object.values(empalmeMap).filter((m) => {
-      if (deletedMufaIds.includes(m.id_empalme)) return false;
+      if (!m?.id_empalme || !Array.isArray(deletedMufaIds) || deletedMufaIds.includes(m.id_empalme)) return false;
       if (!m.coordenadas_gps || typeof m.coordenadas_gps.lat !== 'number' || typeof m.coordenadas_gps.lng !== 'number') return false;
       return !isNaN(m.coordenadas_gps.lat) && !isNaN(m.coordenadas_gps.lng);
     });
@@ -789,7 +789,7 @@ export const GponMap: React.FC<GponMapProps> = ({
       }
     });
     return Object.values(posteMap).filter((p) => {
-      if (deletedPosteIds.includes(p.id_poste)) return false;
+      if (!p?.id_poste || !Array.isArray(deletedPosteIds) || deletedPosteIds.includes(p.id_poste)) return false;
       if (!p.coordenadas_gps || typeof p.coordenadas_gps.lat !== 'number' || typeof p.coordenadas_gps.lng !== 'number') return false;
       return !isNaN(p.coordenadas_gps.lat) && !isNaN(p.coordenadas_gps.lng);
     });
@@ -807,7 +807,7 @@ export const GponMap: React.FC<GponMapProps> = ({
       }
     });
     return Object.values(posteMap).filter((p) => {
-      if (deletedPosteIds.includes(p.id_poste)) return false;
+      if (!p?.id_poste || !Array.isArray(deletedPosteIds) || deletedPosteIds.includes(p.id_poste)) return false;
       if (!p.coordenadas_gps || typeof p.coordenadas_gps.lat !== 'number' || typeof p.coordenadas_gps.lng !== 'number') return false;
       return !isNaN(p.coordenadas_gps.lat) && !isNaN(p.coordenadas_gps.lng);
     });
@@ -819,7 +819,7 @@ export const GponMap: React.FC<GponMapProps> = ({
     (gasas || troncalGasas || []).forEach((g) => { gasaMap[g.id_gasa] = g; });
     (customGasas || []).forEach((cg) => { gasaMap[cg.id_gasa] = cg; });
     return Object.values(gasaMap).filter((g) => {
-      if (deletedGasaIds.includes(g.id_gasa)) return false;
+      if (!g?.id_gasa || !Array.isArray(deletedGasaIds) || deletedGasaIds.includes(g.id_gasa)) return false;
       if (!g.coordenadas_gps || typeof g.coordenadas_gps.lat !== 'number' || typeof g.coordenadas_gps.lng !== 'number') return false;
       return !isNaN(g.coordenadas_gps.lat) && !isNaN(g.coordenadas_gps.lng);
     });

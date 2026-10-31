@@ -3,48 +3,33 @@ import ReactDOM from 'react-dom/client';
 import 'leaflet/dist/leaflet.css';
 import App from './App';
 import './index.css';
+import { ErrorBoundary } from './components/ErrorBoundary';
+
+// Capturar errores de carga dinámica de chunks generados por nuevas compilaciones en Vercel
+window.addEventListener('vite:preloadError', (event) => {
+  console.warn('Nueva versión detectada en servidor, recargando asset:', event);
+  window.location.reload();
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 );
 
-// Registrar Service Worker para instalación como App PWA en Android, iOS, Laptops y modo sin conexión
+// Registrar Service Worker para instalación PWA sin bucles de recarga
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
       .then((reg) => {
-        console.log('Service Worker PWA registrado con éxito en scope:', reg.scope);
-        // Verificar actualizaciones inmediatamente al cargar la página
-        reg.update().catch(() => {});
-
-        // Detectar si hay una nueva versión del worker esperando
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('Nueva versión de la app lista. Activando...');
-                newWorker.postMessage({ type: 'SKIP_WAITING' });
-              }
-            });
-          }
-        });
+        console.log('Service Worker PWA registrado en scope:', reg.scope);
       })
       .catch((err) => {
-        console.warn('Advertencia al registrar Service Worker:', err);
+        console.warn('Aviso Service Worker:', err);
       });
-
-    // Cuando el nuevo service worker toma el control, recargar suavemente para aplicar los cambios
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!refreshing) {
-        refreshing = true;
-        window.location.reload();
-      }
-    });
   });
 }
 

@@ -111,7 +111,7 @@ self.addEventListener('fetch', (event) => {
             return cached;
           }
           return new Response(
-            '<!doctype html><html><body style="font-family:sans-serif;background:#0f172a;color:#fff;text-align:center;padding:2rem;"><h2>GPON Telecom Modo Offline</h2><p>Iniciando entorno local...</p><script>window.location.reload();</script></body></html>',
+            '<!doctype html><html><body style="font-family:sans-serif;background:#0f172a;color:#fff;text-align:center;padding:2rem;"><h2>GPON Telecom</h2><p>Conexión en pausa. Verifica tu acceso a internet.</p></body></html>',
             { headers: { 'Content-Type': 'text/html; charset=utf-8' }, status: 200 }
           );
         })

@@ -79,7 +79,8 @@ export const MapViewPage: React.FC = () => {
     const cached = getCachedNapsSync();
     const seen = new Set<string>();
     const unique = cached.filter((n) => {
-      const key = (n.identificador || n.id_nap).toLowerCase().replace(/[^a-z0-9]/g, '');
+      const key = String(n?.identificador || n?.id_nap || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!key) return false;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -264,46 +265,36 @@ export const MapViewPage: React.FC = () => {
     setTempPlacementPin(null);
     setDroppedCoordinates(null);
   };
-  const [customRoutes, setCustomRoutes] = useState<FiberRoute[]>(() => {
+    const getStoredArray = <T,>(key: string): T[] => {
     try {
-      const saved = localStorage.getItem('gpon_custom_routes');
-      return saved ? JSON.parse(saved) : [];
+      const s = localStorage.getItem(key);
+      if (!s) return [];
+      const parsed = JSON.parse(s);
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
     } catch {
       return [];
     }
-  });
-  const [customEmpalmes, setCustomEmpalmes] = useState<EmpalmeClosure[]>(() => {
-    try {
-      const saved = localStorage.getItem('gpon_custom_empalmes');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [customGasas, setCustomGasas] = useState<GasaReserva[]>(() => {
-    try {
-      const saved = localStorage.getItem('gpon_custom_gasas');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [customPostes, setCustomPostes] = useState<PosteInfraestructura[]>(() => {
-    try {
-      const saved = localStorage.getItem('gpon_custom_postes');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [customNaps, setCustomNaps] = useState<NapBox[]>(() => {
-    try {
-      const saved = localStorage.getItem('gpon_custom_naps');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  };
+
+  const safeId = (id: any): string => (id ? String(id).toLowerCase().trim() : '');
+  const safeIdent = (ident: any): string => (ident ? String(ident).toLowerCase().replace(/[^a-z0-9]/g, '').trim() : '');
+
+  const isDeletedNap = (n: { id_nap?: string; identificador?: string } | null | undefined, list: string[]): boolean => {
+    if (!n || !Array.isArray(list) || list.length === 0) return false;
+    if (n.id_nap && list.includes(n.id_nap)) return true;
+    if (n.identificador && list.includes(n.identificador)) return true;
+    return false;
+  };
+
+  const isDeletedItem = (id: any, list: string[]): boolean => {
+    if (!id || !Array.isArray(list) || list.length === 0) return false;
+    return list.includes(String(id));
+  };
+const [customRoutes, setCustomRoutes] = useState<FiberRoute[]>(() => getStoredArray<FiberRoute>('gpon_custom_routes'));
+  const [customEmpalmes, setCustomEmpalmes] = useState<EmpalmeClosure[]>(() => getStoredArray<EmpalmeClosure>('gpon_custom_empalmes'));
+  const [customGasas, setCustomGasas] = useState<GasaReserva[]>(() => getStoredArray<GasaReserva>('gpon_custom_gasas'));
+  const [customPostes, setCustomPostes] = useState<PosteInfraestructura[]>(() => getStoredArray<PosteInfraestructura>('gpon_custom_postes'));
+  const [customNaps, setCustomNaps] = useState<NapBox[]>(() => getStoredArray<NapBox>('gpon_custom_naps'));
   const isFetchingRef = useRef<boolean>(false);
 
   // Estados de control para eliminación de elementos (Troncales, Mufas, Postes, Gasas)
@@ -316,50 +307,11 @@ export const MapViewPage: React.FC = () => {
   const [isDeletingElement, setIsDeletingElement] = useState(false);
 
   // Registro de IDs eliminados para sincronización inmediata entre dispositivos y filtros
-  const [deletedRouteIds, setDeletedRouteIds] = useState<string[]>(() => {
-    try {
-      const s = localStorage.getItem('gpon_deleted_route_ids');
-      return s ? JSON.parse(s) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [deletedMufaIds, setDeletedMufaIds] = useState<string[]>(() => {
-    try {
-      const s = localStorage.getItem('gpon_deleted_mufa_ids');
-      return s ? JSON.parse(s) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [deletedGasaIds, setDeletedGasaIds] = useState<string[]>(() => {
-    try {
-      const s = localStorage.getItem('gpon_deleted_gasa_ids');
-      return s ? JSON.parse(s) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [deletedPosteIds, setDeletedPosteIds] = useState<string[]>(() => {
-    try {
-      const s = localStorage.getItem('gpon_deleted_poste_ids');
-      return s ? JSON.parse(s) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [deletedNapIds, setDeletedNapIds] = useState<string[]>(() => {
-    try {
-      const s = localStorage.getItem('gpon_deleted_nap_ids');
-      return s ? JSON.parse(s) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [deletedRouteIds, setDeletedRouteIds] = useState<string[]>(() => getStoredArray<string>('gpon_deleted_route_ids'));
+  const [deletedMufaIds, setDeletedMufaIds] = useState<string[]>(() => getStoredArray<string>('gpon_deleted_mufa_ids'));
+  const [deletedGasaIds, setDeletedGasaIds] = useState<string[]>(() => getStoredArray<string>('gpon_deleted_gasa_ids'));
+  const [deletedPosteIds, setDeletedPosteIds] = useState<string[]>(() => getStoredArray<string>('gpon_deleted_poste_ids'));
+  const [deletedNapIds, setDeletedNapIds] = useState<string[]>(() => getStoredArray<string>('gpon_deleted_nap_ids'));
 
 // Helpers para seguimiento de IDs confirmados en la base de datos central (evita re-subir eliminados)
 const getKnownServerIds = (key: string): Set<string> => {
@@ -395,16 +347,16 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       });
 
       const activeRoutes = [...troncalIxtJocRoutes, ...customRoutes].filter(
-        (r) => !deletedRouteIds.includes(r.id_ruta)
+        (r) => r && r.id_ruta && !isDeletedItem(r.id_ruta, deletedRouteIds)
       );
       const activeEmpalmes = [...troncalMufas, ...customEmpalmes].filter(
-        (m) => !deletedMufaIds.includes(m.id_empalme)
+        (m) => m && m.id_empalme && !isDeletedItem(m.id_empalme, deletedMufaIds)
       );
       const activePostes = [
         ...troncalPostesCfe,
         ...troncalPostesPropuestos,
         ...customPostes
-      ].filter((p) => !deletedPosteIds.includes(p.id_poste));
+      ].filter((p) => p && p.id_poste && !isDeletedItem(p.id_poste, deletedPosteIds));
 
       const parsed = await parseKmzOrKmlFile(file, activeRoutes, activeEmpalmes, activePostes);
 
@@ -444,7 +396,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
     // 1. Procesar rutas
     if (routeItems.length > 0) {
       const newRoutes: FiberRoute[] = routeItems.map((item, idx) => {
-        const isTroncal = item.tipo === 'troncal' || !item.nombre.toLowerCase().includes('ramal');
+        const isTroncal = item.tipo === 'troncal' || !(item.nombre || '').toLowerCase().includes('ramal');
         const coords = item.coordenadas as [number, number][];
         return {
           id_ruta: `route_kmz_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
@@ -585,23 +537,23 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       });
 
       const activeRoutes = [...troncalIxtJocRoutes, ...customRoutes].filter(
-        (r) => !deletedRouteIds.includes(r.id_ruta)
+        (r) => r && r.id_ruta && !isDeletedItem(r.id_ruta, deletedRouteIds)
       );
       const activeEmpalmes = [...troncalMufas, ...customEmpalmes].filter(
-        (m) => !deletedMufaIds.includes(m.id_empalme)
+        (m) => m && m.id_empalme && !isDeletedItem(m.id_empalme, deletedMufaIds)
       );
       const activePostesPropuestos = [
         ...troncalPostesPropuestos,
         ...customPostes.filter((p) => p.tipo === 'poste_propuesto')
-      ].filter((p) => !deletedPosteIds.includes(p.id_poste));
+      ].filter((p) => p && p.id_poste && !isDeletedItem(p.id_poste, deletedPosteIds));
       const activePostesCfe = [
         ...troncalPostesCfe,
         ...customPostes.filter((p) => p.tipo === 'poste_cfe')
-      ].filter((p) => !deletedPosteIds.includes(p.id_poste));
+      ].filter((p) => p && p.id_poste && !isDeletedItem(p.id_poste, deletedPosteIds));
       const activeGasas = [
         ...troncalGasas,
         ...customGasas
-      ].filter((g) => !deletedGasaIds.includes(g.id_gasa));
+      ].filter((g) => g && g.id_gasa && !isDeletedItem(g.id_gasa, deletedGasaIds));
 
       await exportGponNetworkToKmz({
         naps,
@@ -823,26 +775,19 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       }
 
       // 0. Sincronización Bidireccional de Cajas NAP
-      const localNaps: NapBox[] = (() => {
-        try {
-          const s = localStorage.getItem('gpon_custom_naps');
-          return s ? JSON.parse(s) : [];
-        } catch {
-          return [];
-        }
-      })();
+      const localNaps: NapBox[] = getStoredArray<NapBox>('gpon_custom_naps');
 
       if (napsRes.data?.success && Array.isArray(napsRes.data.data) && napsRes.data.data.length > 0) {
-        const serverNaps: NapBox[] = napsRes.data.data;
-        const serverIds = new Set(serverNaps.map((n) => n.id_nap.toLowerCase()));
-        const serverIdents = new Set(serverNaps.map((n) => (n.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, '')));
+        const serverNaps: NapBox[] = napsRes.data.data.filter((n: any) => n && (n.id_nap || n.identificador));
+        const serverIds = new Set(serverNaps.map((n) => safeId(n.id_nap)).filter(Boolean));
+        const serverIdents = new Set(serverNaps.map((n) => safeIdent(n.identificador)).filter(Boolean));
         const knownNapIds = getKnownServerIds('gpon_known_server_nap_ids');
 
         // Subir a la base de datos en Neon cualquier caja creada fuera de línea
         const unsyncedNaps = localNaps.filter(
-          (loc) => (loc.id_nap.startsWith('local-') || loc.id_nap.startsWith('nap-local-')) &&
+          (loc) => loc && (safeId(loc.id_nap).startsWith('local-') || safeId(loc.id_nap).startsWith('nap-local-')) &&
                    !knownNapIds.has(loc.id_nap) &&
-                   !deletedNapIds.includes(loc.id_nap) && !deletedNapIds.includes(loc.identificador)
+                   !isDeletedNap(loc, deletedNapIds)
         );
 
         if (unsyncedNaps.length > 0) {
@@ -871,20 +816,19 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         // Mapeo para sobreponer ediciones locales sobre datos antiguos del servidor
         const customNapMap = new Map<string, NapBox>();
         localNaps.forEach((cn) => {
-          if (!deletedNapIds.includes(cn.id_nap) && !deletedNapIds.includes(cn.identificador)) {
-            customNapMap.set(cn.id_nap.toLowerCase(), cn);
-            if (cn.identificador) {
-              customNapMap.set((cn.identificador).toLowerCase().replace(/[^a-z0-9]/g, ''), cn);
-            }
-          }
+          if (!cn || isDeletedNap(cn, deletedNapIds)) return;
+          const kId = safeId(cn.id_nap);
+          if (kId) customNapMap.set(kId, cn);
+          const kIdent = safeIdent(cn.identificador);
+          if (kIdent) customNapMap.set(kIdent, cn);
         });
 
         // Aplicar cualquier edición local sobre las cajas del servidor
         const mergedServerNaps = serverNaps
-          .filter((sn) => !deletedNapIds.includes(sn.id_nap) && !deletedNapIds.includes(sn.identificador))
+          .filter((sn) => !isDeletedNap(sn, deletedNapIds))
           .map((sn) => {
-            const localOverride = customNapMap.get(sn.id_nap.toLowerCase()) || 
-                                  customNapMap.get((sn.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+            const localOverride = (sn.id_nap ? customNapMap.get(safeId(sn.id_nap)) : undefined) || 
+                                  (sn.identificador ? customNapMap.get(safeIdent(sn.identificador)) : undefined);
             if (localOverride) {
               return {
                 ...sn,
@@ -898,9 +842,9 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
 
         // Mantener cajas creadas localmente que aún no están en el servidor
         const localOnly = localNaps.filter((loc) => {
-          if (deletedNapIds.includes(loc.id_nap) || deletedNapIds.includes(loc.identificador)) return false;
-          const idMatch = serverIds.has(loc.id_nap.toLowerCase());
-          const identMatch = serverIdents.has((loc.identificador || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+          if (!loc || isDeletedNap(loc, deletedNapIds)) return false;
+          const idMatch = loc.id_nap ? serverIds.has(safeId(loc.id_nap)) : false;
+          const identMatch = loc.identificador ? serverIdents.has(safeIdent(loc.identificador)) : false;
           return !idMatch && !identMatch;
         });
 
@@ -924,23 +868,16 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       }
 
       // 1. Sincronización Bidireccional de Postes con Neon DB
-      const localPostes: PosteInfraestructura[] = (() => {
-        try {
-          const s = localStorage.getItem('gpon_custom_postes');
-          return s ? JSON.parse(s) : [];
-        } catch {
-          return [];
-        }
-      })();
+      const localPostes: PosteInfraestructura[] = getStoredArray<PosteInfraestructura>('gpon_custom_postes');
 
       if (postesRes.data?.success && Array.isArray(postesRes.data.data)) {
-        const serverPostes: PosteInfraestructura[] = postesRes.data.data;
-        const serverIds = new Set(serverPostes.map((p) => p.id_poste));
+        const serverPostes: PosteInfraestructura[] = postesRes.data.data.filter((p: any) => p && p.id_poste);
+        const serverIds = new Set(serverPostes.map((p) => String(p.id_poste)));
         const knownPosteIds = getKnownServerIds('gpon_known_server_poste_ids');
 
         // Postes locales nuevos que nunca se subieron al servidor
         const unsyncedPostes = localPostes.filter(
-          (loc) => !serverIds.has(loc.id_poste) && !knownPosteIds.has(loc.id_poste) && !deletedPosteIds.includes(loc.id_poste)
+          (loc) => loc && loc.id_poste && !serverIds.has(String(loc.id_poste)) && !knownPosteIds.has(String(loc.id_poste)) && !isDeletedItem(loc.id_poste, deletedPosteIds)
         );
 
         if (unsyncedPostes.length > 0) {
@@ -954,12 +891,11 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           }
         }
 
-        // Registrar todos los postes del servidor como conocidos
         serverPostes.forEach((p) => knownPosteIds.add(p.id_poste));
         saveKnownServerIds('gpon_known_server_poste_ids', knownPosteIds);
 
         const mergedPostes = [
-          ...serverPostes.filter((p) => !deletedPosteIds.includes(p.id_poste)),
+          ...serverPostes.filter((p) => !isDeletedItem(p.id_poste, deletedPosteIds)),
           ...unsyncedPostes
         ];
 
@@ -973,22 +909,15 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       }
 
       // 2. Sincronización Bidireccional de Mufas con Neon DB
-      const localMufas: EmpalmeClosure[] = (() => {
-        try {
-          const s = localStorage.getItem('gpon_custom_empalmes');
-          return s ? JSON.parse(s) : [];
-        } catch {
-          return [];
-        }
-      })();
+      const localMufas: EmpalmeClosure[] = getStoredArray<EmpalmeClosure>('gpon_custom_empalmes');
 
       if (mufasRes.data?.success && Array.isArray(mufasRes.data.data)) {
-        const serverMufas: EmpalmeClosure[] = mufasRes.data.data;
-        const serverIds = new Set(serverMufas.map((m) => m.id_empalme));
+        const serverMufas: EmpalmeClosure[] = mufasRes.data.data.filter((m: any) => m && m.id_empalme);
+        const serverIds = new Set(serverMufas.map((m) => String(m.id_empalme)));
         const knownMufaIds = getKnownServerIds('gpon_known_server_mufa_ids');
 
         const unsyncedMufas = localMufas.filter(
-          (loc) => !serverIds.has(loc.id_empalme) && !knownMufaIds.has(loc.id_empalme) && !deletedMufaIds.includes(loc.id_empalme)
+          (loc) => loc && loc.id_empalme && !serverIds.has(String(loc.id_empalme)) && !knownMufaIds.has(String(loc.id_empalme)) && !isDeletedItem(loc.id_empalme, deletedMufaIds)
         );
 
         if (unsyncedMufas.length > 0) {
@@ -1006,7 +935,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         saveKnownServerIds('gpon_known_server_mufa_ids', knownMufaIds);
 
         const mergedMufas = [
-          ...serverMufas.filter((m) => !deletedMufaIds.includes(m.id_empalme)),
+          ...serverMufas.filter((m) => !isDeletedItem(m.id_empalme, deletedMufaIds)),
           ...unsyncedMufas
         ];
 
@@ -1020,22 +949,15 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       }
 
       // 3. Sincronización Bidireccional de Rutas Troncales con Neon DB
-      const localRoutes: FiberRoute[] = (() => {
-        try {
-          const s = localStorage.getItem('gpon_custom_routes');
-          return s ? JSON.parse(s) : [];
-        } catch {
-          return [];
-        }
-      })();
+      const localRoutes: FiberRoute[] = getStoredArray<FiberRoute>('gpon_custom_routes');
 
       if (routesRes.data?.success && Array.isArray(routesRes.data.data)) {
-        const serverRoutes: FiberRoute[] = routesRes.data.data;
-        const serverIds = new Set(serverRoutes.map((r) => r.id_ruta));
+        const serverRoutes: FiberRoute[] = routesRes.data.data.filter((r: any) => r && r.id_ruta);
+        const serverIds = new Set(serverRoutes.map((r) => String(r.id_ruta)));
         const knownRouteIds = getKnownServerIds('gpon_known_server_route_ids');
 
         const unsyncedRoutes = localRoutes.filter(
-          (loc) => !serverIds.has(loc.id_ruta) && !knownRouteIds.has(loc.id_ruta) && !deletedRouteIds.includes(loc.id_ruta)
+          (loc) => loc && loc.id_ruta && !serverIds.has(String(loc.id_ruta)) && !knownRouteIds.has(String(loc.id_ruta)) && !isDeletedItem(loc.id_ruta, deletedRouteIds)
         );
 
         if (unsyncedRoutes.length > 0) {
@@ -1053,7 +975,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         saveKnownServerIds('gpon_known_server_route_ids', knownRouteIds);
 
         const mergedRoutes = [
-          ...serverRoutes.filter((r) => !deletedRouteIds.includes(r.id_ruta)),
+          ...serverRoutes.filter((r) => !isDeletedItem(r.id_ruta, deletedRouteIds)),
           ...unsyncedRoutes
         ];
 
@@ -1067,22 +989,15 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       }
 
       // 4. Sincronización Bidireccional de Gasas de Reserva Técnica con Neon DB
-      const localGasas: GasaReserva[] = (() => {
-        try {
-          const s = localStorage.getItem('gpon_custom_gasas');
-          return s ? JSON.parse(s) : [];
-        } catch {
-          return [];
-        }
-      })();
+      const localGasas: GasaReserva[] = getStoredArray<GasaReserva>('gpon_custom_gasas');
 
       if (gasasRes.data?.success && Array.isArray(gasasRes.data.data)) {
-        const serverGasas: GasaReserva[] = gasasRes.data.data;
-        const serverIds = new Set(serverGasas.map((g) => g.id_gasa));
+        const serverGasas: GasaReserva[] = gasasRes.data.data.filter((g: any) => g && g.id_gasa);
+        const serverIds = new Set(serverGasas.map((g) => String(g.id_gasa)));
         const knownGasaIds = getKnownServerIds('gpon_known_server_gasa_ids');
 
         const unsyncedGasas = localGasas.filter(
-          (loc) => !serverIds.has(loc.id_gasa) && !knownGasaIds.has(loc.id_gasa) && !deletedGasaIds.includes(loc.id_gasa)
+          (loc) => loc && loc.id_gasa && !serverIds.has(String(loc.id_gasa)) && !knownGasaIds.has(String(loc.id_gasa)) && !isDeletedItem(loc.id_gasa, deletedGasaIds)
         );
 
         if (unsyncedGasas.length > 0) {
@@ -1100,7 +1015,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         saveKnownServerIds('gpon_known_server_gasa_ids', knownGasaIds);
 
         const mergedGasas = [
-          ...serverGasas.filter((g) => !deletedGasaIds.includes(g.id_gasa)),
+          ...serverGasas.filter((g) => !isDeletedItem(g.id_gasa, deletedGasaIds)),
           ...unsyncedGasas
         ];
 
@@ -1519,8 +1434,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
   // Filtrado de NAPs en el listado
   const filteredNaps = naps.filter((nap) => {
     const matchSearch =
-      nap.identificador.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      nap.zona.toLowerCase().includes(searchTerm.toLowerCase());
+      (nap?.identificador || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (nap?.zona || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     if (!matchSearch) return false;
 
@@ -2458,12 +2373,13 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
       <FiberDesignLegendModal
         isOpen={isLegendModalOpen}
         onClose={() => setIsLegendModalOpen(false)}
-        activeRoutes={[...troncalIxtJocRoutes, ...customRoutes].filter((r) => !deletedRouteIds.includes(r.id_ruta))}
+        activeRoutes={[...troncalIxtJocRoutes, ...customRoutes].filter((r) => r && r.id_ruta && !isDeletedItem(r.id_ruta, deletedRouteIds))}
         activeEmpalmes={(() => {
           const seen = new Set<string>();
           return [...customEmpalmes, ...troncalMufas].filter((m) => {
-            if (deletedMufaIds.includes(m.id_empalme)) return false;
-            const key = (m.nombre || m.id_empalme).toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (isDeletedItem(m?.id_empalme, deletedMufaIds)) return false;
+            const key = String(m?.nombre || m?.id_empalme || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (!key) return false;
             if (seen.has(key)) return false;
             seen.add(key);
             return true;
@@ -2477,7 +2393,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
         onClose={() => setIsOltModalOpen(false)}
         odf={odf}
         naps={filteredNaps}
-        routes={[...troncalIxtJocRoutes, ...customRoutes].filter((r) => !deletedRouteIds.includes(r.id_ruta))}
+        routes={[...troncalIxtJocRoutes, ...customRoutes].filter((r) => r && r.id_ruta && !isDeletedItem(r.id_ruta, deletedRouteIds))}
         onSelectNapOnMap={(nap) => {
           setSelectedNap(nap);
           setIsOltModalOpen(false);
