@@ -14,6 +14,7 @@ import { CreateGasaModal } from '../components/CreateGasaModal';
 import { DeleteElementModal } from '../components/DeleteElementModal';
 import { OltOdfLogicalModal } from '../components/OltOdfLogicalModal';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { NapBox, NapPort, OdfPanel, FiberRoute, EmpalmeClosure, GasaReserva, PosteInfraestructura } from '../types';
 import { offlineDb } from '../db/offlineDb';
 import api from '../api/client';
@@ -75,6 +76,7 @@ import {
 } from '../services/realtimeSync';
 
 export const MapViewPage: React.FC = () => {
+  const { t } = useLanguage();
   // Carga instantánea de NAPs desde caché local en 0ms (Deduplicación estricta para garantizar 26 NAPs exactas)
   const [naps, setNaps] = useState<NapBox[]>(() => {
     const cached = getCachedNapsSync();
@@ -1487,7 +1489,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
               <input
                 type="text"
-                placeholder="Buscar por NAP o zona (ej. NAP-SJR-01)..."
+                placeholder={t('map.searchNapPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
@@ -1501,10 +1503,10 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                 onChange={(e) => setFilterStatus(e.target.value)}
                 className="h-9 w-full sm:w-auto bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
               >
-                <option value="todos">Todos los Estados</option>
-                <option value="disponible">Disponibles (&lt;80%)</option>
-                <option value="alerta">En Alerta (&ge;80%)</option>
-                <option value="saturada">Saturadas (100%)</option>
+                <option value="todos">{t('map.allStatuses')}</option>
+                <option value="disponible">{t('map.availableFilter')}</option>
+                <option value="alerta">{t('map.alertFilter')}</option>
+                <option value="saturada">{t('map.saturatedFilter')}</option>
               </select>
             </div>
           </div>
@@ -1520,8 +1522,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               title="Expandir el mapa a pantalla completa y ocultar paneles"
             >
               <Maximize2 className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">Expandir Mapa</span>
-              <span className="sm:hidden">Expandir</span>
+              <span className="hidden sm:inline">{t('map.expandMap')}</span>
+              <span className="sm:hidden">{t('map.expand')}</span>
             </button>
 
             {/* Selector de archivo KMZ / KML oculto */}
@@ -1541,8 +1543,8 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               title="Subir archivo KMZ o KML de Google Earth para vista previa, edición y agregación a la red"
             >
               <Upload className={`w-3.5 h-3.5 shrink-0 ${isParsingKmz ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{isParsingKmz ? 'Cargando...' : 'Subir KMZ'}</span>
-              <span className="sm:hidden">{isParsingKmz ? 'KMZ...' : 'Subir'}</span>
+              <span className="hidden sm:inline">{isParsingKmz ? t('common.loading') : t('map.uploadKmz')}</span>
+              <span className="sm:hidden">{isParsingKmz ? 'KMZ...' : t('map.uploadKmz')}</span>
             </button>
 
             <button
@@ -1552,7 +1554,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               title="Descargar toda la infraestructura geográfica de la red (cajas NAP, fibra óptica, mufas y postes) en archivo KMZ para Google Earth"
             >
               <Download className={`w-3.5 h-3.5 shrink-0 ${isExportingKmz ? 'animate-bounce' : ''}`} />
-              <span className="hidden sm:inline">{isExportingKmz ? 'Generando...' : 'Descargar KMZ'}</span>
+              <span className="hidden sm:inline">{isExportingKmz ? t('common.loading') : t('map.downloadKmz')}</span>
               <span className="sm:hidden">{isExportingKmz ? 'KMZ...' : 'KMZ'}</span>
             </button>
 
@@ -1575,7 +1577,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               title="Actualizar datos de la red y comprobar nueva versión"
             >
               <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
-              <span>Actualizar</span>
+              <span>{t('common.refresh')}</span>
             </button>
           </div>
         </div>
@@ -1589,7 +1591,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             title="Abrir Arquitectura Lógica GPON: Chasis OLT Activo, Puertos PON, Distribuidor ODF, Trazabilidad Extremo a Extremo y Presupuesto Óptico"
           >
             <Server className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>Mapeo Lógico OLT / ODF</span>
+            <span>{t('map.oltOdfLogical')}</span>
           </button>
 
           {/* Botón de Simbología Estándar y Metrajes */}
@@ -1599,7 +1601,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             title="Ver norma de simbología (triángulos, mufas torpedo, gasas) y cómputo de metrajes totales en ML y km"
           >
             <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-            <span>Simbología</span>
+            <span>{t('map.legend')}</span>
           </button>
 
           {/* Botón para crear nueva línea troncal o ramal (Trazado interactivo de curvas o arrastre) */}
@@ -1624,7 +1626,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           >
             <GripVertical className="w-3 h-3 text-purple-500/70 shrink-0" />
             <Ruler className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-            <span>{isDrawingRoute ? 'Trazando...' : '+ Troncal / Ramal'}</span>
+            <span>{isDrawingRoute ? t('map.tracing') : t('map.addTrunkBranch')}</span>
           </button>
 
           {/* Botón para crear nueva mufa de empalme (Arrastrable hacia el mapa) */}
@@ -1645,7 +1647,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           >
             <GripVertical className="w-3 h-3 text-amber-500/70 shrink-0" />
             <GitCommit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span>+ Mufa</span>
+            <span>{t('map.addClosure')}</span>
           </button>
 
           {/* Botón para registrar nuevo poste (Arrastrable hacia el mapa) */}
@@ -1666,7 +1668,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           >
             <GripVertical className="w-3 h-3 text-rose-500/70 shrink-0" />
             <MapPin className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
-            <span>+ Poste</span>
+            <span>{t('map.addPole')}</span>
           </button>
 
           {/* Botón para registrar nueva gasa de reserva (Arrastrable hacia el mapa) */}
@@ -1687,7 +1689,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           >
             <GripVertical className="w-3 h-3 text-blue-500/70 shrink-0" />
             <span className="font-bold text-blue-600 dark:text-blue-400 text-sm leading-none shrink-0">∞</span>
-            <span>+ Gasa</span>
+            <span>{t('map.addSlack')}</span>
           </button>
 
           {/* Botón para registrar nueva caja NAP con icono de cajita */}
@@ -1709,7 +1711,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             >
               <GripVertical className="w-3 h-3 text-sky-500/70 shrink-0" />
               <Box className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-              <span>+ Caja NAP</span>
+              <span>{t('map.addNap')}</span>
             </button>
           )}
 
@@ -1731,7 +1733,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
               title="Calcular ruta vial de llegada desde la Empresa hacia la caja seleccionada"
             >
               <Navigation className="w-3.5 h-3.5 shrink-0" />
-              <span>{isRouteActive ? 'Ocultar Ruta' : 'Ruta a Caja'}</span>
+              <span>{isRouteActive ? t('map.hideRoute') : t('map.routeToNap')}</span>
             </button>
           )}
         </div>

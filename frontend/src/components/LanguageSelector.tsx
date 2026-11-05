@@ -8,7 +8,7 @@ interface LanguageSelectorProps {
 }
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = 'navbar' }) => {
-  const { language, setLanguage, languages, currentLanguageOption } = useLanguage();
+  const { language, setLanguage, languages, currentLanguageOption, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +32,17 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = 'n
     setIsOpen(false);
   };
 
+  const getDropdownHeaderTitle = () => {
+    switch (language) {
+      case 'en':
+        return 'Select Language';
+      case 'pt':
+        return 'Selecionar Idioma';
+      default:
+        return 'Seleccionar Idioma';
+    }
+  };
+
   return (
     <div className="relative inline-block text-left" ref={containerRef}>
       <button
@@ -42,11 +53,16 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = 'n
             ? 'px-3 py-1.5 text-xs bg-slate-800/90 hover:bg-slate-700/90 border-slate-700 text-slate-200'
             : 'p-1.5 sm:px-2.5 sm:py-1 text-xs border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
         }`}
-        title="Cambiar idioma / Switch language / Mudar idioma"
+        title={t('nav.language')}
         aria-expanded={isOpen}
       >
         <Globe className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-        <span className="font-mono font-bold text-[11px] tracking-wide">{currentLanguageOption.badge}</span>
+        <span className="hidden sm:inline font-semibold text-xs whitespace-nowrap">
+          {currentLanguageOption.label}
+        </span>
+        <span className="sm:hidden font-mono font-bold text-[11px] tracking-wide">
+          {currentLanguageOption.badge}
+        </span>
         <ChevronDown
           className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
@@ -55,9 +71,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = 'n
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1.5 w-48 rounded-xl shadow-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-1.5 z-50 animate-fadeIn text-slate-800 dark:text-slate-100 divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="absolute right-0 mt-1.5 w-52 rounded-xl shadow-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-1.5 z-[100] animate-fadeIn text-slate-800 dark:text-slate-100 divide-y divide-slate-100 dark:divide-slate-800">
           <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            Seleccionar Idioma
+            {getDropdownHeaderTitle()}
           </div>
           <div className="py-1">
             {languages.map((item) => {

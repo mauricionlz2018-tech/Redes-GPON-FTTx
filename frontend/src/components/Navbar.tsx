@@ -87,30 +87,30 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="bg-white/95 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 backdrop-blur sticky top-0 z-30 w-full overflow-hidden transition-colors">
-        <div className="max-w-7xl mx-auto px-2 sm:px-6">
+      <header className="bg-white/95 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 backdrop-blur sticky top-0 z-40 w-full overflow-visible transition-colors">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between h-14 gap-1.5 sm:gap-2">
             {/* Logo y Nombre de la Empresa */}
-            <Link to="/mapa" className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0 group">
-              <div className="bg-white p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center h-8 sm:h-10 shrink-0">
+            <Link to="/mapa" className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink-0 group">
+              <div className="bg-white p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center h-8 sm:h-9 shrink-0">
                 <img
                   src="/logo-gpon.png"
                   alt="Gpon Telecom"
-                  className="h-6 sm:h-8 w-auto object-contain"
+                  className="h-6 sm:h-7 w-auto object-contain"
                 />
               </div>
               <div className="min-w-0">
-                <span className="font-bold text-xs sm:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+                <span className="font-bold text-xs sm:text-sm lg:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
                   GPON TELECOM
                 </span>
-                <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 -mt-0.5 hidden md:block truncate">
+                <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 -mt-0.5 hidden xl:block truncate">
                   {t('nav.brandSubtitle')}
                 </p>
               </div>
             </Link>
 
-            {/* Navegación Principal en Desktop */}
-            <nav className="hidden sm:flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            {/* Navegación Principal en Desktop / Tablet */}
+            <nav className="hidden sm:flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = location.pathname === link.to;
@@ -118,39 +118,40 @@ export const Navbar: React.FC = () => {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 px-2.5 lg:px-3 py-1.5 rounded-lg text-xs lg:text-sm font-medium transition-colors ${
                       isActive
                         ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-semibold'
                         : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    <span>{link.label}</span>
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="hidden lg:inline whitespace-nowrap">{link.label}</span>
+                    <span className="lg:hidden whitespace-nowrap">{link.label.split(' ')[0]}</span>
                   </Link>
                 );
               })}
             </nav>
 
             {/* Acciones derechas: Selector de Idioma, Tema, APK, Red y Perfil */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              {/* Selector Multilingüe (ES, EN, PT) */}
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+              {/* Selector Multilingüe (Español, English, Português) */}
               <LanguageSelector variant="navbar" />
 
               {/* Botón Conmutador de Modo Claro / Oscuro */}
               <button
                 onClick={toggleTheme}
-                className="flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-xs font-semibold shadow-sm"
+                className="flex items-center justify-center gap-1.5 p-1.5 sm:px-2 sm:py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-xs font-semibold shadow-xs"
                 title={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
               >
                 {theme === 'dark' ? (
                   <>
-                    <Sun className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="hidden lg:inline text-[11px]">{t('nav.themeLight')}</span>
+                    <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span className="hidden xl:inline text-[11px]">{t('nav.themeLight')}</span>
                   </>
                 ) : (
                   <>
-                    <Moon className="w-3.5 h-3.5 text-sky-600" />
-                    <span className="hidden lg:inline text-[11px]">{t('nav.themeDark')}</span>
+                    <Moon className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                    <span className="hidden xl:inline text-[11px]">{t('nav.themeDark')}</span>
                   </>
                 )}
               </button>
@@ -158,7 +159,7 @@ export const Navbar: React.FC = () => {
               {/* Botón de Descarga APK Móvil */}
               <button
                 onClick={handleInstallClick}
-                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 font-bold text-[11px] sm:text-xs transition-all shadow-xs active:scale-95 cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-lg border border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 font-bold text-[11px] transition-all shadow-xs active:scale-95 cursor-pointer"
                 title="Centro de Descarga e Instalación Móvil (APK / PWA)"
               >
                 <Download className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
@@ -172,16 +173,16 @@ export const Navbar: React.FC = () => {
                     className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 p-1 sm:px-2 sm:py-1 rounded-full border border-emerald-500/20"
                     title="Conexión en línea activa"
                   >
-                    <Wifi className="w-3.5 h-3.5" />
-                    <span className="hidden md:inline">{t('nav.online')}</span>
+                    <Wifi className="w-3.5 h-3.5 shrink-0" />
+                    <span className="hidden xl:inline">{t('nav.online')}</span>
                   </div>
                 ) : (
                   <div
                     className="flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 p-1 sm:px-2 sm:py-1 rounded-full border border-amber-500/20 animate-pulse"
                     title="Sin conexión a internet. Modo Offline"
                   >
-                    <WifiOff className="w-3.5 h-3.5" />
-                    <span className="hidden md:inline">{t('nav.offline')}</span>
+                    <WifiOff className="w-3.5 h-3.5 shrink-0" />
+                    <span className="hidden xl:inline">{t('nav.offline')}</span>
                   </div>
                 )}
 
@@ -199,15 +200,15 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
 
-              {/* Perfil de Usuario (Abre modal de perfil y opción para cerrar sesión) */}
-              <div className="flex items-center border-l border-slate-200 dark:border-slate-800 pl-1.5 sm:pl-2">
+              {/* Perfil de Usuario */}
+              <div className="flex items-center border-l border-slate-200 dark:border-slate-800 pl-1 sm:pl-1.5">
                 <button
                   onClick={() => setIsEditUserOpen(true)}
                   className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-left group cursor-pointer"
                   title="Ver perfil de usuario y opciones de cuenta"
                 >
-                  <div className="text-right hidden sm:block">
-                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors truncate max-w-[120px]">
+                  <div className="text-right hidden lg:block">
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors truncate max-w-[110px]">
                       {user.nombre_completo.split('(')[0]}
                     </p>
                     <span
