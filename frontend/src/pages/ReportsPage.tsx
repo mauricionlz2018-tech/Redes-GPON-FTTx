@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { NapBox } from '../types';
 import { mockNaps } from '../data/mockGponData';
+import { useLanguage } from '../context/LanguageContext';
+import { sanitizeNaps } from '../utils/safeJson';
 import api from '../api/client';
 import { getCachedNapsSync, saveCachedNaps } from '../services/realtimeSync';
 import { ReportPreviewModal } from '../components/ReportPreviewModal';
@@ -34,7 +36,7 @@ const getCleanNaps = (rawNaps: NapBox[]): NapBox[] => {
     const cust = localStorage.getItem('gpon_custom_naps');
     if (cust) {
       const parsed = JSON.parse(cust);
-      if (Array.isArray(parsed)) customNaps = parsed.filter(Boolean);
+      if (Array.isArray(parsed)) customNaps = sanitizeNaps(parsed.filter(Boolean));
     }
   } catch {}
 
@@ -77,6 +79,7 @@ const getCleanNaps = (rawNaps: NapBox[]): NapBox[] => {
 };
 
 export const ReportsPage: React.FC = () => {
+  const { t } = useLanguage();
   // Carga instantánea de NAPs desde caché local en 0ms para evitar mostrar 0 mientras se conecta al servidor
   const [naps, setNaps] = useState<NapBox[]>(() => {
     const cached = getCachedNapsSync();
@@ -158,10 +161,10 @@ export const ReportsPage: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <FileText className="w-5 h-5 text-sky-500 dark:text-sky-400" />
-            Reportes e Indicadores de Saturación GPON
+            {t('reports.title')}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Métricas de capacidad de red y exportación de reportes ejecutivos en PDF de alta fidelidad.
+            {t('reports.subtitle')}
           </p>
         </div>
 
@@ -173,7 +176,7 @@ export const ReportsPage: React.FC = () => {
             title="Abrir vista previa del reporte ejecutivo y descargar en PDF"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Descargar Reporte PDF</span>
+            <span>{t('reports.downloadPdf')}</span>
           </button>
         </div>
       </div>
@@ -182,7 +185,7 @@ export const ReportsPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Cajas NAP Activas</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reports.activeNaps')}</span>
             <div className="p-2 bg-sky-500/10 text-sky-600 dark:text-sky-400 rounded-lg">
               <Network className="w-4 h-4" />
             </div>
@@ -193,7 +196,7 @@ export const ReportsPage: React.FC = () => {
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total de Puertos</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reports.totalPorts')}</span>
             <div className="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg">
               <Server className="w-4 h-4" />
             </div>
@@ -204,7 +207,7 @@ export const ReportsPage: React.FC = () => {
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Abonados Conectados</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reports.connectedClients')}</span>
             <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
               <Users className="w-4 h-4" />
             </div>
@@ -215,7 +218,7 @@ export const ReportsPage: React.FC = () => {
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Saturación Global</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('reports.globalSaturation')}</span>
             <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">
               <BarChart3 className="w-4 h-4" />
             </div>
@@ -243,10 +246,10 @@ export const ReportsPage: React.FC = () => {
         <div className="px-4 py-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 transition-colors">
           <div>
             <span className="font-semibold text-xs text-slate-800 dark:text-white uppercase tracking-wider block">
-              Matriz de Estado y Saturación por Caja de Distribución (NAP)
+              {t('reports.matrixTitle')}
             </span>
             <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              Criterio de Alerta &ge; 80% • Mostrando 20 cajas por página
+              {t('reports.matrixSubtitle')}
             </span>
           </div>
 
@@ -283,13 +286,13 @@ export const ReportsPage: React.FC = () => {
           <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
             <thead className="bg-slate-100 dark:bg-slate-950/60 text-slate-600 dark:text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="px-4 py-3">Identificador</th>
-                <th className="px-4 py-3">Zona / Cobertura</th>
-                <th className="px-4 py-3 text-center">Puertos Totales</th>
-                <th className="px-4 py-3 text-center">Libres</th>
-                <th className="px-4 py-3 text-center">Ocupados</th>
-                <th className="px-4 py-3">Saturación</th>
-                <th className="px-4 py-3">Diagnóstico</th>
+                <th className="px-4 py-3">{t('reports.colId')}</th>
+                <th className="px-4 py-3">{t('reports.colZone')}</th>
+                <th className="px-4 py-3 text-center">{t('reports.colTotalPorts')}</th>
+                <th className="px-4 py-3 text-center">{t('reports.colFree')}</th>
+                <th className="px-4 py-3 text-center">{t('reports.colOccupied')}</th>
+                <th className="px-4 py-3">{t('reports.colSaturation')}</th>
+                <th className="px-4 py-3">{t('reports.colStatus')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -326,15 +329,15 @@ export const ReportsPage: React.FC = () => {
                     <td className="px-4 py-3">
                       {pct >= 100 ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30">
-                          <AlertTriangle className="w-3 h-3" /> SATURADA
+                          <AlertTriangle className="w-3 h-3" /> {t('reports.saturated')}
                         </span>
                       ) : pct >= 80 ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                          <AlertTriangle className="w-3 h-3" /> EN ALERTA
+                          <AlertTriangle className="w-3 h-3" /> {t('reports.alert')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                          <CheckCircle2 className="w-3 h-3" /> DISPONIBLE
+                          <CheckCircle2 className="w-3 h-3" /> {t('reports.available')}
                         </span>
                       )}
                     </td>
@@ -344,7 +347,7 @@ export const ReportsPage: React.FC = () => {
               {filteredNaps.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
-                    No se encontraron cajas NAP con los criterios de búsqueda especificados.
+                    {t('reports.noNaps')}
                   </td>
                 </tr>
               )}

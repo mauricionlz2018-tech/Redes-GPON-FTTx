@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { User, UserRole } from '../types';
 import api from '../api/client';
 import { CreateUserModal } from '../components/CreateUserModal';
@@ -67,6 +68,7 @@ import { subscribeToRealtime } from '../services/realtimeSync';
 
 export const UsersManagementPage: React.FC = () => {
   const { user: currentUser } = useAuth();
+  const { t } = useLanguage();
 
   // Carga instantánea de usuarios desde caché en 0ms
   const [users, setUsers] = useState<User[]>(() => {
@@ -269,10 +271,10 @@ export const UsersManagementPage: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <UserCog className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-            <span>Gestión de Personal y Técnicos</span>
+            <span>{t('users.title')}</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Administración de cuadrillas de campo, técnicos de empalme, personal de soporte y administradores.
+            {t('users.subtitle')}
           </p>
         </div>
 
@@ -291,7 +293,7 @@ export const UsersManagementPage: React.FC = () => {
             className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
           >
             <UserPlus className="w-4 h-4 shrink-0" />
-            <span>Agregar Personal</span>
+            <span>{t('users.addStaff')}</span>
           </button>
         </div>
       </div>
@@ -328,7 +330,7 @@ export const UsersManagementPage: React.FC = () => {
         {/* Total Personal */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Personal</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('users.totalStaff')}</span>
             <div className="p-2 bg-sky-500/10 text-sky-600 dark:text-sky-400 rounded-lg">
               <UserCog className="w-4 h-4" />
             </div>
@@ -340,7 +342,7 @@ export const UsersManagementPage: React.FC = () => {
         {/* Técnicos de Campo */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Técnicos de Campo</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('users.fieldTechs')}</span>
             <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">
               <Wrench className="w-4 h-4" />
             </div>
@@ -352,7 +354,7 @@ export const UsersManagementPage: React.FC = () => {
         {/* Soporte Técnico */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Soporte Técnico</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('users.supportStaff')}</span>
             <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
               <ShieldAlert className="w-4 h-4" />
             </div>
@@ -364,7 +366,7 @@ export const UsersManagementPage: React.FC = () => {
         {/* Administradores */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm dark:shadow-md transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Administradores</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('users.administrators')}</span>
             <div className="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg">
               <Shield className="w-4 h-4" />
             </div>
@@ -414,18 +416,18 @@ export const UsersManagementPage: React.FC = () => {
           <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
             <thead className="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="px-4 py-3">Personal</th>
-                <th className="px-4 py-3">Credencial / Acceso</th>
-                <th className="px-4 py-3">Rol Asignado</th>
-                <th className="px-4 py-3 hidden md:table-cell">Fecha de Registro</th>
-                <th className="px-4 py-3 text-right">Acciones</th>
+                <th className="px-4 py-3">{t('users.colStaff')}</th>
+                <th className="px-4 py-3">{t('users.colCredential')}</th>
+                <th className="px-4 py-3">{t('users.colRole')}</th>
+                <th className="px-4 py-3 hidden md:table-cell">{t('users.colDate')}</th>
+                <th className="px-4 py-3 text-right">{t('users.colActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {paginatedUsers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-slate-500 dark:text-slate-400">
-                    No se encontraron usuarios que coincidan con la búsqueda o filtro aplicado.
+                    {t('users.noStaff')}
                   </td>
                 </tr>
               ) : (

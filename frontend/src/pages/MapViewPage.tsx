@@ -271,7 +271,9 @@ export const MapViewPage: React.FC = () => {
       const s = localStorage.getItem(key);
       if (!s) return [];
       const parsed = JSON.parse(s);
-      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      if (!Array.isArray(parsed)) return [];
+      const filtered = parsed.filter(Boolean);
+      return key === 'gpon_custom_naps' ? (sanitizeNaps(filtered) as unknown as T[]) : filtered;
     } catch {
       return [];
     }

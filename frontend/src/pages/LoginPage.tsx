@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import api from '../api/client';
 import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { LanguageSelector } from '../components/LanguageSelector';
 import { DataDisclaimerModal } from '../components/DataDisclaimerModal';
 import { PasswordRecoveryModal } from '../components/PasswordRecoveryModal';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const [credencial, setCredencial] = useState('');
@@ -74,7 +77,7 @@ export const LoginPage: React.FC = () => {
       if (success) {
         navigate('/mapa');
       } else {
-        setErrorMsg('Credenciales inválidas. Verifica tu usuario/correo y contraseña.');
+        setErrorMsg(t('login.invalidCredentials'));
       }
     } finally {
       setLoading(false);
@@ -89,6 +92,11 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-8 sm:py-12 sm:px-6 lg:px-8 relative overflow-hidden transition-colors">
+      {/* Selector de Idioma Flotante Superior */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageSelector variant="login" />
+      </div>
+
       {/* Fondo con resplandor sutil de fibra óptica */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -107,6 +115,9 @@ export const LoginPage: React.FC = () => {
         <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
           GPON TELECOM
         </h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          {t('login.subtitle')}
+        </p>
       </div>
 
       {/* Tarjeta Principal de Inicio de Sesión */}
@@ -129,7 +140,7 @@ export const LoginPage: React.FC = () => {
             {/* Campo: Correo o Usuario */}
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Correo o Usuario
+                {t('login.credentialLabel')}
               </label>
               <div className="relative rounded-lg shadow-xs">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
@@ -138,7 +149,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   type="text"
                   required
-                  placeholder="ej. tecnico@gpon.com o tecnico"
+                  placeholder={t('login.credentialPlaceholder')}
                   value={credencial}
                   onChange={(e) => setCredencial(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:bg-white"
@@ -150,14 +161,14 @@ export const LoginPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Contraseña
+                  {t('login.passwordLabel')}
                 </label>
                 <button
                   type="button"
                   onClick={() => setIsRecoveryOpen(true)}
                   className="text-[11px] text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-semibold hover:underline cursor-pointer"
                 >
-                  ¿Olvidaste tu contraseña?
+                  {t('login.forgotPassword')}
                 </button>
               </div>
               <div className="relative rounded-lg shadow-xs">
@@ -193,7 +204,7 @@ export const LoginPage: React.FC = () => {
                   className="w-3.5 h-3.5 rounded text-sky-600 focus:ring-sky-500 border-slate-300 dark:border-slate-700 dark:bg-slate-800 cursor-pointer"
                 />
                 <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-                  Recordar contraseña e inicio automático
+                  {t('login.rememberMe')}
                 </span>
               </label>
             </div>
@@ -204,7 +215,7 @@ export const LoginPage: React.FC = () => {
               disabled={loading}
               className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-md shadow-sky-900/20 disabled:opacity-50 active:scale-98 cursor-pointer"
             >
-              <span>{loading ? 'Iniciando sesión...' : 'Ingresar al Sistema'}</span>
+              <span>{loading ? t('login.loadingBtn') : t('login.submitBtn')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -216,7 +227,7 @@ export const LoginPage: React.FC = () => {
               onClick={() => setIsDisclaimerOpen(true)}
               className="text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:underline font-medium cursor-pointer transition-colors"
             >
-              Aviso de Privacidad
+              {t('login.privacyNotice')}
             </button>
           </div>
 

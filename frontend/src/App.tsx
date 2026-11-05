@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NetworkProvider } from './context/NetworkContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -60,55 +61,57 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
 export const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <NetworkProvider>
-        <Router>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
+    <LanguageProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <NetworkProvider>
+            <Router>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
 
-            <Route
-              path="/mapa"
-              element={
-                <ProtectedLayout>
-                  <MapViewPage />
-                </ProtectedLayout>
-              }
-            />
+                <Route
+                  path="/mapa"
+                  element={
+                    <ProtectedLayout>
+                      <MapViewPage />
+                    </ProtectedLayout>
+                  }
+                />
 
-            <Route
-              path="/clientes"
-              element={
-                <ProtectedLayout>
-                  <ClientsPage />
-                </ProtectedLayout>
-              }
-            />
+                <Route
+                  path="/clientes"
+                  element={
+                    <ProtectedLayout>
+                      <ClientsPage />
+                    </ProtectedLayout>
+                  }
+                />
 
-            <Route
-              path="/reportes"
-              element={
-                <ProtectedLayout>
-                  <ReportsPage />
-                </ProtectedLayout>
-              }
-            />
+                <Route
+                  path="/reportes"
+                  element={
+                    <ProtectedLayout>
+                      <ReportsPage />
+                    </ProtectedLayout>
+                  }
+                />
 
-            <Route
-              path="/usuarios"
-              element={
-                <ProtectedLayout>
-                  <UsersManagementPage />
-                </ProtectedLayout>
-              }
-            />
+                <Route
+                  path="/usuarios"
+                  element={
+                    <ProtectedLayout>
+                      <UsersManagementPage />
+                    </ProtectedLayout>
+                  }
+                />
 
-            <Route path="*" element={<Navigate to="/mapa" replace />} />
-          </Routes>
-        </Router>
-      </NetworkProvider>
-    </AuthProvider>
-    </ThemeProvider>
+                <Route path="*" element={<Navigate to="/mapa" replace />} />
+              </Routes>
+            </Router>
+          </NetworkProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 };
 

@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNetwork } from '../context/NetworkContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { LanguageSelector } from './LanguageSelector';
 import { EditUserModal } from './EditUserModal';
 import { InstallPwaModal } from './InstallPwaModal';
 import {
@@ -26,6 +28,7 @@ export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { isOnline, pendingCount, isSyncing, syncNow } = useNetwork();
   const { theme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
   const location = useLocation();
 
   if (!user) return null;
@@ -63,11 +66,11 @@ export const Navbar: React.FC = () => {
   };
 
   const navLinks = [
-    { to: '/mapa', label: 'Mapa de Red', icon: MapPin },
-    { to: '/clientes', label: 'Abonados', icon: Users },
-    { to: '/reportes', label: 'Reportes PDF', icon: FileText },
+    { to: '/mapa', label: t('nav.map'), icon: MapPin },
+    { to: '/clientes', label: t('nav.clients'), icon: Users },
+    { to: '/reportes', label: t('nav.reports'), icon: FileText },
     ...(user.rol === 'Admin'
-      ? [{ to: '/usuarios', label: 'Personal', icon: UserCog }]
+      ? [{ to: '/usuarios', label: t('nav.users'), icon: UserCog }]
       : [])
   ];
 
@@ -101,7 +104,7 @@ export const Navbar: React.FC = () => {
                   GPON TELECOM
                 </span>
                 <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 -mt-0.5 hidden md:block truncate">
-                  Inventario y Mapeo Lógico de Fibra
+                  {t('nav.brandSubtitle')}
                 </p>
               </div>
             </Link>
@@ -128,8 +131,11 @@ export const Navbar: React.FC = () => {
               })}
             </nav>
 
-            {/* Acciones derechas: Tema, APK, Red y Perfil */}
+            {/* Acciones derechas: Selector de Idioma, Tema, APK, Red y Perfil */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              {/* Selector Multilingüe (ES, EN, PT) */}
+              <LanguageSelector variant="navbar" />
+
               {/* Botón Conmutador de Modo Claro / Oscuro */}
               <button
                 onClick={toggleTheme}
@@ -139,12 +145,12 @@ export const Navbar: React.FC = () => {
                 {theme === 'dark' ? (
                   <>
                     <Sun className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="hidden lg:inline text-[11px]">Claro</span>
+                    <span className="hidden lg:inline text-[11px]">{t('nav.themeLight')}</span>
                   </>
                 ) : (
                   <>
                     <Moon className="w-3.5 h-3.5 text-sky-600" />
-                    <span className="hidden lg:inline text-[11px]">Oscuro</span>
+                    <span className="hidden lg:inline text-[11px]">{t('nav.themeDark')}</span>
                   </>
                 )}
               </button>
@@ -167,7 +173,7 @@ export const Navbar: React.FC = () => {
                     title="Conexión en línea activa"
                   >
                     <Wifi className="w-3.5 h-3.5" />
-                    <span className="hidden md:inline">En Línea</span>
+                    <span className="hidden md:inline">{t('nav.online')}</span>
                   </div>
                 ) : (
                   <div
@@ -175,7 +181,7 @@ export const Navbar: React.FC = () => {
                     title="Sin conexión a internet. Modo Offline"
                   >
                     <WifiOff className="w-3.5 h-3.5" />
-                    <span className="hidden md:inline">Offline</span>
+                    <span className="hidden md:inline">{t('nav.offline')}</span>
                   </div>
                 )}
 
@@ -188,7 +194,7 @@ export const Navbar: React.FC = () => {
                     title="Sincronizar cambios pendientes con el servidor"
                   >
                     <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
-                    <span className="hidden sm:inline">Sync</span> ({pendingCount})
+                    <span className="hidden sm:inline">{t('nav.sync')}</span> ({pendingCount})
                   </button>
                 )}
               </div>

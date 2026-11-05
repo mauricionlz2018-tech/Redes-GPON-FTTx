@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import {
   Bot,
   X,
@@ -285,6 +286,7 @@ interface ActiveViewDetail {
 
 export const AssistantChatbot: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGuide, setSelectedGuide] = useState<ActiveViewDetail | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -371,13 +373,13 @@ export const AssistantChatbot: React.FC = () => {
           <button
             onClick={() => setIsOpen(true)}
             className="flex items-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-medium text-xs sm:text-sm px-3.5 py-2.5 sm:px-4 sm:py-2.5 rounded-full shadow-lg shadow-sky-950/25 hover:shadow-sky-600/30 transition-all duration-200 active:scale-95 cursor-pointer border border-sky-400/40 group"
-            title="Abrir Asistente y Guía Paso a Paso GPON"
+            title={t('chatbot.buttonTitle')}
           >
             <div className="relative">
               <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full border-2 border-sky-700" />
             </div>
-            <span className="tracking-wide">Asistente GPON</span>
+            <span className="tracking-wide">{t('chatbot.buttonText')}</span>
             <Sparkles className="w-3.5 h-3.5 text-sky-200 group-hover:rotate-12 transition-transform" />
           </button>
         )}
@@ -395,15 +397,15 @@ export const AssistantChatbot: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-sm text-white tracking-tight">
-                    Asistente Técnico GPON
+                    {t('chatbot.title')}
                   </h3>
                   <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-400/20 text-emerald-100 px-2 py-0.5 rounded-full font-medium border border-emerald-400/30">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
-                    Paso a Paso
+                    {t('chatbot.stepByStep')}
                   </span>
                 </div>
                 <p className="text-[11px] text-sky-100 opacity-90">
-                  Ayuda técnica y procedimientos del sistema
+                  {t('chatbot.subtitle')}
                 </p>
               </div>
             </div>
@@ -645,13 +647,13 @@ export const AssistantChatbot: React.FC = () => {
           <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-              GPON Telecom • Guía Paso a Paso
+              GPON Telecom • {t('chatbot.stepByStep')}
             </span>
             <button
               onClick={() => setIsOpen(false)}
               className="text-sky-600 dark:text-sky-400 font-medium hover:underline cursor-pointer"
             >
-              Cerrar
+              {t('chatbot.close')}
             </button>
           </div>
         </div>

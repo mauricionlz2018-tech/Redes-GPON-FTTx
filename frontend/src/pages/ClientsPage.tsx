@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Client } from '../types';
 import { mockNaps } from '../data/mockGponData';
+import { useLanguage } from '../context/LanguageContext';
 import api from '../api/client';
 import {
   getCachedClientsSync,
@@ -12,6 +13,7 @@ import { EditClientModal } from '../components/EditClientModal';
 import { TablePagination } from '../components/TablePagination';
 
 export const ClientsPage: React.FC = () => {
+  const { t } = useLanguage();
   // Carga instantánea de clientes desde caché local en 0ms
   const [clients, setClients] = useState<Client[]>(() => getCachedClientsSync());
   const [search, setSearch] = useState('');
@@ -141,20 +143,20 @@ export const ClientsPage: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-            Padrón de Abonados Conectados
+            {t('clients.title')}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Consulta y administración de clientes vinculados a puertos de cajas NAP.
+            {t('clients.subtitle')}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-            Total activos: <strong className="text-sky-600 dark:text-sky-400">{filteredClients.length}</strong>
+            {t('clients.totalActive')}: <strong className="text-sky-600 dark:text-sky-400">{filteredClients.length}</strong>
           </span>
           <button
             onClick={() => fetchClients(true)}
-            className="p-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 shadow-sm"
+            className="p-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
             title="Recargar abonados"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -189,7 +191,7 @@ export const ClientsPage: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3 pointer-events-none" />
           <input
             type="text"
-            placeholder="Buscar por abonado, código, MAC, dirección o caja..."
+            placeholder={t('clients.searchPlaceholder')}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -213,7 +215,7 @@ export const ClientsPage: React.FC = () => {
 
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-          <span className="text-xs text-slate-600 dark:text-slate-400">Marca ONT:</span>
+          <span className="text-xs text-slate-600 dark:text-slate-400">{t('clients.filterBrand')}:</span>
           <select
             value={brandFilter}
             onChange={(e) => {
@@ -222,7 +224,7 @@ export const ClientsPage: React.FC = () => {
             }}
             className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 cursor-pointer"
           >
-            <option value="todas">Todas las marcas</option>
+            <option value="todas">{t('clients.allBrands')}</option>
             <option value="ZTE">ZTE</option>
             <option value="Huawei">Huawei</option>
             <option value="V-SOL">V-SOL</option>
@@ -237,14 +239,14 @@ export const ClientsPage: React.FC = () => {
           <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
             <thead className="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="px-4 py-3">Código</th>
-                <th className="px-4 py-3">Nombre del Abonado</th>
-                <th className="px-4 py-3">NAP / Puerto</th>
-                <th className="px-4 py-3">Equipo ONT</th>
-                <th className="px-4 py-3">MAC ONT</th>
-                <th className="px-4 py-3">Potencia Rx</th>
-                <th className="px-4 py-3">Dirección</th>
-                <th className="px-4 py-3 text-right">Acciones</th>
+                <th className="px-4 py-3">{t('clients.colCode')}</th>
+                <th className="px-4 py-3">{t('clients.colName')}</th>
+                <th className="px-4 py-3">{t('clients.colNap')}</th>
+                <th className="px-4 py-3">{t('clients.colOnt')}</th>
+                <th className="px-4 py-3">{t('clients.colMac')}</th>
+                <th className="px-4 py-3">{t('clients.colPower')}</th>
+                <th className="px-4 py-3">{t('clients.colAddress')}</th>
+                <th className="px-4 py-3 text-right">{t('clients.colActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -275,7 +277,7 @@ export const ClientsPage: React.FC = () => {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-400 dark:text-slate-500">Sin NAP asignada</span>
+                        <span className="text-slate-400 dark:text-slate-500">{t('clients.noNap')}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
@@ -299,7 +301,7 @@ export const ClientsPage: React.FC = () => {
                         title="Editar datos del abonado"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
-                        <span>Editar</span>
+                        <span>{t('common.edit')}</span>
                       </button>
                     </td>
                   </tr>
@@ -308,7 +310,7 @@ export const ClientsPage: React.FC = () => {
               {filteredClients.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
-                    No se encontraron abonados con los criterios de búsqueda especificados.
+                    {t('clients.noClients')}
                   </td>
                 </tr>
               )}

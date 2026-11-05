@@ -84,3 +84,4 @@ export const sanitizeNaps = <T extends Record<string, any>>(naps: T[]): T[] => {
   if (!Array.isArray(naps)) return [];
   return naps.map(sanitizeNap);
 };
+
