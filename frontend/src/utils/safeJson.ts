@@ -85,3 +85,30 @@ export const sanitizeNaps = <T extends Record<string, any>>(naps: T[]): T[] => {
   return naps.map(sanitizeNap);
 };
 
+
+/**
+ * Instala un escudo global sobre JSON.stringify que intercepta automáticamente
+ * cualquier intento de serializar estructuras circulares en toda la aplicación,
+ * devolviendo una versión limpia e impidiendo que se lance TypeError hacia ErrorBoundary.
+ */
+export const installGlobalJsonShield = (): void => {
+  if (typeof window === 'undefined') return;
+  if ((JSON as any).__gpon_shield_installed) return;
+
+  const originalStringify = JSON.stringify;
+  (JSON as any).__gpon_shield_installed = true;
+  JSON.stringify = function (value: any, replacer?: any, space?: any) {
+    try {
+      return originalStringify(value, replacer, space);
+    } catch (err: any) {
+      if (err && typeof err.message === 'string' && err.message.toLowerCase().includes('circular')) {
+        console.warn('[GPON Shield] Referencia circular interceptada de forma segura en JSON.stringify');
+        return safeJsonStringify(value, space);
+      }
+      throw err;
+    }
+  };
+};
+
+// Auto-instalar escudo al cargar el modulo
+installGlobalJsonShield();

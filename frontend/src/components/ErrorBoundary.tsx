@@ -26,11 +26,14 @@ export class ErrorBoundary extends Component<Props, State> {
   private handleReload = () => {
     try {
       sessionStorage.clear();
-      localStorage.removeItem('gpon_naps_cache');
-      localStorage.removeItem('gpon_clients_cache');
-      localStorage.removeItem('gpon_realtime_events_queue');
-      localStorage.removeItem('gpon_realtime_event_signal');
-      localStorage.removeItem('gpon_custom_naps');
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('gpon_') || key.includes('cache') || key.includes('nap'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
     } catch {}
     window.location.reload();
   };

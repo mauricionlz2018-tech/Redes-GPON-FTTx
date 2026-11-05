@@ -185,7 +185,7 @@ export const getCachedClientsSync = (): Client[] => {
           ...port.cliente,
           puerto_nap: {
             ...port,
-            caja_nap: nap
+            caja_nap: { id_nap: nap.id_nap, identificador: nap.identificador, zona: nap.zona, direccion_texto: nap.direccion_texto, coordenadas_gps: nap.coordenadas_gps, total_puertos: nap.total_puertos } as any
           }
         });
       }
