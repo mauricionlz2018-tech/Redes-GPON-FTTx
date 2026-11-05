@@ -71,7 +71,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = 'n
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1.5 w-52 rounded-xl shadow-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-1.5 z-[100] animate-fadeIn text-slate-800 dark:text-slate-100 divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="absolute right-0 mt-1.5 w-44 sm:w-52 max-w-[calc(100vw-1rem)] rounded-xl shadow-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-1.5 z-[100] animate-fadeIn text-slate-800 dark:text-slate-100 divide-y divide-slate-100 dark:divide-slate-800">
           <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             {getDropdownHeaderTitle()}
           </div>

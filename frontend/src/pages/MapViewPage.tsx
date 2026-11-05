@@ -1512,13 +1512,13 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
           </div>
 
           {/* Botones Descargar KMZ, Expandir Mapa y Actualizar a la derecha */}
-          <div className="flex items-center justify-end shrink-0 gap-1.5 sm:gap-2 w-full sm:w-auto">
+          <div className="grid grid-cols-4 sm:flex sm:items-center sm:justify-end gap-1.5 sm:gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={() => {
                 setIsMapExpanded(true);
                 setIsExpandedDrawerOpen(false);
               }}
-              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-2.5 sm:px-3 rounded-lg border border-sky-500 transition-all shadow-xs active:scale-95 cursor-pointer flex-1 sm:flex-initial whitespace-nowrap"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-1.5 sm:px-3 rounded-lg border border-sky-500 transition-all shadow-xs active:scale-95 cursor-pointer w-full sm:w-auto whitespace-nowrap"
               title="Expandir el mapa a pantalla completa y ocultar paneles"
             >
               <Maximize2 className="w-3.5 h-3.5 shrink-0" />
@@ -1539,7 +1539,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             <button
               onClick={() => kmzFileInputRef.current?.click()}
               disabled={isParsingKmz}
-              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold px-2 sm:px-3 rounded-lg border border-teal-500 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial whitespace-nowrap"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold px-1.5 sm:px-3 rounded-lg border border-teal-500 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer w-full sm:w-auto whitespace-nowrap"
               title="Subir archivo KMZ o KML de Google Earth para vista previa, edición y agregación a la red"
             >
               <Upload className={`w-3.5 h-3.5 shrink-0 ${isParsingKmz ? 'animate-spin' : ''}`} />
@@ -1550,7 +1550,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
             <button
               onClick={handleExportKmz}
               disabled={isExportingKmz}
-              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-2 sm:px-3 rounded-lg border border-emerald-500 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial whitespace-nowrap"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-1.5 sm:px-3 rounded-lg border border-emerald-500 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer w-full sm:w-auto whitespace-nowrap"
               title="Descargar toda la infraestructura geográfica de la red (cajas NAP, fibra óptica, mufas y postes) en archivo KMZ para Google Earth"
             >
               <Download className={`w-3.5 h-3.5 shrink-0 ${isExportingKmz ? 'animate-bounce' : ''}`} />
@@ -1573,7 +1573,7 @@ const saveKnownServerIds = (key: string, ids: Set<string>) => {
                 setTimeout(() => setFeedbackNotice(null), 4000);
               }}
               disabled={loading}
-              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-2 sm:px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer flex-1 sm:flex-initial whitespace-nowrap"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 h-9 min-h-[36px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-1.5 sm:px-3.5 rounded-lg border border-slate-300 dark:border-slate-700 transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer w-full sm:w-auto whitespace-nowrap"
               title="Actualizar datos de la red y comprobar nueva versión"
             >
               <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />

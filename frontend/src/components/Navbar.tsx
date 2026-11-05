@@ -100,8 +100,8 @@ export const Navbar: React.FC = () => {
                 />
               </div>
               <div className="min-w-0">
-                <span className="font-bold text-xs sm:text-sm lg:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
-                  GPON TELECOM
+                <span className="font-bold text-xs sm:text-sm lg:text-base tracking-tight text-slate-900 dark:text-white flex items-center gap-1 whitespace-nowrap">
+                  GPON<span className="hidden sm:inline"> TELECOM</span>
                 </span>
                 <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 -mt-0.5 hidden xl:block truncate">
                   {t('nav.brandSubtitle')}
@@ -166,8 +166,8 @@ export const Navbar: React.FC = () => {
                 <span className="font-extrabold">APK</span>
               </button>
 
-              {/* Indicador de Red */}
-              <div className="flex items-center">
+              {/* Indicador de Red (Visible en pantallas medianas o si está Offline) */}
+              <div className={`items-center shrink-0 ${isOnline ? 'hidden sm:flex' : 'flex'}`}>
                 {isOnline ? (
                   <div
                     className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 p-1 sm:px-2 sm:py-1 rounded-full border border-emerald-500/20"
@@ -200,11 +200,11 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
 
-              {/* Perfil de Usuario */}
-              <div className="flex items-center border-l border-slate-200 dark:border-slate-800 pl-1 sm:pl-1.5">
+              {/* Perfil de Usuario (Siempre visible y con shrink-0 para evitar cortes) */}
+              <div className="flex items-center border-l border-slate-200 dark:border-slate-800 pl-1 sm:pl-1.5 shrink-0">
                 <button
                   onClick={() => setIsEditUserOpen(true)}
-                  className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-left group cursor-pointer"
+                  className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-left group cursor-pointer shrink-0"
                   title="Ver perfil de usuario y opciones de cuenta"
                 >
                   <div className="text-right hidden lg:block">
@@ -219,7 +219,7 @@ export const Navbar: React.FC = () => {
                       {user.rol}
                     </span>
                   </div>
-                  <div className="p-1.5 bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-500/20 dark:group-hover:bg-indigo-600/30 text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
+                  <div className="p-1.5 bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-500/20 dark:group-hover:bg-indigo-600/30 text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors shrink-0">
                     <UserCog className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </button>

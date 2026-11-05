@@ -219,6 +219,11 @@ export const pt = {
     deleteUser: 'Desativar Usuário'
   },
   chatbot: {
+    buttonText: 'Assistente GPON',
+    buttonTitle: 'Abrir Assistente e Guia Passo a Passo GPON',
+    stepByStep: 'Passo a Passo',
+    close: 'Fechar',
+    searchPlaceholder: 'Buscar ajuda técnica ou procedimento...',
     title: 'Assistente Técnico GPON',
     subtitle: 'Manual interativo de fibra óptica e suporte operacional em campo',
     placeholder: 'Pergunte sobre caixas de emenda, postes, cabos ou caixas NAP...',
