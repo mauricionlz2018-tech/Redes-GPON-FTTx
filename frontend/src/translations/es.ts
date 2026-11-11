@@ -151,7 +151,11 @@ export const es = {
     "trunk96": "Troncal 96H",
     "trunk48": "Troncal 48H",
     "trunk12": "Troncal 12H",
-    "dist12": "Distribución 12H"
+    "dist12": "Distribución 12H",
+    "activateGps": "Activar GPS",
+    "gpsSearching": "Buscando GPS...",
+    "updateGps": "Actualizar",
+    "turnOffGps": "Desactivar GPS"
   },
   "infra": {
     "pole": "Poste",
@@ -369,7 +373,12 @@ export const es = {
     "markDamagedBtn": "Marcar como Dañado",
     "markFreeBtn": "Marcar como Libre (Operativo)",
     "deleteConfirm": "¿Seguro que deseas dar de baja y eliminar la caja {ident}?",
-    "rbacDeleteError": "Permiso denegado: El rol 'Técnico' no tiene autorización para dar de baja o eliminar cajas NAP de la infraestructura. Esta acción requiere permisos de Soporte o Administrador."
+    "rbacDeleteError": "Permiso denegado: El rol 'Técnico' no tiene autorización para dar de baja o eliminar cajas NAP de la infraestructura. Esta acción requiere permisos de Soporte o Administrador.",
+    "backToMap": "Subir a Mapa",
+    "portStatusOccupied": "Ocupado",
+    "portStatusFree": "Libre",
+    "portStatusDamaged": "Dañado",
+    "portStatusReserved": "Reservado"
   },
   "disclaimer": {
     "bannerTitle": "Entorno Demostrativo • Protección de Datos Personales",
@@ -399,5 +408,24 @@ export const es = {
     "dist12H": "Fibra 12H Distribución",
     "inReserve": "En Reserva / Fase 2",
     "close": "Cerrar"
+  },
+  "navigation": {
+    "cardTitle": "Ruta de Navegación a Caja",
+    "testingMode": "Modo de Pruebas",
+    "startingPoint": "Punto de Partida",
+    "centralOdf": "Central / Empresa",
+    "currentGps": "Mi GPS Actual",
+    "destination": "Destino",
+    "noAddress": "Sin dirección detallada",
+    "calculating": "Calculando ruta vial con OpenStreetMap...",
+    "drivingDistance": "Distancia de Conducción",
+    "estimatedTime": "Tiempo Estimado",
+    "offlineFallback": "Modo sin conexión activo: Calculado como distancia geodésica estimada.",
+    "stepByStep": "Indicaciones Paso a Paso ({count})",
+    "openGoogleMaps": "Abrir en Google Maps",
+    "openWaze": "Abrir en Waze",
+    "evaluationPeriod": "Esta función está en periodo de evaluación.",
+    "clearRoute": "Quitar ruta",
+    "closePanel": "Cerrar panel de ruta"
   }
 };

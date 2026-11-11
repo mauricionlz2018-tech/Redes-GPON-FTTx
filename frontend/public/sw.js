@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gpon-telecom-v17';
+const CACHE_NAME = 'gpon-telecom-v18';
 const MAP_CACHE_NAME = 'gpon-map-tiles-v1';
 
 const STATIC_ASSETS = [

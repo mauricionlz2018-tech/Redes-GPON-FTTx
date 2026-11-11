@@ -151,7 +151,11 @@ export const en = {
     "trunk96": "Trunk 96F",
     "trunk48": "Trunk 48F",
     "trunk12": "Trunk 12F",
-    "dist12": "Distribution 12F"
+    "dist12": "Distribution 12F",
+    "activateGps": "Activate GPS",
+    "gpsSearching": "Searching GPS...",
+    "updateGps": "Update",
+    "turnOffGps": "Turn off GPS"
   },
   "infra": {
     "pole": "Pole",
@@ -369,7 +373,12 @@ export const en = {
     "markDamagedBtn": "Mark as Damaged",
     "markFreeBtn": "Mark as Free (Operational)",
     "deleteConfirm": "Are you sure you want to decommission and delete NAP box {ident}?",
-    "rbacDeleteError": "Permission denied: The 'Technician' role is not authorized to decommission or delete NAP boxes from infrastructure. This action requires Support or Administrator permissions."
+    "rbacDeleteError": "Permission denied: The 'Technician' role is not authorized to decommission or delete NAP boxes from infrastructure. This action requires Support or Administrator permissions.",
+    "backToMap": "Back to Map",
+    "portStatusOccupied": "Occupied",
+    "portStatusFree": "Free",
+    "portStatusDamaged": "Damaged",
+    "portStatusReserved": "Reserved"
   },
   "disclaimer": {
     "bannerTitle": "Demonstrative Environment • Personal Data Protection",
@@ -399,5 +408,24 @@ export const en = {
     "dist12H": "12F Distribution Fiber",
     "inReserve": "In Reserve / Phase 2",
     "close": "Close"
+  },
+  "navigation": {
+    "cardTitle": "Box Navigation Route",
+    "testingMode": "Testing Mode",
+    "startingPoint": "Starting Point",
+    "centralOdf": "Central / Company",
+    "currentGps": "My Current GPS",
+    "destination": "Destination",
+    "noAddress": "No detailed address",
+    "calculating": "Calculating driving route with OpenStreetMap...",
+    "drivingDistance": "Driving Distance",
+    "estimatedTime": "Estimated Time",
+    "offlineFallback": "Offline mode active: Calculated as estimated geodesic distance.",
+    "stepByStep": "Step-by-Step Directions ({count})",
+    "openGoogleMaps": "Open in Google Maps",
+    "openWaze": "Open in Waze",
+    "evaluationPeriod": "This feature is in evaluation period.",
+    "clearRoute": "Clear route",
+    "closePanel": "Close route panel"
   }
 };

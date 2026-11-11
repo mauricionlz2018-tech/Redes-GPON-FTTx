@@ -145,12 +145,24 @@ const EMERGENCY_FALLBACK_LABELS: Record<string, string> = {
 
   // Matrix
   'matrix.saturation': 'Saturación',
-  'matrix.routeToBox': 'Ruta de llegada',
+  'matrix.routeToBox': 'Ruta a Caja',
+  'matrix.backToMap': 'Subir a Mapa',
   'matrix.deleteBox': 'Eliminar Caja',
   'matrix.greenFree': 'Verde: Libre',
   'matrix.blueOccupied': 'Azul: Ocupado',
   'matrix.amberReserved': 'Ámbar: Reservado',
   'matrix.redDamaged': 'Rojo: Dañado',
+
+  // Navigation
+  'navigation.cardTitle': 'Ruta de Navegación a Caja',
+  'navigation.testingMode': 'Modo de Pruebas',
+  'navigation.startingPoint': 'Punto de Partida',
+  'navigation.centralOdf': 'Central / Empresa',
+  'navigation.currentGps': 'Mi GPS Actual',
+  'navigation.destination': 'Destino',
+  'navigation.openGoogleMaps': 'Abrir en Google Maps',
+  'navigation.openWaze': 'Abrir en Waze',
+  'navigation.clearRoute': 'Quitar ruta',
 
   // Disclaimer
   'disclaimer.bannerTitle': 'Entorno Demostrativo • Protección de Datos Personales',

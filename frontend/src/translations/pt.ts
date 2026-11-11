@@ -151,7 +151,11 @@ export const pt = {
     "trunk96": "Tronco 96FO",
     "trunk48": "Tronco 48FO",
     "trunk12": "Tronco 12FO",
-    "dist12": "Distribuição 12FO"
+    "dist12": "Distribuição 12FO",
+    "activateGps": "Ativar GPS",
+    "gpsSearching": "Buscando GPS...",
+    "updateGps": "Atualizar",
+    "turnOffGps": "Desativar GPS"
   },
   "infra": {
     "pole": "Poste",
@@ -369,7 +373,12 @@ export const pt = {
     "markDamagedBtn": "Marcar como Danificado",
     "markFreeBtn": "Marcar como Livre (Operacional)",
     "deleteConfirm": "Tem certeza de que deseja desativar e excluir a caixa NAP {ident}?",
-    "rbacDeleteError": "Permissão negada: O cargo 'Técnico' não possui autorização para desativar ou excluir caixas NAP da infraestrutura. Esta ação requer permissões de Suporte ou Administrador."
+    "rbacDeleteError": "Permissão negada: O cargo 'Técnico' não possui autorização para desativar ou excluir caixas NAP da infraestrutura. Esta ação requer permissões de Suporte ou Administrador.",
+    "backToMap": "Subir ao Mapa",
+    "portStatusOccupied": "Ocupado",
+    "portStatusFree": "Livre",
+    "portStatusDamaged": "Danificado",
+    "portStatusReserved": "Reservado"
   },
   "disclaimer": {
     "bannerTitle": "Ambiente Demonstrativo • Proteção de Dados Pessoais",
@@ -399,5 +408,24 @@ export const pt = {
     "dist12H": "Fibra 12FO Distribuição",
     "inReserve": "Em Reserva / Fase 2",
     "close": "Fechar"
+  },
+  "navigation": {
+    "cardTitle": "Rota de Navegação até a Caixa",
+    "testingMode": "Modo de Testes",
+    "startingPoint": "Ponto de Partida",
+    "centralOdf": "Central / Empresa",
+    "currentGps": "Meu GPS Atual",
+    "destination": "Destino",
+    "noAddress": "Sem endereço detalhado",
+    "calculating": "Calculando rota viária com OpenStreetMap...",
+    "drivingDistance": "Distância de Condução",
+    "estimatedTime": "Tempo Estimado",
+    "offlineFallback": "Modo offline ativo: Calculado como distância geodésica estimada.",
+    "stepByStep": "Instruções Passo a Passo ({count})",
+    "openGoogleMaps": "Abrir no Google Maps",
+    "openWaze": "Abrir no Waze",
+    "evaluationPeriod": "Esta função está em período de avaliação.",
+    "clearRoute": "Remover rota",
+    "closePanel": "Fechar painel de rota"
   }
 };

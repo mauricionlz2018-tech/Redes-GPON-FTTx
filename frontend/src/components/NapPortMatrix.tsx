@@ -181,25 +181,25 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         return {
           bg: 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-300',
           led: 'bg-emerald-500 shadow-emerald-500/50 shadow-sm',
-          label: 'Libre'
+          label: t('ports.free')
         };
       case 'Ocupado':
         return {
           bg: 'bg-sky-500/10 hover:bg-sky-500/20 border-sky-500/40 text-sky-700 dark:text-sky-300',
           led: 'bg-sky-500 shadow-sky-500/50 shadow-sm',
-          label: 'Ocupado'
+          label: t('ports.occupied')
         };
       case 'Dañado':
         return {
           bg: 'bg-red-500/10 hover:bg-red-500/20 border-red-500/40 text-red-700 dark:text-red-400',
           led: 'bg-red-500 shadow-red-500/50 shadow-sm',
-          label: 'Dañado'
+          label: t('ports.damaged')
         };
       case 'Reservado':
         return {
           bg: 'bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/50 text-amber-800 dark:text-amber-300',
           led: 'bg-amber-500 shadow-amber-500/60 shadow-sm animate-pulse',
-          label: 'Reservado'
+          label: t('ports.reserved')
         };
       default:
         return {
@@ -256,37 +256,39 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         </div>
 
         {/* Fila 2: Botones de Acción de la Caja (Ruta, Volver a Mapa, Eliminar) */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:items-center gap-1.5 sm:gap-2">
           {onRequestRoute && (
             <button
               onClick={() => onRequestRoute(nap)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
+              className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800/80 px-2 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer min-w-0"
               title={t('matrix.routeToBox')}
             >
               <Navigation className="w-3.5 h-3.5 shrink-0" />
-              <span>{t('matrix.routeToBox')}</span>
+              <span className="truncate">{t('matrix.routeToBox')}</span>
             </button>
           )}
 
           {onScrollToMap && (
             <button
               onClick={onScrollToMap}
-              className="lg:hidden flex-1 sm:flex-none flex items-center justify-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
-              title={t('common.back')}
+              className="lg:hidden flex items-center justify-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-200 dark:border-sky-800/80 px-2 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer min-w-0"
+              title={t('matrix.backToMap')}
             >
               <ArrowUp className="w-3.5 h-3.5 shrink-0" />
-              <span>{t('common.back')}</span>
+              <span className="truncate">{t('matrix.backToMap')}</span>
             </button>
           )}
 
           {onDeleteNapRequest && (
             <button
               onClick={handleDeleteClick}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border border-red-200 dark:border-red-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
+              className={`flex items-center justify-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border border-red-200 dark:border-red-800/80 px-2 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer min-w-0 ${
+                onScrollToMap ? 'col-span-2 sm:col-span-1 lg:col-auto' : ''
+              }`}
               title={t('matrix.deleteBox')}
             >
               <Trash2 className="w-3.5 h-3.5 shrink-0" />
-              <span>{t('matrix.deleteBox')}</span>
+              <span className="truncate">{t('matrix.deleteBox')}</span>
             </button>
           )}
         </div>
@@ -414,7 +416,13 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   getPortBadgeStyle(selectedPort.estado).bg
                 }`}
               >
-                {selectedPort.estado}
+                {selectedPort.estado === 'Libre'
+                  ? t('ports.free')
+                  : selectedPort.estado === 'Ocupado'
+                  ? t('ports.occupied')
+                  : selectedPort.estado === 'Dañado'
+                  ? t('ports.damaged')
+                  : t('ports.reserved')}
               </span>
             </div>
             <button
