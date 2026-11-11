@@ -336,7 +336,7 @@ export const UsersManagementPage: React.FC = () => {
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{totalUsers}</p>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Usuarios registrados</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{t('users.registeredUsers')}</span>
         </div>
 
         {/* Técnicos de Campo */}
@@ -348,7 +348,7 @@ export const UsersManagementPage: React.FC = () => {
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{countTecnicos}</p>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Cuadrillas activas</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{t('users.activeCrews')}</span>
         </div>
 
         {/* Soporte Técnico */}
@@ -360,7 +360,7 @@ export const UsersManagementPage: React.FC = () => {
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{countSoporte}</p>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Mantenimiento y clientes</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{t('users.maintenanceClients')}</span>
         </div>
 
         {/* Administradores */}
@@ -372,7 +372,7 @@ export const UsersManagementPage: React.FC = () => {
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{countAdmins}</p>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Control total NOC</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{t('users.totalNocControl')}</span>
         </div>
       </div>
 
@@ -382,7 +382,7 @@ export const UsersManagementPage: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
           <input
             type="text"
-            placeholder="Buscar personal por nombre o correo (ej. Juan, tecnico@gpon.com)..."
+            placeholder={t('users.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-10 pr-3.5 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
@@ -393,6 +393,14 @@ export const UsersManagementPage: React.FC = () => {
           <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0 hidden md:block" />
           {(['Todos', 'Tecnico', 'Soporte', 'Admin'] as const).map((r) => {
             const isSelected = filterRole === r;
+            const roleLabel =
+              r === 'Todos'
+                ? t('users.allRoles')
+                : r === 'Tecnico'
+                ? t('users.techsRole')
+                : r === 'Soporte'
+                ? t('users.supportRole')
+                : t('users.adminRole');
             return (
               <button
                 key={r}
@@ -403,7 +411,7 @@ export const UsersManagementPage: React.FC = () => {
                     : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
                 }`}
               >
-                {r === 'Todos' ? 'Todos' : r === 'Tecnico' ? 'Técnicos' : r}
+                {roleLabel}
               </button>
             );
           })}

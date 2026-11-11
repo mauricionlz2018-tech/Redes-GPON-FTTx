@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Download, X, Smartphone, CheckCircle, Apple, ExternalLink, HelpCircle, ArrowRight } from 'lucide-react';
+import { Download, X, Smartphone, Apple, ExternalLink, HelpCircle } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface InstallPwaModalProps {
   onClose: () => void;
@@ -12,6 +13,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
   deferredPrompt,
   onInstallSuccess
 }) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'apk' | 'direct' | 'ios'>('apk');
   const [downloading, setDownloading] = useState(false);
 
@@ -24,7 +26,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
         onClose();
       }
     } else {
-      alert('Para instalar directamente: Toca los tres puntos de opciones arriba a la derecha en Chrome y pulsa "Instalar aplicación" o "Agregar a la pantalla principal".');
+      alert(t('apk.directInstallAlert'));
     }
   };
 
@@ -52,52 +54,57 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
               />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">Centro de Descarga e Instalación (APK)</h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">Instalador y paquete de campo para teléfonos Android e iOS</p>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                {t('apk.modalTitle')}
+              </h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                {t('apk.modalSubtitle')}
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors flex-shrink-0"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer"
+            title={t('common.close')}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Pestañas de Opciones */}
+        {/* Pestanas de Opciones */}
         <div className="flex items-center border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/60 p-1 gap-1 flex-shrink-0">
           <button
             onClick={() => setActiveTab('apk')}
-            className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'apk'
                 ? 'bg-sky-600 text-white shadow-md'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800/60'
             }`}
           >
             <Download className="w-3.5 h-3.5" />
-            <span>1. Paquete APK</span>
+            <span>{t('apk.tabApk')}</span>
           </button>
           <button
             onClick={() => setActiveTab('direct')}
-            className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'direct'
                 ? 'bg-sky-600 text-white shadow-md'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800/60'
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
-            <span>2. Instalar PWA</span>
+            <span>{t('apk.tabPwa')}</span>
           </button>
           <button
             onClick={() => setActiveTab('ios')}
-            className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'ios'
                 ? 'bg-sky-600 text-white shadow-md'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800/60'
             }`}
           >
             <Apple className="w-3.5 h-3.5" />
-            <span>3. iPhone / iOS</span>
+            <span>{t('apk.tabIos')}</span>
           </button>
         </div>
 
@@ -114,31 +121,31 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
                   />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Instalación Nativa Inmediata (PWA)</h3>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('apk.pwaTitle')}</h3>
                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-                    Crea el acceso directo con icono oficial en tu pantalla principal. Funciona en pantalla completa real sin barra de navegador y con soporte offline en campo.
+                    {t('apk.pwaDesc')}
                   </p>
                 </div>
 
                 <button
                   onClick={handleNativeInstall}
-                  className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all active:scale-95"
+                  className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
-                  <span>{deferredPrompt ? 'Instalar Ahora en Mi Teléfono' : 'Activar Instalación Directa'}</span>
+                  <span>{deferredPrompt ? t('apk.installNowBtn') : t('apk.activateInstallBtn')}</span>
                 </button>
               </div>
 
-              {/* Guía si no sale el aviso directo */}
+              {/* Guia si no sale el aviso directo */}
               <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 space-y-2">
                 <span className="text-xs font-bold text-slate-900 dark:text-slate-200 flex items-center gap-1.5">
                   <HelpCircle className="w-4 h-4 text-sky-500 dark:text-sky-400" />
-                  ¿Cómo instalarlo en 2 pasos desde Chrome en Android?
+                  {t('apk.howToInstallChrome')}
                 </span>
                 <ol className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 pl-4 list-decimal">
-                  <li>Toca los <strong className="text-slate-900 dark:text-white">tres puntos ⋮</strong> en la esquina superior derecha del navegador Chrome.</li>
-                  <li>Selecciona la opción <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">"Instalar aplicación"</strong> o <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">"Agregar a la pantalla principal"</strong>.</li>
-                  <li>¡Listo! El icono de GPON TELECOM se agregará a tu cajón de aplicaciones.</li>
+                  <li>{t('apk.step1Chrome')}</li>
+                  <li>{t('apk.step2Chrome')}</li>
+                  <li>{t('apk.step3Chrome')}</li>
                 </ol>
               </div>
             </div>
@@ -152,9 +159,9 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
                     <Download className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Generar y Descargar Archivo .APK</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('apk.apkTitle')}</h3>
                     <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      Genera un archivo instalador <strong>.APK</strong> firmado de Android usando el motor de Microsoft PWABuilder para compartir por WhatsApp o guardar en una memoria USB.
+                      {t('apk.apkDesc')}
                     </p>
                   </div>
                 </div>
@@ -163,19 +170,19 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
                   <button
                     onClick={handleDownloadApkPackage}
                     disabled={downloading}
-                    className="w-full py-2.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-sky-950/50 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                    className="w-full py-2.5 px-4 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-sky-950/50 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    <span>{downloading ? 'Abriendo generador APK...' : 'Generar / Descargar APK en PWABuilder'}</span>
+                    <span>{downloading ? t('apk.openingGenerator') : t('apk.generateApkBtn')}</span>
                   </button>
                 </div>
               </div>
 
               <div className="bg-slate-100 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs text-slate-600 dark:text-slate-400 space-y-2">
-                <span className="font-bold text-slate-800 dark:text-slate-300 block">Pasos para descargar el APK:</span>
-                <p>1. Al pulsar el botón azul, se abrirá la herramienta oficial con tu app ya cargada y calificada con 100/100 en verde.</p>
-                <p>2. Haz clic en <strong>"Package for Stores"</strong> o en la pestaña <strong>Android</strong>.</p>
-                <p>3. Pulsa <strong>"Download Package"</strong> y obtendrás tu instalador <strong>.apk</strong> listo.</p>
+                <span className="font-bold text-slate-800 dark:text-slate-300 block">{t('apk.apkStepsTitle')}</span>
+                <p>{t('apk.apkStep1')}</p>
+                <p>{t('apk.apkStep2')}</p>
+                <p>{t('apk.apkStep3')}</p>
               </div>
             </div>
           )}
@@ -188,18 +195,18 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
                     <Apple className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Instalar en iPhone o iPad (Apple iOS)</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('apk.iosTitle')}</h3>
                     <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      Apple no permite descargar archivos .apk, pero sí permite instalar la aplicación completa en tu pantalla de inicio mediante Safari.
+                      {t('apk.iosDesc')}
                     </p>
                   </div>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-2 text-slate-700 dark:text-slate-300">
-                  <p>1. Abre <strong className="text-sky-600 dark:text-sky-400">Safari</strong> en tu iPhone.</p>
-                  <p>2. Toca el botón central <strong className="text-slate-900 dark:text-white">Compartir</strong> (icono de cuadrado con flecha hacia arriba).</p>
-                  <p>3. Desliza hacia abajo y pulsa <strong className="text-emerald-600 dark:text-emerald-400">"Agregar a pantalla de inicio"</strong>.</p>
-                  <p>4. Pulsa "Agregar" arriba a la derecha. Listo.</p>
+                  <p>{t('apk.iosStep1')}</p>
+                  <p>{t('apk.iosStep2')}</p>
+                  <p>{t('apk.iosStep3')}</p>
+                  <p>{t('apk.iosStep4')}</p>
                 </div>
               </div>
             </div>
@@ -208,12 +215,12 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
 
         {/* Pie de modal */}
         <div className="px-5 py-3 bg-slate-100 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-shrink-0">
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Versión Móvil 1.0.0 (GPON TELECOM)</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{t('apk.versionFooter')}</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-lg text-xs font-semibold transition-colors"
+            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
           >
-            Cerrar
+            {t('common.close')}
           </button>
         </div>
       </div>

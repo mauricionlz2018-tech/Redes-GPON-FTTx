@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Lock, Database, Check, X, Info, FileText } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface DataDisclaimerModalProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface DataDisclaimerModalProps {
 }
 
 export const DataDisclaimerModal: React.FC<DataDisclaimerModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useLanguage();
   const [dontShowAgainSession, setDontShowAgainSession] = useState(false);
 
   useEffect(() => {
@@ -52,18 +54,18 @@ export const DataDisclaimerModal: React.FC<DataDisclaimerModalProps> = ({ isOpen
             </div>
             <div className="min-w-0">
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/20 text-sky-100 inline-block mb-1">
-                Aviso de Privacidad y Pruebas
+                {t('disclaimer.modalBadge')}
               </span>
               <h2 id="disclaimer-modal-title" className="text-sm sm:text-base font-bold text-white truncate">
-                Entorno de Pruebas y Protección de Datos
+                {t('disclaimer.modalTitle')}
               </h2>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0 z-10"
-            title="Cerrar aviso"
+            className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0 z-10 cursor-pointer"
+            title={t('common.close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -76,10 +78,10 @@ export const DataDisclaimerModal: React.FC<DataDisclaimerModalProps> = ({ isOpen
             <Info className="w-5 h-5 text-sky-600 dark:text-sky-400 flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-semibold text-sky-900 dark:text-sky-200">
-                Bienvenido al Sistema de Inventario y Mapeo Lógico de Red GPON/FTTx
+                {t('disclaimer.welcomeTitle')}
               </p>
               <p className="text-xs text-sky-800/90 dark:text-sky-300 leading-relaxed">
-                Este software se encuentra configurado para fines demostrativos, de evaluación técnica y auditoría operativa de infraestructura óptica.
+                {t('disclaimer.welcomeDesc')}
               </p>
             </div>
           </div>
@@ -93,10 +95,10 @@ export const DataDisclaimerModal: React.FC<DataDisclaimerModalProps> = ({ isOpen
               </div>
               <div>
                 <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm mb-1">
-                  1. Datos de prueba y simulación técnica
+                  {t('disclaimer.point1Title')}
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Todos los registros de <strong>abonados, nombres de clientes, domicilios, números telefónicos, coordenadas y contratos</strong> visualizados en el mapa y en los reportes son <strong>datos ficticios</strong> generados para comprobar el funcionamiento de la plataforma, el trazado de fibra óptica y la ocupación de puertos NAP.
+                  {t('disclaimer.point1Desc')}
                 </p>
               </div>
             </div>
@@ -108,10 +110,10 @@ export const DataDisclaimerModal: React.FC<DataDisclaimerModalProps> = ({ isOpen
               </div>
               <div>
                 <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm mb-1">
-                  2. Privacidad y protección de personas reales
+                  {t('disclaimer.point2Title')}
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  En estricto cumplimiento con las normativas de protección de datos personales y privacidad, la información e identidad de clientes y suscriptores reales está <strong>totalmente resguardada, cifrada y protegida</strong>. Ningún dato sensible de personas reales se expone en este entorno de prueba.
+                  {t('disclaimer.point2Desc')}
                 </p>
               </div>
             </div>
@@ -123,10 +125,10 @@ export const DataDisclaimerModal: React.FC<DataDisclaimerModalProps> = ({ isOpen
               </div>
               <div>
                 <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm mb-1">
-                  3. Libertad de prueba operativa
+                  {t('disclaimer.point3Title')}
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Puedes registrar clientes de prueba, asignar puertos, medir potencias ópticas en dBm y generar reportes en PDF con total confianza de estar en un entorno seguro y aislado.
+                  {t('disclaimer.point3Desc')}
                 </p>
               </div>
             </div>
@@ -139,9 +141,9 @@ export const DataDisclaimerModal: React.FC<DataDisclaimerModalProps> = ({ isOpen
                 type="checkbox"
                 checked={dontShowAgainSession}
                 onChange={(e) => setDontShowAgainSession(e.target.checked)}
-                className="rounded border-slate-300 dark:border-slate-700 text-sky-600 focus:ring-sky-500 w-4 h-4"
+                className="rounded border-slate-300 dark:border-slate-700 text-sky-600 focus:ring-sky-500 w-4 h-4 cursor-pointer"
               />
-              <span>No volver a mostrar esta advertencia automáticamente durante esta sesión</span>
+              <span>{t('disclaimer.dontShowAgain')}</span>
             </label>
           </div>
         </div>
@@ -150,19 +152,18 @@ export const DataDisclaimerModal: React.FC<DataDisclaimerModalProps> = ({ isOpen
         <div className="p-3.5 sm:p-4 bg-slate-100 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 flex-shrink-0">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Datos 100% Seguros</span>
+            <span>SSL / TLS 256-bit</span>
           </div>
 
           <button
             onClick={handleAccept}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-sky-950/20 active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-sky-950/20 active:scale-95 cursor-pointer"
           >
             <Check className="w-4 h-4" />
-            <span>Entendido y Continuar</span>
+            <span>{t('disclaimer.acceptBtn')}</span>
           </button>
         </div>
       </div>
     </div>
   );
 };
-

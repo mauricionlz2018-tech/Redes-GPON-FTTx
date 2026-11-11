@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NapBox, NapPort, UserRole, Client } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import api from '../api/client';
 import { putCachedNapImmediate, broadcastRealtimeEvent } from '../services/realtimeSync';
 import {
@@ -42,6 +43,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
   onDeleteNapRequest
 }) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [selectedPort, setSelectedPort] = useState<NapPort | null>(null);
   const [portToRelease, setPortToRelease] = useState<NapPort | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -165,9 +167,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
 
   const handleDeleteClick = () => {
     if (user?.rol === 'Tecnico') {
-      setRbacError(
-        "Permiso denegado (HTTP 403 Forbidden): El rol 'Tecnico' no tiene autorización para dar de baja o eliminar cajas NAP de la infraestructura. Esta acción requiere permisos de Soporte o Administrador."
-      );
+      setRbacError(t('matrix.rbacDeleteError'));
       return;
     }
     if (onDeleteNapRequest) {
@@ -236,7 +236,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           {/* Badge de Saturación en esquina superior derecha */}
           <div className="text-right shrink-0">
             <span className="text-[10px] text-slate-400 dark:text-slate-500 block leading-tight">
-              Saturación
+              {t('matrix.saturation')}
             </span>
             <span
               className={`inline-block text-xs font-bold px-2 py-0.5 rounded mt-0.5 ${
@@ -249,7 +249,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             </span>
             {!!(nap.metricas?.reservados && nap.metricas.reservados > 0) && (
               <span className="block text-[10px] text-amber-700 dark:text-amber-300 font-bold mt-0.5 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">
-                {nap.metricas.reservados} reservado{nap.metricas.reservados > 1 ? 's' : ''} (ámbar)
+                {nap.metricas.reservados} {t('matrix.reservedOrange')}
               </span>
             )}
           </div>
@@ -261,10 +261,10 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             <button
               onClick={() => onRequestRoute(nap)}
               className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
-              title="Trazar ruta vial desde la Empresa hacia esta caja"
+              title={t('matrix.routeToBox')}
             >
               <Navigation className="w-3.5 h-3.5 shrink-0" />
-              <span>Ruta de llegada</span>
+              <span>{t('matrix.routeToBox')}</span>
             </button>
           )}
 
@@ -272,10 +272,10 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             <button
               onClick={onScrollToMap}
               className="lg:hidden flex-1 sm:flex-none flex items-center justify-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
-              title="Volver arriba al mapa"
+              title={t('common.back')}
             >
               <ArrowUp className="w-3.5 h-3.5 shrink-0" />
-              <span>Subir a Mapa</span>
+              <span>{t('common.back')}</span>
             </button>
           )}
 
@@ -283,10 +283,10 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             <button
               onClick={handleDeleteClick}
               className="flex-1 sm:flex-none flex items-center justify-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border border-red-200 dark:border-red-800/80 px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer"
-              title="Dar de baja o eliminar esta caja NAP de la red"
+              title={t('matrix.deleteBox')}
             >
               <Trash2 className="w-3.5 h-3.5 shrink-0" />
-              <span>Eliminar Caja</span>
+              <span>{t('matrix.deleteBox')}</span>
             </button>
           )}
         </div>
@@ -330,8 +330,8 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
       {/* Matriz física de 16 puertos en 2 filas de 8 */}
       <div className="space-y-2 mb-4">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 px-1">
-          <span>Matriz de Distribución ({ports.length} Puertos)</span>
-          <span className="text-[11px] text-slate-400 dark:text-slate-500">Toca un puerto para gestionar</span>
+          <span>{t('matrix.distributionMatrix', { count: ports.length })}</span>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">{t('matrix.tapToManage')}</span>
         </div>
 
         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 bg-slate-100 dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800/80">
@@ -384,19 +384,19 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center justify-between gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shrink-0" />
-            <span>Verde: <strong>Libre</strong></span>
+            <span>{t('matrix.greenFree')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-sky-500 shadow-xs shrink-0" />
-            <span>Azul: <strong>Ocupado</strong></span>
+            <span>{t('matrix.blueOccupied')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-xs animate-pulse shrink-0" />
-            <span>Ámbar: <strong>Reservado (Apartado)</strong></span>
+            <span>{t('matrix.amberReserved')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-xs shrink-0" />
-            <span>Rojo: <strong>Dañado</strong></span>
+            <span>{t('matrix.redDamaged')}</span>
           </div>
         </div>
       </div>
@@ -407,7 +407,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700/80 pb-2">
             <div className="flex items-center gap-2">
               <span className="font-bold text-sm text-slate-900 dark:text-white">
-                Detalle Puerto #{selectedPort.indice_puerto}
+                {t('matrix.portDetail', { num: selectedPort.indice_puerto })}
               </span>
               <span
                 className={`text-[10px] font-bold px-2 py-0.5 rounded ${
@@ -430,29 +430,29 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
             <div className="space-y-2 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                 <div>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">Abonado:</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">{t('clients.clientName')}:</span>
                   <strong className="text-slate-900 dark:text-white font-semibold">
                     {selectedPort.cliente.nombre_completo}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">Número de Cuenta:</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">{t('clients.contractNumber')}:</span>
                   <strong className="text-sky-600 dark:text-sky-400 font-mono">
                     {selectedPort.cliente.numero_cliente}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">Dirección:</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">{t('clients.colAddress')}:</span>
                   <span>{selectedPort.cliente.direccion}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">ONT / Marca:</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">{t('matrix.ontBrandMac')}:</span>
                   <span>
                     {selectedPort.cliente.marca_ont} (MAC: {selectedPort.cliente.ont_mac || 'N/A'})
                   </span>
                 </div>
                 <div className="sm:col-span-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">Potencia Óptica Rx:</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">{t('matrix.opticalPower')}:</span>
                   <span
                     className={`font-semibold ${
                       selectedPort.cliente.potencia_rx_estimada && selectedPort.cliente.potencia_rx_estimada < -27
@@ -461,8 +461,8 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                     }`}
                   >
                     {selectedPort.cliente.potencia_rx_estimada
-                      ? `${selectedPort.cliente.potencia_rx_estimada} dBm (Rango Operativo Óptimo)`
-                      : '-19.2 dBm (Simulada)'}
+                      ? `${selectedPort.cliente.potencia_rx_estimada} dBm (${t('matrix.optimalRange')})`
+                      : `-19.2 dBm (${t('matrix.simulated')})`}
                   </span>
                 </div>
               </div>
@@ -473,7 +473,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                 className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs py-1.5 px-3 rounded-lg border border-slate-300 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
               >
                 <Edit3 className="w-3.5 h-3.5 text-sky-500" />
-                <span>Editar Datos del Abonado</span>
+                <span>{t('matrix.editClientBtn')}</span>
               </button>
             </div>
           ) : selectedPort.estado === 'Reservado' ? (
@@ -481,18 +481,18 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
               <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-0.5">
                 <strong className="font-semibold text-amber-900 dark:text-amber-200 block">
-                  Puerto apartado para orden de instalación programada
+                  {t('matrix.reservedPortNotice')}
                 </strong>
                 <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 leading-relaxed">
-                  Este puerto óptico se encuentra reservado. Puedes proceder con la instalación para vincular al abonado, o liberar el apartado si la orden fue reprogramada o cancelada.
+                  {t('matrix.reservedPortDesc')}
                 </p>
               </div>
             </div>
           ) : (
             <div className="text-xs text-slate-500 dark:text-slate-400 p-2.5 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80">
               {selectedPort.estado === 'Libre'
-                ? 'El puerto se encuentra disponible para asignación de acometida a un nuevo abonado o para apartarse para una orden programada.'
-                : `Puerto en condición '${selectedPort.estado}'. Bloqueado para nuevas conexiones por daño físico en conector o fibra.`}
+                ? t('matrix.freePortDesc')
+                : t('matrix.damagedPortDesc')}
             </div>
           )}
 
@@ -507,7 +507,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   title="Conectar acometida a nuevo abonado"
                 >
                   <PlusCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Asignar Acometida</span>
+                  <span>{t('matrix.assignDropBtn')}</span>
                 </button>
 
                 <button
@@ -517,7 +517,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   title="Apartar este puerto para una orden de instalación programada"
                 >
                   <Clock className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-                  <span>Apartar para Orden</span>
+                  <span>{t('matrix.reserveOrderBtn')}</span>
                 </button>
               </>
             )}
@@ -531,7 +531,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   title="Completar la instalación programada y vincular cliente en este puerto"
                 >
                   <PlusCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Asignar Acometida</span>
+                  <span>{t('matrix.assignDropBtn')}</span>
                 </button>
 
                 <button
@@ -541,7 +541,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                   title="Cancelar el apartado y regresar puerto a Libre"
                 >
                   <RotateCcw className="w-3.5 h-3.5 shrink-0 text-slate-500 dark:text-slate-400" />
-                  <span>Liberar Reserva</span>
+                  <span>{t('matrix.releasePortBtn')}</span>
                 </button>
               </>
             )}
@@ -555,7 +555,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                 title="Liberar puerto ocupado y desvincular abonado"
               >
                 <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                <span>Liberar Puerto</span>
+                <span>{t('matrix.releasePortBtn')}</span>
               </button>
             )}
 
@@ -573,7 +573,7 @@ export const NapPortMatrix: React.FC<NapPortMatrixProps> = ({
                 title={selectedPort.estado === 'Dañado' ? 'Marcar como reparado y Libre' : 'Marcar como puerto Dañado'}
               >
                 <Wrench className="w-3.5 h-3.5 shrink-0 text-slate-500 dark:text-slate-400" />
-                <span>{selectedPort.estado === 'Dañado' ? 'Marcar Libre' : 'Marcar Dañado'}</span>
+                <span>{selectedPort.estado === 'Dañado' ? t('matrix.markFreeBtn') : t('matrix.markDamagedBtn')}</span>
               </button>
             )}
           </div>

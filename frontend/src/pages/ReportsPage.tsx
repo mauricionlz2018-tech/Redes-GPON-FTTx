@@ -191,7 +191,7 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{totalNaps}</p>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Distribuidas en San José del Rincón</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{t('reports.distributedIn')}</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
@@ -202,7 +202,7 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{totalPuertos}</p>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Capacidad splitter 1:16</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{t('reports.splitterCapacity')}</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">
@@ -213,7 +213,7 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">{totalOcupados}</p>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Puertos libres: {totalLibres}</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{t('reports.freePortsCount', { count: totalLibres })}</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs dark:shadow-md transition-colors">

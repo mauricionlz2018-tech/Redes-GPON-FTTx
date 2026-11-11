@@ -36,6 +36,7 @@ import {
 import { RouteResult, formatDistance, formatDuration } from '../services/routingService';
 import { MUNICIPALITIES_DATA, MunicipalityBoundary } from '../data/municipalitiesBoundaries';
 import { StreetViewModal } from './StreetViewModal';
+import { useLanguage } from '../context/LanguageContext';
 import {
   mockFiberRoutes,
   mockEmpalmes,
@@ -518,6 +519,7 @@ export const GponMap: React.FC<GponMapProps> = ({
   onCancelDrawingRoute,
   onOpenOltModal
 }) => {
+  const { t } = useLanguage();
 
   // Detección de dispositivo móvil / táctil para optimización ultra-fluida de recursos
   const isMobile = useMemo(() => {
@@ -928,21 +930,21 @@ export const GponMap: React.FC<GponMapProps> = ({
             <button
               onClick={() => setIsBaseMapMenuOpen(true)}
               className="bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-md flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
-              title="Cambiar tipo de mapa (Calles / Satélite / Street View)"
+              title={t('map.mapType')}
             >
               {mapLayer === 'satellite' ? (
                 <>
                   <Satellite className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span>Satélite</span>
+                  <span>{t('map.satellite')}</span>
                 </>
               ) : (
                 <>
                   <Map className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                  <span>Calles</span>
+                  <span>{t('map.streets')}</span>
                 </>
               )}
               {isStreetViewActive && (
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" title="Street View activo" />
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" title={t('map.streetViewMode')} />
               )}
               <ChevronDown className="w-3 h-3 text-slate-400 shrink-0 ml-0.5" />
             </button>
@@ -951,7 +953,7 @@ export const GponMap: React.FC<GponMapProps> = ({
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-1.5 px-1">
                 <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-sky-600" />
-                  Tipo de Mapa
+                  {t('map.mapType')}
                 </span>
                 <button
                   onClick={() => setIsBaseMapMenuOpen(false)}
@@ -976,7 +978,7 @@ export const GponMap: React.FC<GponMapProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Map className="w-3.5 h-3.5 text-sky-400" />
-                  <span>Calles (OSM)</span>
+                  <span>{t('map.streetsOsm')}</span>
                 </div>
                 {mapLayer === 'streets' && <Check className="w-3.5 h-3.5" />}
               </button>
@@ -996,7 +998,7 @@ export const GponMap: React.FC<GponMapProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Satellite className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Satélite HD</span>
+                  <span>{t('map.satelliteHd')}</span>
                 </div>
                 {mapLayer === 'satellite' && <Check className="w-3.5 h-3.5" />}
               </button>
@@ -1018,7 +1020,7 @@ export const GponMap: React.FC<GponMapProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Camera className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                  <span>Street View 360°</span>
+                  <span>{t('map.streetViewMode')}</span>
                 </div>
                 {isStreetViewActive && <span className="text-[10px] font-bold bg-slate-950 text-white px-1.5 py-0.2 rounded-full">ON</span>}
               </button>
@@ -1032,7 +1034,7 @@ export const GponMap: React.FC<GponMapProps> = ({
         <div className="absolute bottom-14 sm:bottom-6 left-1/2 -translate-x-1/2 z-[450] bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-full shadow-xl border border-amber-600 flex items-center justify-between gap-2 text-xs font-bold w-[92%] sm:w-auto max-w-sm whitespace-nowrap animate-fadeIn">
           <div className="flex items-center gap-1.5 truncate">
             <Camera className="w-3.5 h-3.5 text-slate-950 shrink-0" />
-            <span className="truncate text-[11px] sm:text-xs">Modo Street View: Toca una calle o poste</span>
+            <span className="truncate text-[11px] sm:text-xs">{t('map.streetViewPrompt')}</span>
           </div>
           <button
             onClick={() => setIsStreetViewActive(false)}
@@ -1151,11 +1153,10 @@ export const GponMap: React.FC<GponMapProps> = ({
           <button
             onClick={() => setIsLayersMenuOpen(true)}
             className="bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-300 dark:border-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-md flex items-center gap-1.5 sm:gap-2 text-xs font-bold text-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
-            title="Abrir selector de capas de red de fibra"
+            title={t('map.layers')}
           >
             <Eye className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-            <span>Capas</span>
-            <span className="hidden sm:inline">de Red</span>
+            <span>{t('map.networkLayers')}</span>
             <span className="text-[10px] bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 px-1.5 py-0.2 rounded-full font-mono">
               {totalNetworkDistance.km} km
             </span>
@@ -1165,7 +1166,7 @@ export const GponMap: React.FC<GponMapProps> = ({
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-1.5">
               <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5 text-sky-600" />
-                Capas de Planta Externa
+                {t('map.outsidePlantLayers')}
               </span>
               <button
                 onClick={() => setIsLayersMenuOpen(false)}
@@ -1185,7 +1186,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <span className="w-3 h-1 rounded bg-purple-700 shrink-0" />
-                <span className="flex-1">Líneas Troncal ({allRoutes.length})</span>
+                <span className="flex-1">{t('map.trunkLines')} ({allRoutes.length})</span>
               </label>
 
               {/* Mufas / Cierres de Empalme */}
@@ -1197,7 +1198,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <GitCommit className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                <span className="flex-1">Mufas Torpedo ({allEmpalmes.length})</span>
+                <span className="flex-1">{t('map.closuresTorpedo')} ({allEmpalmes.length})</span>
               </label>
 
               {/* Gasas de Reserva */}
@@ -1210,16 +1211,16 @@ export const GponMap: React.FC<GponMapProps> = ({
                 />
                 <span className="font-bold text-blue-600 shrink-0">∞</span>
                 <span className="flex-1">
-                  Gasas de Reserva ({allGasas.length})
+                  {t('map.slackLoops')} ({allGasas.length})
                   {showGasas && (
                     <span className="text-[10px] block">
                       {currentZoom < (isMobile ? 15 : 14) ? (
                         <span className="text-amber-600 dark:text-amber-400 font-medium">
-                          Acércate a la calle (zoom {isMobile ? 15 : 14}+)
+                          {t('map.zoomInStreet', { zoom: isMobile ? 15 : 14 })}
                         </span>
                       ) : (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                          {visibleGasas.length} en pantalla
+                          {t('map.onScreen', { count: visibleGasas.length })}
                         </span>
                       )}
                     </span>
@@ -1237,16 +1238,16 @@ export const GponMap: React.FC<GponMapProps> = ({
                 />
                 <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
                 <span className="flex-1">
-                  Postes Propuestos ({allPostesPropuestos.length})
+                  {t('map.proposedPoles')} ({allPostesPropuestos.length})
                   {showPostesPropuestos && (
                     <span className="text-[10px] block">
                       {currentZoom < (isMobile ? 15 : 14) ? (
                         <span className="text-amber-600 dark:text-amber-400 font-medium">
-                          Acércate a la calle (zoom {isMobile ? 15 : 14}+)
+                          {t('map.zoomInStreet', { zoom: isMobile ? 15 : 14 })}
                         </span>
                       ) : (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                          {visiblePostesPropuestos.length} en pantalla
+                          {t('map.onScreen', { count: visiblePostesPropuestos.length })}
                         </span>
                       )}
                     </span>
@@ -1266,16 +1267,16 @@ export const GponMap: React.FC<GponMapProps> = ({
                   +
                 </span>
                 <span className="flex-1">
-                  Postes CFE ({allPostesCfe.length})
+                  {t('map.cfePoles')} ({allPostesCfe.length})
                   {showPostesCfe && (
                     <span className="text-[10px] block">
                       {currentZoom < 15 ? (
                         <span className="text-amber-600 dark:text-amber-400 font-medium">
-                          Acércate a la calle (zoom 15+)
+                          {t('map.zoomInStreet', { zoom: 15 })}
                         </span>
                       ) : (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                          {visiblePostesCfe.length} en pantalla
+                          {t('map.onScreen', { count: visiblePostesCfe.length })}
                         </span>
                       )}
                     </span>
@@ -1292,7 +1293,7 @@ export const GponMap: React.FC<GponMapProps> = ({
                   className="rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                 />
                 <Box className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="flex-1">Cajas NAP ({naps.length})</span>
+                <span className="flex-1">{t('map.napBoxes')} ({naps.length})</span>
               </label>
             </div>
 
@@ -2326,20 +2327,20 @@ export const GponMap: React.FC<GponMapProps> = ({
         <button
           onClick={() => setIsLegendOpen(true)}
           className="absolute bottom-3 left-3 z-20 bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-800 dark:text-slate-200 shadow-md flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-          title="Mostrar leyenda de la red"
+          title={t('map.legend')}
         >
           <Layers className="w-3.5 h-3.5 text-sky-500" />
-          <span>Leyenda</span>
+          <span>{t('map.legend')}</span>
           <span className="w-2 h-2 rounded-full bg-emerald-500" />
         </button>
       ) : (
         <div className="absolute bottom-3 left-3 z-20 bg-white/95 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-700 dark:text-slate-300 shadow-lg dark:shadow-xl max-w-[220px] transition-all">
           <div className="flex items-center justify-between gap-2 mb-1.5 pb-1 border-b border-slate-200 dark:border-slate-800">
-            <span className="font-semibold text-slate-900 dark:text-white">Simbología</span>
+            <span className="font-semibold text-slate-900 dark:text-white">{t('map.legendTitle')}</span>
             <button
               onClick={() => setIsLegendOpen(false)}
               className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              title="Minimizar leyenda"
+              title={t('common.close')}
             >
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
@@ -2350,25 +2351,25 @@ export const GponMap: React.FC<GponMapProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-purple-700 dark:text-purple-400 font-semibold">
                 <span className="w-3 h-1 rounded" style={{ backgroundColor: FIBER_DESIGN_COLORS.fibraTroncal96H }} />
-                <span>Troncal 96H</span>
+                <span>{t('map.trunk96')}</span>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-400 font-semibold">
                 <span className="w-3 h-1 rounded" style={{ backgroundColor: FIBER_DESIGN_COLORS.fibraTroncal48H }} />
-                <span>Troncal 48H</span>
+                <span>{t('map.trunk48')}</span>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-pink-600 dark:text-pink-400 font-semibold">
                 <span className="w-3 h-1 rounded" style={{ backgroundColor: FIBER_DESIGN_COLORS.fibraTroncal12H }} />
-                <span>Troncal 12H</span>
+                <span>{t('map.trunk12')}</span>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 font-semibold">
                 <span className="w-3 h-1 rounded" style={{ backgroundColor: FIBER_DESIGN_COLORS.fibraDistribucion12H }} />
-                <span>Distribución 12H</span>
+                <span>{t('map.dist12')}</span>
               </div>
             </div>
           </div>
@@ -2376,19 +2377,19 @@ export const GponMap: React.FC<GponMapProps> = ({
           {/* Elementos físicos */}
           <div className="flex items-center gap-2 mb-1 text-sky-700 dark:text-sky-400 font-medium">
             <GitCommit className="w-3.5 h-3.5" />
-            <span>Mufas ({allEmpalmes.length})</span>
+            <span>{t('infra.closure')} ({allEmpalmes.length})</span>
           </div>
           <div className="flex items-center gap-2 mb-1 text-blue-700 dark:text-blue-400 font-medium">
             <span className="font-bold">∞</span>
-            <span>Gasas Reserva ({gasas.length})</span>
+            <span>{t('map.slackLoops')} ({gasas.length})</span>
           </div>
           <div className="flex items-center gap-2 mb-1 text-red-600 font-medium">
             <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
-            <span>Postes Propuestos ({postesPropuestos.length})</span>
+            <span>{t('map.proposedPoles')} ({postesPropuestos.length})</span>
           </div>
           <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium">
             <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
-            <span>Cajas NAP ({naps.length})</span>
+            <span>{t('map.napBoxes')} ({naps.length})</span>
           </div>
         </div>
       )}

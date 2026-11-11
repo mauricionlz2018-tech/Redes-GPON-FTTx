@@ -127,7 +127,34 @@ const EMERGENCY_FALLBACK_LABELS: Record<string, string> = {
   'map.downloadKmz': 'Descargar KMZ',
   'map.refresh': 'Actualizar',
   'map.oltOdfLogical': 'Mapeo Lógico OLT / ODF',
-  'map.legend': 'Simbología'
+  'map.legend': 'Simbología',
+  'map.networkLayers': 'Capas de Red',
+  'map.outsidePlantLayers': 'Capas de Planta Externa',
+  'map.satelliteHd': 'Satélite HD',
+  'map.streetsOsm': 'Calles (OSM)',
+  'map.mapType': 'Tipo de Mapa',
+
+  // APK Modal
+  'apk.modalTitle': 'Centro de Descarga e Instalación (APK)',
+  'apk.modalSubtitle': 'Instalador y paquete de campo para teléfonos Android e iOS',
+  'apk.tabApk': '1. Paquete APK',
+  'apk.tabPwa': '2. Instalar PWA',
+  'apk.tabIos': '3. iPhone / iOS',
+  'apk.pwaTitle': 'Instalación Nativa Inmediata (PWA)',
+  'apk.generateApkBtn': 'Generar / Descargar APK en PWABuilder',
+
+  // Matrix
+  'matrix.saturation': 'Saturación',
+  'matrix.routeToBox': 'Ruta de llegada',
+  'matrix.deleteBox': 'Eliminar Caja',
+  'matrix.greenFree': 'Verde: Libre',
+  'matrix.blueOccupied': 'Azul: Ocupado',
+  'matrix.amberReserved': 'Ámbar: Reservado',
+  'matrix.redDamaged': 'Rojo: Dañado',
+
+  // Disclaimer
+  'disclaimer.bannerTitle': 'Entorno Demostrativo • Protección de Datos Personales',
+  'disclaimer.viewFullNotice': 'Ver aviso completo'
 };
 
 /**

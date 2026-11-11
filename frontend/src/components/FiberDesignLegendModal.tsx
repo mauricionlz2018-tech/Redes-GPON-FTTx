@@ -3,6 +3,7 @@ import { X, Network, GitCommit, Layers, Info } from 'lucide-react';
 import { FIBER_DESIGN_COLORS } from './standardFiberIcons';
 import { getRouteDistance } from '../utils/geoUtils';
 import { FiberRoute, EmpalmeClosure } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface FiberDesignLegendModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
   totalPostesCfeCount = 803,
   totalPostesPropuestosCount = 144
 }) => {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   const calculatedMetrics: CalculatedMetrics = React.useMemo(() => {
@@ -96,17 +98,17 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
             </div>
             <div>
               <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
-                Simbología de Red
+                {t('legendModal.title')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Simbología de diseño, tipos de fusiones ópticas y desglose de metrajes
+                {t('legendModal.subtitle')}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer shrink-0"
-            title="Cerrar ventana"
+            title={t('common.close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -118,10 +120,10 @@ export const FiberDesignLegendModal: React.FC<FiberDesignLegendModalProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
               <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white flex items-center gap-2">
                 <Network className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
-                <span>Cómputo Total de Tendido de Fibra Óptica</span>
+                <span>{t('legendModal.totalFiberCompute')}</span>
               </h3>
               <span className="text-xs font-semibold bg-sky-600 text-white px-3 py-1 rounded-full shadow-xs self-start sm:self-auto">
-                Total Red: {calculatedMetrics.totalKm.toLocaleString()} km ({calculatedMetrics.totalMetros.toLocaleString()} ML)
+                {t('legendModal.totalNetwork', { km: calculatedMetrics.totalKm.toLocaleString(), m: calculatedMetrics.totalMetros.toLocaleString() })}
               </span>
             </div>
 
