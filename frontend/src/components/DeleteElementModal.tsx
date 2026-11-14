@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { Trash2, AlertTriangle, X, Ruler, GitCommit, MapPin } from 'lucide-react';
 
 interface DeleteElementModalProps {
@@ -22,6 +23,7 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
   details,
   isDeleting
 }) => {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   const getIcon = () => {
@@ -40,13 +42,13 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
   const getTypeLabel = () => {
     switch (elementType) {
       case 'troncal':
-        return 'Línea Troncal / Ramal';
+        return t('forms.createRoute.title');
       case 'mufa':
-        return 'Cierre de Empalme (Mufa)';
+        return t('forms.createMufa.title');
       case 'poste':
-        return 'Poste de Infraestructura';
+        return t('forms.createPoste.title');
       case 'gasa':
-        return 'Gasa de Reserva Técnica';
+        return t('forms.createGasa.title');
     }
   };
 
@@ -61,10 +63,10 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                {title || `Eliminar ${getTypeLabel()}`}
+                {title || `${t('common.delete')} ${getTypeLabel()}`}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Baja de elemento en red
+                {t('forms.deleteNap.subtitle')}
               </p>
             </div>
           </div>
@@ -110,7 +112,7 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
             disabled={isDeleting}
             className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer disabled:opacity-50"
           >
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             type="button"
@@ -119,11 +121,10 @@ export const DeleteElementModal: React.FC<DeleteElementModalProps> = ({
             className="px-4 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-950/20 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>{isDeleting ? 'Eliminando...' : 'Sí, Eliminar de la Red'}</span>
+            <span>{isDeleting ? t('forms.deleteNap.deleting') : t('forms.deleteNap.confirmDelete')}</span>
           </button>
         </div>
       </div>
     </div>
   );
 };
-

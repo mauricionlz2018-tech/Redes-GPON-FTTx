@@ -2090,4 +2090,94 @@ export const realNaps: NapBox[] = [
     },
     puertos: createPortsForRealNap('nap-sjr-25', 'NAP-SJR-25', 2, true)
   },
+  {
+    id_nap: 'nap-joc-01',
+    identificador: 'NAP-JOC-01',
+    zona: 'Jocotitlán - Centro',
+    id_puerto_pon: 'pon-2',
+    total_puertos: 16,
+    direccion_texto: 'Plaza Principal Juárez #12, Jocotitlán',
+    coordenadas_gps: { lat: 19.708450, lng: -99.785210 },
+    metricas: {
+      total: 16,
+      libres: 4,
+      ocupados: 12,
+      danados: 0,
+      porcentajeSaturacion: 75,
+      estadoSaturacion: 'disponible'
+    },
+    puertos: createPortsForRealNap('nap-joc-01', 'NAP-JOC-01', 12, false)
+  },
+  {
+    id_nap: 'nap-joc-02',
+    identificador: 'NAP-JOC-02',
+    zona: 'Jocotitlán - San Joaquín',
+    id_puerto_pon: 'pon-2',
+    total_puertos: 16,
+    direccion_texto: 'Av. Las Palmas #45, Barrio San Joaquín, Jocotitlán',
+    coordenadas_gps: { lat: 19.712100, lng: -99.781350 },
+    metricas: {
+      total: 16,
+      libres: 7,
+      ocupados: 9,
+      danados: 0,
+      porcentajeSaturacion: 56,
+      estadoSaturacion: 'disponible'
+    },
+    puertos: createPortsForRealNap('nap-joc-02', 'NAP-JOC-02', 9, false)
+  },
+  {
+    id_nap: 'nap-joc-03',
+    identificador: 'NAP-JOC-03',
+    zona: 'Jocotitlán - El Riego',
+    id_puerto_pon: 'pon-2',
+    total_puertos: 16,
+    direccion_texto: 'Carretera Panamericana Km 62, Jocotitlán',
+    coordenadas_gps: { lat: 19.719820, lng: -99.774500 },
+    metricas: {
+      total: 16,
+      libres: 10,
+      ocupados: 6,
+      danados: 0,
+      porcentajeSaturacion: 38,
+      estadoSaturacion: 'disponible'
+    },
+    puertos: createPortsForRealNap('nap-joc-03', 'NAP-JOC-03', 6, false)
+  },
+  {
+    id_nap: 'nap-ixt-01',
+    identificador: 'NAP-IXT-01',
+    zona: 'Ixtlahuaca - Centro',
+    id_puerto_pon: 'pon-3',
+    total_puertos: 16,
+    direccion_texto: 'Av. Hidalgo #88, Col. Centro, Ixtlahuaca',
+    coordenadas_gps: { lat: 19.571400, lng: -99.767800 },
+    metricas: {
+      total: 16,
+      libres: 2,
+      ocupados: 14,
+      danados: 0,
+      porcentajeSaturacion: 88,
+      estadoSaturacion: 'alerta'
+    },
+    puertos: createPortsForRealNap('nap-ixt-01', 'NAP-IXT-01', 14, false)
+  },
+  {
+    id_nap: 'nap-ixt-02',
+    identificador: 'NAP-IXT-02',
+    zona: 'Ixtlahuaca - San Pedro',
+    id_puerto_pon: 'pon-3',
+    total_puertos: 16,
+    direccion_texto: 'Calle Benito Juárez #23, San Pedro, Ixtlahuaca',
+    coordenadas_gps: { lat: 19.578900, lng: -99.762100 },
+    metricas: {
+      total: 16,
+      libres: 5,
+      ocupados: 11,
+      danados: 0,
+      porcentajeSaturacion: 69,
+      estadoSaturacion: 'disponible'
+    },
+    puertos: createPortsForRealNap('nap-ixt-02', 'NAP-IXT-02', 11, false)
+  }
 ];

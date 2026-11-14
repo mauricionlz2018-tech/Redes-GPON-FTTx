@@ -124,6 +124,7 @@ export interface EmpalmeClosure {
   tipo_cierre: string;
   capacidad_hilos?: number;
   estado?: string;
+  tipo_fusion?: string;
 }
 
 export interface GasaReserva {

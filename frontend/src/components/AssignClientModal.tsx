@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NapBox, NapPort, Client } from '../types';
 import { useNetwork } from '../context/NetworkContext';
+import { useLanguage } from '../context/LanguageContext';
 import api from '../api/client';
 import { putCachedClientImmediate, putCachedNapImmediate, broadcastRealtimeEvent } from '../services/realtimeSync';
 import { UserCheck, X, WifiOff, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
@@ -19,6 +20,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
   onAssignedSuccess
 }) => {
   const { isOnline, enqueueAssignment } = useNetwork();
+  const { t } = useLanguage();
 
   // Generar código de cliente sugerido
   const initialClientCode = `CLI-${Math.floor(10000 + Math.random() * 90000)}`;
@@ -42,7 +44,12 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
     // Validación básica de MAC
     const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
     if (!macRegex.test(formData.ont_mac)) {
-      setErrorMsg('La dirección MAC debe tener el formato AA:BB:CC:DD:EE:FF');
+      setErrorMsg(t('forms.assignClient.invalidMac'));
+      return;
+    }
+
+    if (!formData.nombre_completo.trim()) {
+      setErrorMsg(t('forms.assignClient.fillRequired'));
       return;
     }
 
@@ -68,7 +75,14 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
       potencia_rx_estimada: Number(formData.potencia_rx_estimada) || -19.5,
       puerto_nap: {
         ...port,
-        caja_nap: { id_nap: nap.id_nap, identificador: nap.identificador, zona: nap.zona, direccion_texto: nap.direccion_texto, coordenadas_gps: nap.coordenadas_gps, total_puertos: nap.total_puertos } as any
+        caja_nap: {
+          id_nap: nap.id_nap,
+          identificador: nap.identificador,
+          zona: nap.zona,
+          direccion_texto: nap.direccion_texto,
+          coordenadas_gps: nap.coordenadas_gps,
+          total_puertos: nap.total_puertos
+        } as any
       }
     };
 
@@ -138,9 +152,9 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
             <UserCheck className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Asignar Abonado a Puerto</h3>
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">{t('forms.assignClient.title')}</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Caja <span className="text-sky-600 dark:text-sky-400 font-semibold">{nap.identificador}</span> &bull; Puerto{' '}
+              {t('forms.assignClient.subtitle')} &bull; Caja <span className="text-sky-600 dark:text-sky-400 font-semibold">{nap.identificador}</span> &bull; Puerto{' '}
               <span className="text-emerald-600 dark:text-emerald-400 font-semibold">#{port.indice_puerto}</span>
             </p>
           </div>
@@ -161,7 +175,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
           <div className="mb-4 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
             <WifiOff className="w-4 h-4 flex-shrink-0" />
             <span>
-              Estás en <strong>Modo Sin Conexión</strong>. La asignación se guardará en IndexedDB y se sincronizará automáticamente al volver en línea.
+              {t('forms.assignClient.offlineNotice')}
             </span>
           </div>
         )}
@@ -179,7 +193,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Código / N° de Cliente
+                {t('forms.assignClient.clientCode')}
               </label>
               <input
                 type="text"
@@ -192,7 +206,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Marca de ONT (CPE)
+                {t('forms.assignClient.ontBrand')}
               </label>
               <select
                 value={formData.marca_ont}
@@ -209,12 +223,12 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Nombre Completo del Abonado
+              {t('forms.assignClient.clientName')}
             </label>
             <input
               type="text"
               required
-              placeholder="Ej. María Elena González Flores"
+              placeholder={t('forms.assignClient.clientNamePlaceholder')}
               value={formData.nombre_completo}
               onChange={(e) => setFormData({ ...formData, nombre_completo: e.target.value })}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
@@ -224,7 +238,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Dirección MAC de la ONT
+                {t('forms.assignClient.ontMac')}
               </label>
               <input
                 type="text"
@@ -238,7 +252,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Potencia Rx Estimada (dBm)
+                {t('forms.assignClient.rxPower')}
               </label>
               <input
                 type="number"
@@ -254,7 +268,7 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Dirección de Instalación
+              {t('forms.assignClient.address')}
             </label>
             <textarea
               rows={2}
@@ -270,17 +284,23 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium transition-colors"
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium transition-colors cursor-pointer"
             >
-              Cancelar
+              {t('forms.assignClient.cancel')}
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
+              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{loading ? 'Asignando...' : 'Confirmar Asignación'}</span>
+              <span>
+                {loading
+                  ? t('forms.assignClient.saving')
+                  : isOnline
+                  ? t('forms.assignClient.confirm')
+                  : t('forms.assignClient.confirmOffline')}
+              </span>
             </button>
           </div>
         </form>
@@ -288,4 +308,3 @@ export const AssignClientModal: React.FC<AssignClientModalProps> = ({
     </div>
   );
 };
-

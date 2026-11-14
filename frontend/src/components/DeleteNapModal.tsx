@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NapBox } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 import { Trash2, AlertTriangle, X, ShieldAlert } from 'lucide-react';
 
 interface DeleteNapModalProps {
@@ -15,6 +16,7 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
   onConfirmDelete,
   isDeleting
 }) => {
+  const { t } = useLanguage();
   const [confirmText, setConfirmText] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -24,7 +26,7 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
 
   const handleDelete = async () => {
     if (occupiedCount > 0 && !isMatch) {
-      setErrorMsg(`Por favor escribe "${nap.identificador}" para confirmar la baja segura.`);
+      setErrorMsg(t('forms.deleteNap.confirmMismatch', { id: nap.identificador }));
       return;
     }
     setErrorMsg(null);
@@ -46,10 +48,10 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                Eliminar Caja NAP de la Red
+                {t('forms.deleteNap.title')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Baja técnica de infraestructura pasiva
+                {t('forms.deleteNap.subtitle')}
               </p>
             </div>
           </div>
@@ -79,15 +81,15 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
             </p>
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-center">
               <div>
-                <span className="block text-[10px] text-slate-400">Puertos Totales</span>
+                <span className="block text-[10px] text-slate-400">{t('forms.deleteNap.totalPorts')}</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">{totalCount}</span>
               </div>
               <div>
-                <span className="block text-[10px] text-slate-400">Puertos Libres</span>
+                <span className="block text-[10px] text-slate-400">{t('forms.deleteNap.freePorts')}</span>
                 <span className="font-bold text-emerald-600 dark:text-emerald-400">{nap.metricas?.libres ?? 0}</span>
               </div>
               <div>
-                <span className="block text-[10px] text-slate-400">Abonados Activos</span>
+                <span className="block text-[10px] text-slate-400">{t('forms.deleteNap.activeClients')}</span>
                 <span className={`font-bold ${occupiedCount > 0 ? "text-red-600 dark:text-red-400" : "text-slate-600 dark:text-slate-300"}`}>
                   {occupiedCount}
                 </span>
@@ -100,9 +102,9 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
             <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2.5 text-amber-800 dark:text-amber-300">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
               <div className="space-y-1">
-                <strong className="font-semibold block">Atencion: Abonados activos vinculados</strong>
+                <strong className="font-semibold block">{t('forms.deleteNap.activeClientsWarning')}</strong>
                 <p className="text-[11px] leading-relaxed">
-                  Esta caja tiene <strong>{occupiedCount} cliente(s) conectado(s)</strong>. Al eliminar la caja, sus puertos se darán de baja y los abonados quedarán desvinculados para su reasignación en otra caja NAP disponible.
+                  {t('forms.deleteNap.activeClientsDesc', { count: occupiedCount })}
                 </p>
               </div>
             </div>
@@ -110,7 +112,7 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
             <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-start gap-2 text-slate-600 dark:text-slate-400">
               <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-slate-500" />
               <p className="text-[11px]">
-                La caja no tiene abonados activos. La eliminación retirará de forma segura el activo de la base de datos y de la cartografía Leaflet.
+                {t('forms.deleteNap.noClientsDesc')}
               </p>
             </div>
           )}
@@ -119,7 +121,7 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
           {occupiedCount > 0 && (
             <div className="space-y-1.5 pt-1">
               <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300">
-                Para confirmar, escribe <code className="font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/60 px-1 py-0.5 rounded">{nap.identificador}</code>:
+                {t('forms.deleteNap.confirmPrompt', { id: nap.identificador })}
               </label>
               <input
                 type="text"
@@ -147,7 +149,7 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
             disabled={isDeleting}
             className="px-3.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
           >
-            Cancelar
+            {t('forms.deleteNap.cancel')}
           </button>
           <button
             type="button"
@@ -156,7 +158,7 @@ export const DeleteNapModal: React.FC<DeleteNapModalProps> = ({
             className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-md shadow-red-950/20 transition-all cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>{isDeleting ? 'Eliminando...' : 'Sí, Eliminar Definitivamente'}</span>
+            <span>{isDeleting ? t('forms.deleteNap.deleting') : t('forms.deleteNap.confirmDelete')}</span>
           </button>
         </div>
       </div>

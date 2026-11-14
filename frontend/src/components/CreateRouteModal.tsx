@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { X, Network, MapPin, Plus, Trash2, CheckCircle2, Ruler } from 'lucide-react';
 import { FiberRoute } from '../types';
 import { FIBER_DESIGN_COLORS } from './standardFiberIcons';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CreateRouteModalProps {
   isOpen: boolean;
@@ -47,6 +48,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
   onEditOnMap,
   routeToEdit = null
 }) => {
+  const { t } = useLanguage();
   const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState<'troncal' | 'ramal' | 'distribucion'>('troncal');
   const [hilos, setHilos] = useState<number>(48);
@@ -99,7 +101,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
         ]);
       }
     }
-  }, [isOpen, routeToEdit, draftPoints, defaultCoordinates[0], defaultCoordinates[1]]);
+  }, [isOpen, routeToEdit, draftPoints, defaultCoordinates]);
 
   // Manejar cambio de tipo de cable para autoajustar color y grosor segun la norma
   const handleSubtipoPresetChange = (preset: string) => {
@@ -162,7 +164,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nombre.trim()) {
-      alert('Por favor introduce un nombre para la ruta');
+      alert(t('forms.createRoute.errName'));
       return;
     }
 
@@ -203,19 +205,17 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {isEditing ? 'Editar Línea de Fibra Óptica' : 'Registrar Línea de Fibra Óptica'}
+                {isEditing ? t('forms.createRoute.titleEdit') : t('forms.createRoute.title')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {isEditing
-                  ? 'Modificar parámetros técnicos, hilos o geometría del tendido'
-                  : 'Configuración de tendido, capacidad de hilos y cálculo métrico'}
+                {isEditing ? t('forms.createRoute.subtitleEdit') : t('forms.createRoute.subtitle')}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
-            title="Cerrar ventana"
+            title={t('reports.close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -230,7 +230,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
               </div>
               <div>
                 <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
-                  Longitud Estimada de Tendido
+                  {t('forms.createRoute.estimatedLength')}
                 </span>
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <span className="text-lg font-bold text-slate-900 dark:text-white font-mono">
@@ -244,7 +244,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
             </div>
             <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-700">
               <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-300 shrink-0">
-                {points.length} Vértices
+                {t('forms.createRoute.verticesCount', { count: points.length })}
               </span>
               {onEditOnMap && (
                 <button
@@ -254,7 +254,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                   title="Trazar curvas y postes directamente sobre el mapa"
                 >
                   <Ruler className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-                  <span>Trazar en Mapa</span>
+                  <span>{t('forms.createRoute.drawOnMap')}</span>
                 </button>
               )}
             </div>
@@ -264,29 +264,29 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Tipo / Norma de Cable
+                {t('forms.createRoute.cablePreset')}
               </label>
               <select
                 value={subtipo}
                 onChange={(e) => handleSubtipoPresetChange(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-sky-500"
               >
-                <option value="Troncal 96H">Troncal 96 Hilos</option>
-                <option value="Troncal 48H">Troncal 48 Hilos</option>
-                <option value="Troncal 12H">Troncal 12 Hilos</option>
-                <option value="Distribucion 12H">Distribución 12 Hilos</option>
-                <option value="Ramal 24H">Ramal 24 Hilos</option>
+                <option value="Troncal 96H">{t('forms.createRoute.presetTroncal96')}</option>
+                <option value="Troncal 48H">{t('forms.createRoute.presetTroncal48')}</option>
+                <option value="Troncal 12H">{t('forms.createRoute.presetTroncal12')}</option>
+                <option value="Distribucion 12H">{t('forms.createRoute.presetDistribucion12')}</option>
+                <option value="Ramal 24H">{t('forms.createRoute.presetRamal24')}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Nombre de la Línea / Tramo *
+                {t('forms.createRoute.name')}
               </label>
               <input
                 type="text"
                 required
-                placeholder="Ej. Troncal Ixtlahuaca a Subestación CFE"
+                placeholder={t('forms.createRoute.namePlaceholder')}
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
@@ -298,7 +298,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Color de Línea
+                {t('forms.createRoute.lineColor')}
               </label>
               <div className="flex items-center gap-2 mb-1.5">
                 <input
@@ -306,11 +306,10 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                   className="w-8 h-8 rounded border border-slate-300 dark:border-slate-700 cursor-pointer p-0.5 bg-transparent"
-                  title="Haz clic para elegir cualquier color personalizado"
+                  title="Color"
                 />
                 <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">{color}</span>
               </div>
-              {/* Paleta rápida de colores para selección instantánea */}
               <div className="flex items-center gap-1 flex-wrap">
                 {[
                   { name: 'Azul', hex: '#2563eb' },
@@ -341,7 +340,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Capacidad de Hilos
+                {t('forms.createRoute.fiberCapacity')}
               </label>
               <input
                 type="number"
@@ -355,16 +354,16 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
 
             <div className="col-span-2 sm:col-span-1">
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Estado de Operación
+                {t('forms.createRoute.operatingState')}
               </label>
               <select
                 value={estado}
                 onChange={(e) => setEstado(e.target.value as any)}
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
               >
-                <option value="operativa">Operativa (En servicio)</option>
-                <option value="en_construccion">En Construcción / Tendido</option>
-                <option value="planificada">Planificada / En Proyecto</option>
+                <option value="operativa">{t('forms.createRoute.stateOperativa')}</option>
+                <option value="en_construccion">{t('forms.createRoute.stateConstruccion')}</option>
+                <option value="planificada">{t('forms.createRoute.statePlanificada')}</option>
               </select>
             </div>
           </div>
@@ -374,7 +373,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
             <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-                Coordenadas de los Puntos / Postes ({points.length})
+                {t('forms.createRoute.pointsTitle', { count: points.length })}
               </span>
               <button
                 type="button"
@@ -382,7 +381,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                 className="flex items-center gap-1 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 px-2 py-1 rounded-md shadow-xs cursor-pointer transition-colors"
               >
                 <Plus className="w-3 h-3 text-sky-600 dark:text-sky-400" />
-                <span>Agregar Punto</span>
+                <span>{t('forms.createRoute.addPoint')}</span>
               </button>
             </div>
 
@@ -398,7 +397,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                       step="0.000001"
                       value={pt[0]}
                       onChange={(e) => handlePointChange(idx, 'lat', e.target.value)}
-                      placeholder="Latitud"
+                      placeholder={t('forms.createRoute.latitude')}
                       className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono text-slate-900 dark:text-slate-100 focus:border-sky-500 focus:outline-none"
                     />
                     <input
@@ -406,7 +405,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                       step="0.000001"
                       value={pt[1]}
                       onChange={(e) => handlePointChange(idx, 'lng', e.target.value)}
-                      placeholder="Longitud"
+                      placeholder={t('forms.createRoute.longitude')}
                       className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono text-slate-900 dark:text-slate-100 focus:border-sky-500 focus:outline-none"
                     />
                   </div>
@@ -415,7 +414,7 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                       type="button"
                       onClick={() => handleRemovePoint(idx)}
                       className="text-slate-400 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 p-1 cursor-pointer transition-colors"
-                      title="Eliminar este punto"
+                      title={t('common.delete')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -432,14 +431,14 @@ export const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors cursor-pointer"
             >
-              Cancelar
+              {t('forms.createRoute.cancel')}
             </button>
             <button
               type="submit"
               className="px-5 py-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-lg shadow-sky-900/20 flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{isEditing ? 'Guardar Cambios' : 'Guardar Línea de Fibra'} ({distanciaKm} km)</span>
+              <span>{isEditing ? t('forms.createRoute.saveChanges') : t('forms.createRoute.save')} ({distanciaKm} km)</span>
             </button>
           </div>
         </form>

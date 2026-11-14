@@ -3,6 +3,7 @@ import { Client } from '../types';
 import api from '../api/client';
 import { putCachedClientImmediate, broadcastRealtimeEvent } from '../services/realtimeSync';
 import { Edit3, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface EditClientModalProps {
   client: Client;
@@ -15,6 +16,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
   onClose,
   onClientUpdated
 }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     numero_cliente: client.numero_cliente,
     nombre_completo: client.nombre_completo,
@@ -34,7 +36,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
     // Validar formato de dirección MAC
     const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
     if (!macRegex.test(formData.ont_mac.trim())) {
-      setErrorMsg('La direccion MAC debe tener el formato estandar XX:XX:XX:XX:XX:XX');
+      setErrorMsg(t('forms.editClient.errMac'));
       return;
     }
 
@@ -76,7 +78,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title="Cerrar"
+          title={t('reports.close')}
         >
           <X className="w-5 h-5" />
         </button>
@@ -87,9 +89,9 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
             <Edit3 className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Editar Datos del Abonado</h3>
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">{t('forms.editClient.title')}</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Corrección de datos técnicos y de contrato del cliente conectado
+              {t('forms.editClient.subtitle')}
             </p>
           </div>
         </div>
@@ -107,7 +109,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Codigo / N° de Cliente *
+                {t('forms.editClient.clientCode')}
               </label>
               <input
                 type="text"
@@ -120,7 +122,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Marca de ONT (CPE) *
+                {t('forms.editClient.ontBrand')}
               </label>
               <select
                 value={formData.marca_ont}
@@ -137,7 +139,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Nombre Completo del Abonado *
+              {t('forms.editClient.fullName')}
             </label>
             <input
               type="text"
@@ -151,7 +153,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Direccion MAC de la ONT *
+                {t('forms.editClient.ontMac')}
               </label>
               <input
                 type="text"
@@ -165,7 +167,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Potencia Rx Estimada (dBm) *
+                {t('forms.editClient.rxPower')}
               </label>
               <input
                 type="number"
@@ -182,7 +184,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Direccion de Instalacion *
+              {t('forms.editClient.address')}
             </label>
             <textarea
               rows={2}
@@ -198,17 +200,17 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium transition-colors"
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium transition-colors cursor-pointer"
             >
-              Cancelar
+              {t('forms.editClient.cancel')}
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
+              className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{loading ? 'Guardando...' : 'Guardar Cambios'}</span>
+              <span>{loading ? t('forms.editClient.saving') : t('forms.editClient.save')}</span>
             </button>
           </div>
         </form>
@@ -216,4 +218,3 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({
     </div>
   );
 };
-

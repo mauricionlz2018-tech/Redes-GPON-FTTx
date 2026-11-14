@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PosteInfraestructura } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 import { MapPin, X, Compass, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface CreatePosteModalProps {
@@ -19,6 +20,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
   existingPostesCount = 144,
   posteToEdit = null
 }) => {
+  const { t } = useLanguage();
   const [tipo, setTipo] = useState<'poste_propuesto' | 'poste_cfe'>('poste_propuesto');
   const [codigo, setCodigo] = useState('');
   const [material, setMaterial] = useState('Concreto 12m');
@@ -43,30 +45,30 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
       setTipo('poste_propuesto');
       setCodigo(`POSTE-P-${existingPostesCount + 1}`);
       setMaterial('Concreto 12m');
-      if (defaultCoordinates && defaultCoordinates.length >= 2) {
-        setLat(defaultCoordinates[0]);
-        setLng(defaultCoordinates[1]);
-      }
+      setLat(defaultCoordinates[0]);
+      setLng(defaultCoordinates[1]);
       setErrorMsg(null);
     }
-  }, [isOpen, posteToEdit, defaultCoordinates[0], defaultCoordinates[1], existingPostesCount]);
+  }, [isOpen, posteToEdit, defaultCoordinates, existingPostesCount]);
 
   if (!isOpen) return null;
 
+  const isEditing = Boolean(posteToEdit);
+
   const handleTipoChange = (newTipo: 'poste_propuesto' | 'poste_cfe') => {
     setTipo(newTipo);
-    if (!posteToEdit) {
-      if (newTipo === 'poste_propuesto') {
-        setCodigo(`POSTE-P-${existingPostesCount + 1}`);
+    if (!isEditing) {
+      if (newTipo === 'poste_cfe') {
+        setCodigo(`POSTE-CFE-${existingPostesCount + 1}`);
       } else {
-        setCodigo(`CFE-${Math.floor(800 + Math.random() * 200)}`);
+        setCodigo(`POSTE-P-${existingPostesCount + 1}`);
       }
     }
   };
 
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setErrorMsg('Tu dispositivo o navegador no soporta geolocalización GPS.');
+      setErrorMsg('Geolocalización no soportada en este navegador.');
       return;
     }
     setLocating(true);
@@ -75,11 +77,10 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
         setLat(Number(pos.coords.latitude.toFixed(6)));
         setLng(Number(pos.coords.longitude.toFixed(6)));
         setLocating(false);
-        setErrorMsg(null);
       },
       (err) => {
-        console.warn('Error GPS:', err);
-        setErrorMsg('No se pudo obtener la ubicación GPS actual.');
+        console.warn('Error al capturar GPS:', err);
+        setErrorMsg('No se pudo obtener la posición satelital precisa.');
         setLocating(false);
       },
       { enableHighAccuracy: true, timeout: 8000 }
@@ -88,36 +89,31 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const numLat = typeof lat === 'string' ? parseFloat(lat) : lat;
-    const numLng = typeof lng === 'string' ? parseFloat(lng) : lng;
-
     if (!codigo.trim()) {
-      setErrorMsg('Por favor ingresa un código o identificador para el poste.');
+      setErrorMsg('El código o nombre del poste es obligatorio.');
       return;
     }
+
+    const numLat = Number(lat);
+    const numLng = Number(lng);
     if (isNaN(numLat) || isNaN(numLng)) {
-      setErrorMsg('Las coordenadas GPS no son válidas.');
+      setErrorMsg('Las coordenadas geodésicas deben ser números válidos.');
       return;
     }
 
-    const cleanCodigo = codigo.trim().toUpperCase();
-
-    const savedPoste: PosteInfraestructura = {
+    const posteData: PosteInfraestructura = {
       id_poste: posteToEdit ? posteToEdit.id_poste : `poste-custom-${Date.now()}`,
-      nombre: cleanCodigo,
-      codigo: cleanCodigo,
       tipo,
-      coordenadas_gps: {
-        lat: numLat,
-        lng: numLng
-      }
-    };
+      codigo: codigo.trim().toUpperCase(),
+      nombre: codigo.trim().toUpperCase(),
+      coordenadas_gps: { lat: numLat, lng: numLng },
+      material,
+      estado_operativo: 'operativo'
+    } as any;
 
-    onSavePoste(savedPoste);
+    onSavePoste(posteData);
     onClose();
   };
-
-  const isEditing = Boolean(posteToEdit);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
@@ -130,12 +126,10 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {isEditing ? 'Editar Poste de Red' : 'Agregar Poste de Red'}
+                {isEditing ? `${t('common.edit')} ${t('forms.createPoste.title')}` : t('forms.createPoste.title')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {isEditing
-                  ? 'Modificar parámetros técnicos o coordenadas del poste'
-                  : 'Infraestructura de soporte aéreo de planta externa'}
+                {t('forms.createPoste.subtitle')}
               </p>
             </div>
           </div>
@@ -159,7 +153,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
           {/* Tipo de Poste con Vista Previa Visual */}
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-              Tipo de Poste *
+              {t('forms.createPoste.type')} *
             </label>
             <div className="grid grid-cols-2 gap-2.5">
               <button
@@ -173,7 +167,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
               >
                 <span className="w-4 h-4 rounded-full bg-red-600 border-2 border-white shadow-xs shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">Poste Propuesto</div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white">{t('forms.createPoste.typePropuesto')}</div>
                   <div className="text-[10px] text-slate-500 dark:text-slate-400">Nuevo tendido proyectado</div>
                 </div>
               </button>
@@ -191,7 +185,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
                   +
                 </span>
                 <div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">Poste CFE Existente</div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white">{t('forms.createPoste.typeCfe')}</div>
                   <div className="text-[10px] text-slate-500 dark:text-slate-400">Poste con concesión eléctrica</div>
                 </div>
               </button>
@@ -201,7 +195,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
           {/* Código del Poste */}
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Código / Identificador del Poste *
+              {t('forms.createPoste.code')}
             </label>
             <input
               type="text"
@@ -244,13 +238,13 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
                 className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold flex items-center gap-1 hover:underline cursor-pointer disabled:opacity-50"
               >
                 <Compass className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
-                <span>{locating ? 'Detectando...' : 'Obtener GPS actual'}</span>
+                <span>{locating ? t('forms.createNap.capturingGps') : t('forms.createNap.useMyLocation')}</span>
               </button>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="block text-[10px] text-slate-500 mb-0.5 font-medium">Latitud</span>
+                <span className="block text-[10px] text-slate-500 mb-0.5 font-medium">{t('forms.createNap.latitude')}</span>
                 <input
                   type="number"
                   step="any"
@@ -261,7 +255,7 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
                 />
               </div>
               <div>
-                <span className="block text-[10px] text-slate-500 mb-0.5 font-medium">Longitud</span>
+                <span className="block text-[10px] text-slate-500 mb-0.5 font-medium">{t('forms.createNap.longitude')}</span>
                 <input
                   type="number"
                   step="any"
@@ -281,14 +275,14 @@ export const CreatePosteModal: React.FC<CreatePosteModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
             >
-              Cancelar
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle className="w-4 h-4" />
-              <span>{isEditing ? 'Guardar Cambios' : 'Guardar Poste'}</span>
+              <span>{isEditing ? t('common.saveChanges') : t('forms.createPoste.save')}</span>
             </button>
           </div>
         </form>

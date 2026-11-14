@@ -1,0 +1,7 @@
+"id_usuario","nombre_completo","credencial_acceso","password_hash","rol","createdAt","updatedAt"
+"239b7a49-3281-408b-841a-15ac0922b3f1","Ing. Sofía Ramírez (Soporte Técnico)","soporte@gpon.com","$2a$10$fsTQYBNBTkUpKcF9P.1hkusV0JC8cNnz0M9gYi34iz6.qxx8PNX8C","Soporte","2026-10-15 17:54:33.123+00","2026-10-16 17:34:05.389+00"
+"94b96684-f860-44b7-9120-ca7bb1269ec4","Oscar Mendoza","oscarmendoza@gpon.com","$2a$10$CiIzCaqJ.HK1JVz4/TAjhu0f28EVnM0FZoKgj1nAo/Zl8TL8mka2u","Admin","2026-10-22 17:13:26.095+00","2026-10-22 17:13:26.095+00"
+"bf8ca3fe-2468-4fc2-a3b7-18cbceec50ea","Ing. Daniel Benítez (Monitoreo NOC)","daniel.soporte@gpon.com","$2a$10$fsTQYBNBTkUpKcF9P.1hkusV0JC8cNnz0M9gYi34iz6.qxx8PNX8C","Soporte","2026-10-16 16:49:15.86+00","2026-10-16 17:34:05.768+00"
+"f1ae2108-5167-4a42-b987-584029a14186","Mauricio Nolazco Lonjino","mauricionlz2018@gmail.com","$2a$10$PoThB9wvfLL/Ha5XDSjhqOe/hEaiLDA7jhpYsqvm8EDp1MAcd4f1y","Admin","2026-10-19 17:33:46.568+00","2026-10-19 17:33:46.568+00"
+"fce2a28c-db6d-49b0-8c31-b9a2fc5d8560","Ing. Carlos Mendoza","admin@gpon.com","$2a$10$fsTQYBNBTkUpKcF9P.1hkusV0JC8cNnz0M9gYi34iz6.qxx8PNX8C","Admin","2026-10-15 17:54:33.123+00","2026-10-19 19:00:45.752+00"
+"ff506180-c564-446b-b5ea-d9bb45d0cee0","Juan Pérez (Técnico Cuadrilla 1)","tecnico@gpon.com","$2a$10$fsTQYBNBTkUpKcF9P.1hkusV0JC8cNnz0M9gYi34iz6.qxx8PNX8C","Tecnico","2026-10-15 17:54:33.123+00","2026-10-16 17:34:05.518+00"
